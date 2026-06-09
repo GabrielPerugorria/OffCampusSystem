@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EventPro | Organização de Eventos</title>
+
+  <link rel="stylesheet" href="style.css">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Sora:wght@700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <header id="mainHeader">
+    <nav class="navbar">
+
+      <a href="#" class="logo">
+        <div class="logo-icon">
+          <img src="imagens/favicon.png" alt="Logo OffCampus">
+        </div>
+        EvoTech<span>Events</span>
+      </a>
+
+      <ul class="menu">
+        <li><a href="#mainHeader" class="active">Início</a></li>
+        <li><a href="#events">Eventos</a></li>
+        <li><a href="#">Serviços</a></li>
+        <li><a href="#">Galeria</a></li>
+        <li><a href="#">Sobre</a></li>
+        <div class="nav-divider"></div>
+        <li><a href="#">Contato</a></li>
+      </ul>
+
+      <div class="actions">
+        <a href="#" class="btn-secondary">Entrar</a>
+        <a href="#" class="btn-primary">
+          <span class="dot"></span> Solicitar Orçamento
+        </a>
+      </div>
+
+      <div class="hamburger" id="hamburger">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+
+    </nav>
+
+    <div class="mobile-menu" id="mobileMenu">
+      <a href="#mainHeader">Início</a>
+      <a href="#">Eventos</a>
+      <a href="#">Serviços</a>
+      <a href="#">Galeria</a>
+      <a href="#">Sobre</a>
+      <a href="#">Contato</a>
+      <div class="mobile-actions">
+        <a href="#" class="btn-secondary">Entrar</a>
+        <a href="#" class="btn-primary">Solicitar Orçamento</a>
+      </div>
+    </div>
+
+    <div class="scroll-progress">
+      <div class="scroll-progress-bar" id="progressBar"></div>
+    </div>
+  </header>
+
+  <section class="hero">
+
+    <div class="hero-content">
+
+      <h1>
+Realize a venda de ingressos para seus eventos,
+<span>gerencie estoque, despesas, equipe e público</span>
+      </h1>
+
+      <p>
+  Gerencie seus eventos em um único lugar, com controle de ingressos, estoque, despesas,
+  equipes e público em tempo real.
+      </p>
+
+      <div class="hero-buttons">
+        <a href="#" class="btn-primary">
+          Solicitar Orçamento
+        </a>
+        <a href="#events" class="btn-outline">
+          Ver Eventos
+        </a>
+      </div>
+
+      <div class="stats">
+        <div class="stat">
+          <h3>150+</h3>+</h3>
+          <span>Eventos</span>
+        </div>
+        <div class="stat">
+          <h3>55k+</h3>
+          <span>Participantes</span>
+        </div>
+        <div class="stat">
+          <h3>98%</h3>
+          <span>Satisfação</span>
+        </div>
+      </div>
+
+    </div>
+
+  </section>
+
+  <section class="events" id="events">
+    <div class="carousel-header">
+      <div class="section-title">
+        <span>Ingressos em destaque</span>
+        <h2>Eventos disponíveis para compra agora</h2>
+        <p>Os melhores eventos do momento, com ingressos disponíveis agora para você garantir sua presença.</p>
+      </div>
+      <div class="carousel-controls">
+        <button class="carousel-button prev" aria-label="Evento anterior">‹</button>
+        <button class="carousel-button next" aria-label="Próximo evento">›</button>
+      </div>
+    </div>
+
+    <div class="events-carousel-wrapper">
+      <div class="events-grid">
+        <article class="event-slide">
+          <div class="event-card">
+            <div class="event-image event-image-1"></div>
+            <div class="event-card-info">
+              <div class="event-badge">Próximo</div>
+              <h3>OFFCampus na copa?</h3>
+              <div class="event-meta">
+                <span>EM BREVE</span>
+                <span>EM BREVE</span>
+              </div>
+              <p>Música ao vivo, áreas VIP e networking com convidados especiais para quem busca uma experiência premium. 
+                Vamos em busca do hexa com estilo e exclusividade!
+              </p>
+              <div class="event-actions">
+                <a href="#" class="btn-primary">Comprar ingresso</a>
+                <a href="#" class="btn-secondary">Saiba Mais</a>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="event-slide">
+          <div class="event-card">
+            <div class="event-image event-image-2"></div>
+            <div class="event-card-info">
+              <div class="event-badge secondary">Festival Eletrônico</div>
+              <h3>Noite Eletrônica</h3>
+              <div class="event-meta">
+                <span>EM BREVE</span>
+                <span>EM BREVE</span>
+              </div>
+              <p>Line-up exclusivo, produção premium e acesso controlado para uma noite inesquecível.</p>
+              <div class="event-actions">
+                <a href="#" class="btn-primary">Comprar ingresso</a>
+                <a href="#" class="btn-secondary">Saiba Mais</a>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="event-slide">
+          <div class="event-card">
+            <div class="event-image event-image-3"></div>
+            <div class="event-card-info">
+              <div class="event-badge">Destaque</div>
+              <h3>Festa Universitária</h3>
+              <div class="event-meta">
+                <span>EM BREVE</span>
+                <span>EM BREVE</span>
+              </div>
+              <p>Experience completa para estudantes com open food, música e ambiente vip.</p>
+              <div class="event-actions">
+                <a href="#" class="btn-primary">Comprar ingresso</a>
+                <a href="#" class="btn-secondary">Saiba Mais</a>
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+
+    <div class="carousel-dots">
+      <button class="carousel-dot active" aria-label="Evento 1"></button>
+      <button class="carousel-dot" aria-label="Evento 2"></button>
+      <button class="carousel-dot" aria-label="Evento 3"></button>
+    </div>
+  </section>
+
+  <script>
+    const header = document.getElementById('mainHeader');
+    const progressBar = document.getElementById('progressBar');
+    const hamburger = document.getElementById('hamburger');
+    const mobileMenu = document.getElementById('mobileMenu');
+    const menu = document.querySelector('.menu');
+    const menuLinks = document.querySelectorAll('.menu a');
+
+    const state = {
+      activeLink: document.querySelector('.menu a.active') || menuLinks[0]
+    };
+
+    const sectionLinks = Array.from(menuLinks).filter(link => {
+      const href = link.getAttribute('href');
+      return href && href.startsWith('#') && href.length > 1 && document.querySelector(href);
+    });
+
+    const sectionTargets = sectionLinks.map(link => document.querySelector(link.getAttribute('href')));
+
+    const updateIndicator = (link) => {
+      if (!link || !menu) return;
+      const menuRect = menu.getBoundingClientRect();
+      const linkRect = link.getBoundingClientRect();
+      const left = linkRect.left - menuRect.left;
+      menu.style.setProperty('--menu-indicator-left', `${left}px`);
+      menu.style.setProperty('--menu-indicator-width', `${linkRect.width}px`);
+    };
+
+    const refreshIndicator = () => {
+      window.requestAnimationFrame(() => updateIndicator(state.activeLink));
+    };
+
+    const updateActiveLinkOnScroll = () => {
+      const scrollPosition = window.scrollY + window.innerHeight * 0.22;
+      let current = sectionLinks[0];
+
+      sectionTargets.forEach((section, index) => {
+        if (section && scrollPosition >= section.offsetTop) {
+          current = sectionLinks[index];
+        }
+      });
+
+      if (current !== state.activeLink) {
+        state.activeLink.classList.remove('active');
+        current.classList.add('active');
+        state.activeLink = current;
+        refreshIndicator();
+      }
+    };
+
+    window.addEventListener('load', () => {
+      refreshIndicator();
+      updateActiveLinkOnScroll();
+    });
+    window.addEventListener('resize', () => {
+      refreshIndicator();
+      updateActiveLinkOnScroll();
+    });
+
+    window.addEventListener('scroll', () => {
+      header.classList.toggle('scrolled', window.scrollY > 20);
+      const total = document.documentElement.scrollHeight - window.innerHeight;
+      if (total > 0) {
+        progressBar.style.width = `${(window.scrollY / total) * 100}%`;
+      }
+      updateActiveLinkOnScroll();
+    });
+
+    hamburger.addEventListener('click', (event) => {
+      event.stopPropagation();
+      const active = !mobileMenu.classList.contains('open');
+      mobileMenu.classList.toggle('open', active);
+      hamburger.classList.toggle('active', active);
+      document.body.classList.toggle('nav-open', active);
+    });
+
+    document.addEventListener('click', (event) => {
+      if (!mobileMenu.contains(event.target) && !hamburger.contains(event.target)) {
+        mobileMenu.classList.remove('open');
+        hamburger.classList.remove('active');
+        document.body.classList.remove('nav-open');
+      }
+    });
+
+    menuLinks.forEach(link => {
+      link.addEventListener('click', (event) => {
+        event.preventDefault();
+        const href = link.getAttribute('href');
+        if (href && href.startsWith('#')) {
+          if (href === '#mainHeader' || href === '#') {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          } else {
+            const target = document.querySelector(href);
+            if (target) {
+              target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+          }
+        }
+
+        if (state.activeLink === link) return;
+        state.activeLink.classList.remove('active');
+        link.classList.add('active');
+        state.activeLink = link;
+        refreshIndicator();
+      });
+    });
+
+    document.querySelectorAll('#mobileMenu a').forEach(link => {
+      link.addEventListener('click', () => {
+        mobileMenu.classList.remove('open');
+        hamburger.classList.remove('active');
+        document.body.classList.remove('nav-open');
+      });
+    });
+
+    document.querySelectorAll('a[href^="#"]').forEach(link => {
+      link.addEventListener('click', (event) => {
+        const targetId = link.getAttribute('href');
+        const target = targetId && targetId.startsWith('#') && targetId.length > 1
+          ? document.querySelector(targetId)
+          : null;
+        if (target) {
+          event.preventDefault();
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    });
+
+    const carouselTrack = document.querySelector('.events-grid');
+    const slides = document.querySelectorAll('.event-slide');
+    const dots = document.querySelectorAll('.carousel-dot');
+    const prevButton = document.querySelector('.carousel-button.prev');
+    const nextButton = document.querySelector('.carousel-button.next');
+    let currentSlide = 0;
+    let carouselTimer = null;
+
+    const updateCarousel = () => {
+      if (!carouselTrack || slides.length === 0) return;
+      carouselTrack.style.transform = `translateX(-${currentSlide * 100}%)`;
+      slides.forEach((slide, index) => slide.classList.toggle('active', index === currentSlide));
+      dots.forEach((dot, index) => dot.classList.toggle('active', index === currentSlide));
+    };
+
+    const setSlide = (index) => {
+      currentSlide = (index + slides.length) % slides.length;
+      updateCarousel();
+    };
+
+    const nextSlide = () => setSlide(currentSlide + 1);
+    const prevSlide = () => setSlide(currentSlide - 1);
+
+    const resetCarouselAuto = () => {
+      clearInterval(carouselTimer);
+      carouselTimer = setInterval(nextSlide, 5000);
+    };
+
+    prevButton?.addEventListener('click', () => {
+      prevSlide();
+      resetCarouselAuto();
+    });
+
+    nextButton?.addEventListener('click', () => {
+      nextSlide();
+      resetCarouselAuto();
+    });
+
+    dots.forEach((dot, index) => {
+      dot.addEventListener('click', () => {
+        setSlide(index);
+        resetCarouselAuto();
+      });
+    });
+
+    carouselTrack?.addEventListener('mouseenter', () => clearInterval(carouselTimer));
+    carouselTrack?.addEventListener('mouseleave', resetCarouselAuto);
+
+    updateCarousel();
+    resetCarouselAuto();
+
+    if (window.ResizeObserver) {
+      new ResizeObserver(refreshIndicator).observe(menu);
+    }
+  </script>
+
+</body>
+</html>
