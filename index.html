@@ -6,6 +6,9 @@
   <title>EventPro | Organização de Eventos</title>
 
   <link rel="stylesheet" href="style.css">
+  <link rel="preload" href="imagens/offcampushexa.png" as="image">
+  <link rel="preload" href="imagens/resenhadoportes.png" as="image">
+  <link rel="preload" href="imagens/halloween.png" as="image">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -115,13 +118,11 @@ Realize a venda de ingressos para seus eventos,
         <h2>Eventos disponíveis para compra agora</h2>
         <p>Os melhores eventos do momento, com ingressos disponíveis agora para você garantir sua presença.</p>
       </div>
-      <div class="carousel-controls">
-        <button class="carousel-button prev" aria-label="Evento anterior">‹</button>
-        <button class="carousel-button next" aria-label="Próximo evento">›</button>
-      </div>
     </div>
 
     <div class="events-carousel-wrapper">
+      <button type="button" class="carousel-button carousel-side-button prev" aria-label="Evento anterior">‹</button>
+      <button type="button" class="carousel-button carousel-side-button next" aria-label="Próximo evento">›</button>
       <div class="events-grid">
         <article class="event-slide">
           <div class="event-card">
@@ -149,7 +150,7 @@ Realize a venda de ingressos para seus eventos,
             <div class="event-image event-image-2"></div>
             <div class="event-card-info">
               <div class="event-badge secondary">Festival Eletrônico</div>
-              <h3>Noite Eletrônica</h3>
+              <h3>Resenha do Portes</h3>
               <div class="event-meta">
                 <span>EM BREVE</span>
                 <span>EM BREVE</span>
@@ -168,7 +169,7 @@ Realize a venda de ingressos para seus eventos,
             <div class="event-image event-image-3"></div>
             <div class="event-card-info">
               <div class="event-badge">Destaque</div>
-              <h3>Festa Universitária</h3>
+              <h3>halloween Offcampus?</h3>
               <div class="event-meta">
                 <span>EM BREVE</span>
                 <span>EM BREVE</span>
@@ -320,32 +321,184 @@ Realize a venda de ingressos para seus eventos,
     });
 
     const carouselTrack = document.querySelector('.events-grid');
-    const slides = document.querySelectorAll('.event-slide');
+    const originalSlides = Array.from(document.querySelectorAll('.event-slide'));
     const dots = document.querySelectorAll('.carousel-dot');
-    const prevButton = document.querySelector('.carousel-button.prev');
-    const nextButton = document.querySelector('.carousel-button.next');
-    let currentSlide = 0;
+    const prevButton = document.querySelector('.carousel-side-button.prev') || document.querySelector('.carousel-button.prev');
+    const nextButton = document.querySelector('.carousel-side-button.next') || document.querySelector('.carousel-button.next');
+    const slideCount = originalSlides.length;
+    let currentSlide = slideCount > 1 ? 1 : 0;
     let carouselTimer = null;
+    let isDragging = false;
+    let isTransitioning = false;
+    let dragStartX = 0;
+    let dragCurrentX = 0;
+    let dragDelta = 0;
 
-    const updateCarousel = () => {
-      if (!carouselTrack || slides.length === 0) return;
-      carouselTrack.style.transform = `translateX(-${currentSlide * 100}%)`;
-      slides.forEach((slide, index) => slide.classList.toggle('active', index === currentSlide));
-      dots.forEach((dot, index) => dot.classList.toggle('active', index === currentSlide));
+    const createInfiniteSlides = () => {
+      if (!carouselTrack || slideCount < 2) return;
+      const firstClone = originalSlides[0].cloneNode(true);
+      const lastClone = originalSlides[slideCount - 1].cloneNode(true);
+      firstClone.classList.add('clone');
+      lastClone.classList.add('clone');
+      carouselTrack.appendChild(firstClone);
+      carouselTrack.insertBefore(lastClone, carouselTrack.firstChild);
     };
 
-    const setSlide = (index) => {
-      currentSlide = (index + slides.length) % slides.length;
+    const carouselTransition = 'transform .8s cubic-bezier(.25,.8,.25,1)';
+
+    const updateCarousel = (skipTransition = false) => {
+      if (!carouselTrack || slideCount === 0) return;
+      carouselTrack.style.transition = skipTransition ? 'none' : carouselTransition;
+      if (skipTransition) {
+        carouselTrack.offsetHeight; // force reflow to apply transition reset immediately
+        isTransitioning = false;
+      } else {
+        isTransitioning = true;
+      }
+      carouselTrack.style.transform = `translateX(-${currentSlide * 100}%)`;
+
+      const activeIndex = (currentSlide - 1 + slideCount) % slideCount;
+      originalSlides.forEach((slide, index) => slide.classList.toggle('active', index === activeIndex));
+      dots.forEach((dot, index) => dot.classList.toggle('active', index === activeIndex));
+    };
+
+    const normalizeSlideIndex = () => {
+      if (currentSlide < 0) {
+        currentSlide = slideCount;
+      } else if (currentSlide > slideCount + 1) {
+        currentSlide = 1;
+      }
+    };
+
+    const goToSlide = (index) => {
+      if (isTransitioning) return;
+      currentSlide = index + 1;
+      normalizeSlideIndex();
       updateCarousel();
     };
 
-    const nextSlide = () => setSlide(currentSlide + 1);
-    const prevSlide = () => setSlide(currentSlide - 1);
+    const nextSlide = () => {
+      if (isTransitioning) return;
+      currentSlide += 1;
+      normalizeSlideIndex();
+      updateCarousel();
+    };
+
+    const prevSlide = () => {
+      if (isTransitioning) return;
+      currentSlide -= 1;
+      normalizeSlideIndex();
+      updateCarousel();
+    };
+
+    const handleTransitionEnd = (event) => {
+      if (event.propertyName !== 'transform') return;
+      isTransitioning = false;
+      if (currentSlide === 0) {
+        currentSlide = slideCount;
+        updateCarousel(true);
+      } else if (currentSlide === slideCount + 1) {
+        currentSlide = 1;
+        updateCarousel(true);
+      }
+    };
+
+    const autoDelay = 4000;
+    const carouselAuto = () => {
+      clearTimeout(carouselTimer);
+      carouselTimer = setTimeout(() => {
+        nextSlide();
+        carouselAuto();
+      }, autoDelay);
+    };
 
     const resetCarouselAuto = () => {
-      clearInterval(carouselTimer);
-      carouselTimer = setInterval(nextSlide, 5000);
+      clearTimeout(carouselTimer);
+      carouselAuto();
     };
+
+    const preloadCarouselImages = () => {
+      const urls = [
+        'imagens/offcampushexa.png',
+        'imagens/resenhadoportes.png',
+        'imagens/halloween.png'
+      ];
+      return Promise.all(urls.map(src => new Promise(resolve => {
+        const img = new Image();
+        img.src = src;
+        if (img.complete) {
+          resolve();
+          return;
+        }
+        img.onload = img.onerror = resolve;
+      })));
+    };
+
+    const onDragStart = (event) => {
+      if (!carouselTrack || slideCount < 2) return;
+      if (event.pointerType !== 'touch' && event.pointerType !== 'pen') return;
+      isDragging = true;
+      dragStartX = event.clientX;
+      dragCurrentX = dragStartX;
+      carouselTrack.style.transition = 'none';
+      clearTimeout(carouselTimer);
+      if (event.pointerId && carouselTrack.setPointerCapture) {
+        carouselTrack.setPointerCapture(event.pointerId);
+      }
+    };
+
+    const onDragMove = (event) => {
+      if (!isDragging) return;
+      dragCurrentX = event.clientX;
+      dragDelta = dragCurrentX - dragStartX;
+      carouselTrack.style.transform = `translateX(calc(-${currentSlide * 100}% + ${dragDelta}px))`;
+    };
+
+    const onDragEnd = (event) => {
+      if (!isDragging) return;
+      isDragging = false;
+      const moved = dragCurrentX - dragStartX;
+      carouselTrack.style.transition = carouselTransition;
+      if (Math.abs(moved) > 70) {
+        if (moved < 0) {
+          nextSlide();
+        } else {
+          prevSlide();
+        }
+      } else {
+        updateCarousel();
+      }
+      resetCarouselAuto();
+      if (event.pointerId && carouselTrack.releasePointerCapture) {
+        carouselTrack.releasePointerCapture(event.pointerId);
+      }
+    };
+
+    const onDragCancel = () => {
+      if (!isDragging) return;
+      isDragging = false;
+      updateCarousel();
+      resetCarouselAuto();
+    };
+
+    if (carouselTrack) {
+      preloadCarouselImages().then(() => {
+        createInfiniteSlides();
+        carouselTrack.addEventListener('transitionend', handleTransitionEnd);
+        carouselTrack.addEventListener('mouseenter', () => clearTimeout(carouselTimer));
+        carouselTrack.addEventListener('mouseleave', resetCarouselAuto);
+        carouselTrack.addEventListener('pointerdown', onDragStart);
+        carouselTrack.addEventListener('pointermove', onDragMove);
+        carouselTrack.addEventListener('pointerup', onDragEnd);
+        carouselTrack.addEventListener('pointercancel', onDragCancel);
+        carouselTrack.addEventListener('pointerleave', onDragCancel);
+        updateCarousel(true);
+        resetCarouselAuto();
+      });
+    } else {
+      updateCarousel(true);
+      resetCarouselAuto();
+    }
 
     prevButton?.addEventListener('click', () => {
       prevSlide();
@@ -359,16 +512,10 @@ Realize a venda de ingressos para seus eventos,
 
     dots.forEach((dot, index) => {
       dot.addEventListener('click', () => {
-        setSlide(index);
+        goToSlide(index);
         resetCarouselAuto();
       });
     });
-
-    carouselTrack?.addEventListener('mouseenter', () => clearInterval(carouselTimer));
-    carouselTrack?.addEventListener('mouseleave', resetCarouselAuto);
-
-    updateCarousel();
-    resetCarouselAuto();
 
     if (window.ResizeObserver) {
       new ResizeObserver(refreshIndicator).observe(menu);
