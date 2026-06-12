@@ -248,6 +248,8 @@ Realize a venda de ingressos para seus eventos,
     });
     window.addEventListener('resize', () => {
       refreshIndicator();
+      refreshCarouselMeasurements();
+      updateCarousel(true);
       updateActiveLinkOnScroll();
     });
 
@@ -333,6 +335,16 @@ Realize a venda de ingressos para seus eventos,
     let dragStartX = 0;
     let dragCurrentX = 0;
     let dragDelta = 0;
+    let slideWidth = 0;
+    let slideGap = 0;
+
+    const refreshCarouselMeasurements = () => {
+      if (!carouselTrack || originalSlides.length === 0) return;
+      const firstSlide = originalSlides[0];
+      const trackStyles = window.getComputedStyle(carouselTrack);
+      slideWidth = firstSlide.getBoundingClientRect().width;
+      slideGap = parseFloat(trackStyles.gap) || 0;
+    };
 
     const createInfiniteSlides = () => {
       if (!carouselTrack || slideCount < 2) return;
@@ -346,6 +358,11 @@ Realize a venda de ingressos para seus eventos,
 
     const carouselTransition = 'transform .8s cubic-bezier(.25,.8,.25,1)';
 
+    const getSlideOffset = (index) => {
+      if (!carouselTrack || !carouselTrack.children[index]) return 0;
+      return carouselTrack.children[index].offsetLeft;
+    };
+
     const updateCarousel = (skipTransition = false) => {
       if (!carouselTrack || slideCount === 0) return;
       carouselTrack.style.transition = skipTransition ? 'none' : carouselTransition;
@@ -355,7 +372,8 @@ Realize a venda de ingressos para seus eventos,
       } else {
         isTransitioning = true;
       }
-      carouselTrack.style.transform = `translateX(-${currentSlide * 100}%)`;
+      const offset = getSlideOffset(currentSlide);
+      carouselTrack.style.transform = `translateX(-${offset}px)`;
 
       const activeIndex = (currentSlide - 1 + slideCount) % slideCount;
       originalSlides.forEach((slide, index) => slide.classList.toggle('active', index === activeIndex));
@@ -363,6 +381,14 @@ Realize a venda de ingressos para seus eventos,
     };
 
     const normalizeSlideIndex = () => {
+      if (currentSlide < 0) {
+        currentSlide = slideCount;
+      } else if (currentSlide > slideCount + 1) {
+        currentSlide = 1;
+      }
+    };
+
+    const normalizeForLoop = () => {
       if (currentSlide < 0) {
         currentSlide = slideCount;
       } else if (currentSlide > slideCount + 1) {
@@ -437,21 +463,29 @@ Realize a venda de ingressos para seus eventos,
     const onDragStart = (event) => {
       if (!carouselTrack || slideCount < 2) return;
       if (event.pointerType !== 'touch' && event.pointerType !== 'pen') return;
+      event.preventDefault();
+      event.stopPropagation();
       isDragging = true;
       dragStartX = event.clientX;
       dragCurrentX = dragStartX;
       carouselTrack.style.transition = 'none';
+      carouselTrack.style.cursor = 'grabbing';
       clearTimeout(carouselTimer);
       if (event.pointerId && carouselTrack.setPointerCapture) {
         carouselTrack.setPointerCapture(event.pointerId);
       }
+      document.addEventListener('pointermove', onDragMove);
+      document.addEventListener('pointerup', onDragEnd);
+      document.addEventListener('pointercancel', onDragEnd);
     };
 
     const onDragMove = (event) => {
       if (!isDragging) return;
+      event.preventDefault();
       dragCurrentX = event.clientX;
       dragDelta = dragCurrentX - dragStartX;
-      carouselTrack.style.transform = `translateX(calc(-${currentSlide * 100}% + ${dragDelta}px))`;
+      const baseOffset = getSlideOffset(currentSlide);
+      carouselTrack.style.transform = `translateX(calc(-${baseOffset}px + ${dragDelta}px))`;
     };
 
     const onDragEnd = (event) => {
@@ -459,7 +493,9 @@ Realize a venda de ingressos para seus eventos,
       isDragging = false;
       const moved = dragCurrentX - dragStartX;
       carouselTrack.style.transition = carouselTransition;
-      if (Math.abs(moved) > 70) {
+      carouselTrack.style.cursor = 'grab';
+      const threshold = slideWidth > 0 ? Math.min(90, Math.max(40, slideWidth * 0.18)) : 60;
+      if (Math.abs(moved) > threshold) {
         if (moved < 0) {
           nextSlide();
         } else {
@@ -472,6 +508,9 @@ Realize a venda de ingressos para seus eventos,
       if (event.pointerId && carouselTrack.releasePointerCapture) {
         carouselTrack.releasePointerCapture(event.pointerId);
       }
+      document.removeEventListener('pointermove', onDragMove);
+      document.removeEventListener('pointerup', onDragEnd);
+      document.removeEventListener('pointercancel', onDragEnd);
     };
 
     const onDragCancel = () => {
@@ -484,6 +523,7 @@ Realize a venda de ingressos para seus eventos,
     if (carouselTrack) {
       preloadCarouselImages().then(() => {
         createInfiniteSlides();
+        refreshCarouselMeasurements();
         carouselTrack.addEventListener('transitionend', handleTransitionEnd);
         carouselTrack.addEventListener('mouseenter', () => clearTimeout(carouselTimer));
         carouselTrack.addEventListener('mouseleave', resetCarouselAuto);
