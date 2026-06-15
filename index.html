@@ -1,9 +1,12 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>EventPro | Organização de Eventos</title>
+  <title>EvoTech Events | Plataforma Inteligente de Gestão de Eventos</title>
+  <meta name="description"
+    content="EvoTech Events — plataforma completa para gestão de eventos: ingressos, portaria, financeiro, Open Bar, dashboard e muito mais.">
 
   <link rel="stylesheet" href="style.css">
   <link rel="preload" href="imagens/offcampushexa.png" as="image">
@@ -12,147 +15,220 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Sora:wght@700;800&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Sora:wght@700;800&display=swap"
+    rel="stylesheet">
 </head>
+
 <body>
 
+  <!-- ===================== HEADER ===================== -->
   <header id="mainHeader">
-    <nav class="navbar">
+    <nav class="navbar" role="navigation" aria-label="Navegação principal">
 
-      <a href="#" class="logo">
+      <a href="#" class="logo" aria-label="EvoTech Events — Início">
         <div class="logo-icon">
-          <img src="imagens/favicon.png" alt="Logo OffCampus">
+          <img src="imagens/favicon.png" alt="Logo EvoTech">
         </div>
         EvoTech<span>Events</span>
       </a>
 
-      <ul class="menu">
-        <li><a href="#mainHeader" class="active">Início</a></li>
-        <li><a href="#events">Eventos</a></li>
-        <li><a href="#">Serviços</a></li>
-        <li><a href="#">Galeria</a></li>
-        <li><a href="#">Sobre</a></li>
-        <div class="nav-divider"></div>
-        <li><a href="#">Contato</a></li>
+      <ul class="menu" role="menubar" aria-label="Menu principal">
+        <li role="none"><a href="#hero" class="active" role="menuitem">Início</a></li>
+        <li role="none"><a href="#events" role="menuitem">Eventos</a></li>
+        <li role="none"><a href="#plataforma" role="menuitem">Plataforma</a></li>
+        <li role="none"><a href="#modulos" role="menuitem">Módulos</a></li>
+        <li role="none"><a href="#planos" role="menuitem">Planos</a></li>
+        <li role="none"><a href="#diferenciais" role="menuitem">Diferenciais</a></li>
+        <li role="separator" class="nav-divider" aria-hidden="true"></li>
+        <li role="none"><a href="#contato" role="menuitem">Contato</a></li>
       </ul>
 
-      <div class="actions">
-        <a href="#" class="btn-secondary">Entrar</a>
-        <a href="#" class="btn-primary">
-          <span class="dot"></span> Solicitar Orçamento
+      <div class="actions" id="navActions">
+        <a href="#" class="btn-secondary" id="btnEntrar" aria-label="Entrar na plataforma">Entrar</a>
+        <a href="#" class="btn-primary" id="btnCadastro">
+          <span class="dot" aria-hidden="true"></span> Cadastrar
         </a>
       </div>
 
-      <div class="hamburger" id="hamburger">
-        <span></span>
-        <span></span>
-        <span></span>
-      </div>
+      <button class="hamburger" id="hamburger" aria-label="Abrir menu" aria-expanded="false" aria-controls="mobileMenu">
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+      </button>
 
     </nav>
 
-    <div class="mobile-menu" id="mobileMenu">
-      <a href="#mainHeader">Início</a>
-      <a href="#">Eventos</a>
-      <a href="#">Serviços</a>
-      <a href="#">Galeria</a>
-      <a href="#">Sobre</a>
-      <a href="#">Contato</a>
+    <div class="mobile-menu" id="mobileMenu" role="dialog" aria-label="Menu móvel" aria-hidden="true">
+      <a href="#hero">Início</a>
+      <a href="#events">Eventos</a>
+      <a href="#plataforma">Plataforma</a>
+      <a href="#modulos">Módulos</a>
+      <a href="#planos">Planos</a>
+      <a href="#diferenciais">Diferenciais</a>
+      <a href="#contato">Contato</a>
       <div class="mobile-actions">
-        <a href="#" class="btn-secondary">Entrar</a>
-        <a href="#" class="btn-primary">Solicitar Orçamento</a>
+        <a href="#" class="btn-secondary" id="btnEntrarMobile">Entrar</a>
+        <a href="#" class="btn-primary" id="btnCadastroMobile">Cadastrar</a>
       </div>
     </div>
 
-    <div class="scroll-progress">
+    <div class="scroll-progress" aria-hidden="true">
       <div class="scroll-progress-bar" id="progressBar"></div>
     </div>
   </header>
 
-  <section class="hero">
+  <!-- ===================== HERO ===================== -->
+  <section class="hero" id="hero" aria-label="Apresentação">
+    <canvas id="particlesCanvas" aria-hidden="true"></canvas>
 
     <div class="hero-content">
 
+      <div class="hero-badge" aria-label="Plataforma operacional completa">
+        <span class="badge-dot" aria-hidden="true"></span>
+        Plataforma operacional completa
+      </div>
+
       <h1>
-Realize a venda de ingressos para seus eventos,
-<span>gerencie estoque, despesas, equipe e público</span>
+        Eventos memoráveis <span>começam antes</span> da primeira pessoa entrar.
       </h1>
 
       <p>
-  Gerencie seus eventos em um único lugar, com controle de ingressos, estoque, despesas,
-  equipes e público em tempo real.
+        Da venda dos ingressos ao controle financeiro — centralize toda a operação do seu evento em uma única plataforma
+        inteligente. Dashboard em tempo real, portaria com QR Code, Open Bar e muito mais.
       </p>
 
       <div class="hero-buttons">
-        <a href="#" class="btn-primary">
-          Solicitar Orçamento
+        <a href="#" class="btn-primary btn-large" id="heroBtnCadastro">
+          Cadastrar Grátis
         </a>
-        <a href="#events" class="btn-outline">
+        <a href="#events" class="btn-outline btn-large">
           Ver Eventos
         </a>
       </div>
 
-      <div class="stats">
-        <div class="stat">
-          <h3>150+</h3>
-          <span>Eventos</span>
+      <div class="presence" role="list" aria-label="Informações de presença">
+        <div class="presence-item" role="listitem">
+          <span class="presence-label">Operamos em</span>
+          <span class="presence-value"><span class="highlight">Brasil</span> • <span class="highlight">Inteiro</span>
+            <small>+2 Estados & +17 Cidades</small></span>
         </div>
-        <div class="stat">
-          <h3>55k+</h3>
-          <span>Participantes</span>
+        <div class="presence-item" role="listitem">
+          <span class="presence-label">Eventos</span>
+          <span class="presence-value">Corporativos · Feiras · Shows · Festivais</span>
         </div>
-        <div class="stat">
-          <h3>98%</h3>
-          <span>Satisfação</span>
+        <div class="presence-item" role="listitem">
+          <span class="presence-label">Suporte</span>
+          <span class="presence-value">Equipe em campo <small>antes, durante e após</small></span>
         </div>
       </div>
 
     </div>
 
+    <div class="hero-image" aria-hidden="true">
+      <div class="brazil-container" id="brazilContainer">
+        <div class="brazil-inner" id="brazilInner">
+          <svg class="brazil-svg" viewBox="0 0 613 639" id="brazilSvg" aria-hidden="true">
+            <image href="imagens/brazil-wireframe.svg" x="0" y="0" width="613" height="639"
+              preserveAspectRatio="xMidYMid meet" opacity=".75" />
+            <g id="brazilOverlay"></g>
+          </svg>
+        </div>
+        <div class="brazil-stats" id="brazilStats">
+          <div class="brazil-stats-title">● Pontos ativos</div>
+          <div class="brazil-stats-list" id="brazilStatsList"></div>
+        </div>
+      </div>
+    </div>
+
   </section>
 
-  <section class="events hero-banner" id="events">
+  <!-- ===================== JOURNEY ===================== -->
+  <section class="journey" aria-label="Jornada do evento">
+    <div class="journey-track" role="list" aria-label="Etapas da jornada">
+      <div class="journey-step" role="listitem">
+        <span class="journey-dot" aria-hidden="true"></span>
+        <span class="journey-label">Planejamento</span>
+      </div>
+      <div class="journey-step" role="listitem">
+        <span class="journey-dot" aria-hidden="true"></span>
+        <span class="journey-label">Ingressos</span>
+      </div>
+      <div class="journey-step" role="listitem">
+        <span class="journey-dot" aria-hidden="true"></span>
+        <span class="journey-label">Operação</span>
+      </div>
+      <div class="journey-step" role="listitem">
+        <span class="journey-dot" aria-hidden="true"></span>
+        <span class="journey-label">Portaria</span>
+      </div>
+      <div class="journey-step" role="listitem">
+        <span class="journey-dot" aria-hidden="true"></span>
+        <span class="journey-label">Open Bar</span>
+      </div>
+      <div class="journey-step" role="listitem">
+        <span class="journey-dot" aria-hidden="true"></span>
+        <span class="journey-label">Financeiro</span>
+      </div>
+      <div class="journey-step" role="listitem">
+        <span class="journey-dot" aria-hidden="true"></span>
+        <span class="journey-label">Resultados</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== EVENTOS ===================== -->
+  <section class="events hero-banner" id="events" aria-label="Eventos em destaque">
     <div class="hero-banner-grid">
       <div class="banner-intro">
-        <span>Ingressos em destaque</span>
+        <span aria-hidden="true">Ingressos em destaque</span>
         <h2>Eventos disponíveis para compra agora</h2>
         <p>Os melhores eventos do momento, com ingressos disponíveis agora para você garantir sua presença.</p>
       </div>
 
-      <div class="banner-carousel" aria-roledescription="carousel" aria-label="Eventos em destaque" tabindex="0">
-        <div class="banner-list">
-          <article class="banner-slide active" data-index="0" role="group" aria-roledescription="slide" aria-label="Evento 1" aria-hidden="false">
+      <div class="banner-carousel" aria-roledescription="carrossel" aria-label="Eventos em destaque" tabindex="0">
+        <div class="banner-list" role="list">
+
+          <article class="banner-slide active" data-index="0" role="listitem"
+            aria-label="Evento 1 de 3: OFFCampus na copa" aria-hidden="false" tabindex="0">
             <div class="banner-media">
               <div class="banner-image">
-                <img src="imagens/offcampushexa.png" alt="Imagem do evento OFFCampus na copa" loading="lazy">
-                <div class="banner-visual-overlay"></div>
+                <img src="imagens/offcampushexa.png"
+                  alt="Banner do evento OFFCampus na Copa — experiência premium com música ao vivo e áreas VIP"
+                  loading="lazy">
+                <div class="banner-visual-overlay" aria-hidden="true"></div>
               </div>
-              <div class="banner-ribbon">Próximo</div>
+              <div class="banner-ribbon" aria-label="Status: Próximo">Próximo</div>
             </div>
             <div class="banner-copy">
               <div>
                 <div class="banner-type">Experiência premium</div>
                 <h3>OFFCampus na copa?</h3>
-                <p>Música ao vivo, áreas VIP e networking com convidados especiais para quem busca uma experiência premium. Vamos em busca do hexa com estilo e exclusividade!</p>
+                <p>Música ao vivo, áreas VIP e networking com convidados especiais para quem busca uma experiência
+                  premium. Vamos em busca do hexa com estilo e exclusividade!</p>
               </div>
-              <div class="banner-meta">
+              <div class="banner-meta" aria-label="Informações do evento">
                 <span>EM BREVE</span>
                 <span>EXPERIÊNCIA PREMIUM</span>
               </div>
               <div class="banner-action-group">
-                <a href="#" class="btn-primary">Comprar ingresso</a>
-                <a href="#" class="btn-secondary">Saiba Mais</a>
+                <a href="#" class="btn-primary banner-buy" data-evento="OFFCampus na Copa"
+                  aria-label="Comprar ingresso para OFFCampus na Copa">Comprar ingresso</a>
+                <a href="#" class="btn-secondary banner-info" data-evento="0"
+                  aria-label="Saiba mais sobre OFFCampus na Copa">Saiba Mais</a>
               </div>
             </div>
           </article>
 
-          <article class="banner-slide" data-index="1" role="group" aria-roledescription="slide" aria-label="Evento 2" aria-hidden="true">
+          <article class="banner-slide" data-index="1" role="listitem" aria-label="Evento 2 de 3: Resenha do Portes"
+            aria-hidden="true" tabindex="-1">
             <div class="banner-media">
               <div class="banner-image">
-                <img src="imagens/resenhadoportes.png" alt="Imagem do evento Resenha do Portes" loading="lazy">
-                <div class="banner-visual-overlay"></div>
+                <img src="imagens/resenhadoportes.png"
+                  alt="Banner do evento Resenha do Portes — festival eletrônico com line-up exclusivo" loading="lazy">
+                <div class="banner-visual-overlay" aria-hidden="true"></div>
               </div>
-              <div class="banner-ribbon">Festival Eletrônico</div>
+              <div class="banner-ribbon" aria-label="Tipo: Festival Eletrônico">Festival Eletrônico</div>
             </div>
             <div class="banner-copy">
               <div>
@@ -160,402 +236,1076 @@ Realize a venda de ingressos para seus eventos,
                 <h3>Resenha do Portes</h3>
                 <p>Line-up exclusivo, produção premium e acesso controlado para uma noite inesquecível.</p>
               </div>
-              <div class="banner-meta">
+              <div class="banner-meta" aria-label="Informações do evento">
                 <span>EM BREVE</span>
                 <span>NOITE VIP</span>
               </div>
               <div class="banner-action-group">
-                <a href="#" class="btn-primary">Comprar ingresso</a>
-                <a href="#" class="btn-secondary">Saiba Mais</a>
+                <a href="#" class="btn-primary banner-buy" data-evento="Resenha do Portes"
+                  aria-label="Comprar ingresso para Resenha do Portes">Comprar ingresso</a>
+                <a href="#" class="btn-secondary banner-info" data-evento="1"
+                  aria-label="Saiba mais sobre Resenha do Portes">Saiba Mais</a>
               </div>
             </div>
           </article>
 
-          <article class="banner-slide" data-index="2" role="group" aria-roledescription="slide" aria-label="Evento 3" aria-hidden="true">
+          <article class="banner-slide" data-index="2" role="listitem" aria-label="Evento 3 de 3: Halloween OffCampus"
+            aria-hidden="true" tabindex="-1">
             <div class="banner-media">
               <div class="banner-image">
-                <img src="imagens/halloween.png" alt="Imagem do evento Halloween OffCampus" loading="lazy">
-                <div class="banner-visual-overlay"></div>
+                <img src="imagens/halloween.png"
+                  alt="Banner do evento Halloween OffCampus — experiência completa com open food e música VIP"
+                  loading="lazy">
+                <div class="banner-visual-overlay" aria-hidden="true"></div>
               </div>
-              <div class="banner-ribbon">Destaque</div>
+              <div class="banner-ribbon" aria-label="Status: Destaque">Destaque</div>
             </div>
             <div class="banner-copy">
               <div>
                 <div class="banner-type">Experience completa</div>
-                <h3>Halloween OffCampus?</h3>
+                <h3>Halloween OffCampus</h3>
                 <p>Experience completa para estudantes com open food, música e ambiente vip.</p>
               </div>
-              <div class="banner-meta">
+              <div class="banner-meta" aria-label="Informações do evento">
                 <span>EM BREVE</span>
                 <span>AMBIENTE VIP</span>
               </div>
               <div class="banner-action-group">
-                <a href="#" class="btn-primary">Comprar ingresso</a>
-                <a href="#" class="btn-secondary">Saiba Mais</a>
+                <a href="#" class="btn-primary banner-buy" data-evento="Halloween OffCampus"
+                  aria-label="Comprar ingresso para Halloween OffCampus">Comprar ingresso</a>
+                <a href="#" class="btn-secondary banner-info" data-evento="2"
+                  aria-label="Saiba mais sobre Halloween OffCampus">Saiba Mais</a>
               </div>
             </div>
           </article>
         </div>
 
-        <div class="banner-controls">
-          <button class="banner-arrow prev" aria-label="Evento anterior">‹</button>
-          <button class="banner-arrow next" aria-label="Próximo evento">›</button>
+        <div class="banner-controls" aria-hidden="true">
+          <button class="banner-arrow prev" aria-label="Evento anterior" tabindex="0">‹</button>
+          <button class="banner-arrow next" aria-label="Próximo evento" tabindex="0">›</button>
         </div>
 
-        <div class="banner-dots" role="tablist" aria-label="Controle de slides">
-          <button class="banner-dot active" role="tab" aria-label="Evento 1" aria-selected="true"></button>
-          <button class="banner-dot" role="tab" aria-label="Evento 2" aria-selected="false"></button>
-          <button class="banner-dot" role="tab" aria-label="Evento 3" aria-selected="false"></button>
+        <div class="banner-dots" role="tablist" aria-label="Selecionar evento">
+          <button class="banner-dot active" role="tab" aria-label="Evento 1" aria-selected="true" tabindex="0"></button>
+          <button class="banner-dot" role="tab" aria-label="Evento 2" aria-selected="false" tabindex="-1"></button>
+          <button class="banner-dot" role="tab" aria-label="Evento 3" aria-selected="false" tabindex="-1"></button>
         </div>
       </div>
     </div>
   </section>
 
-  <script>
-    const header = document.getElementById('mainHeader');
-    const progressBar = document.getElementById('progressBar');
-    const hamburger = document.getElementById('hamburger');
-    const mobileMenu = document.getElementById('mobileMenu');
-    const menu = document.querySelector('.menu');
-    const menuLinks = document.querySelectorAll('.menu a');
+  <!-- ===================== PLATAFORMA (visão geral) ===================== -->
+  <section class="plataforma" id="plataforma" aria-label="Visão geral da plataforma">
+    <div class="plataforma-inner">
+      <div class="section-label" aria-hidden="true">O que é a EvoTech</div>
+      <h2 class="section-heading">Uma plataforma. Toda a operação.</h2>
+      <p class="section-sub">
+        A EvoTech centraliza divulgação, venda de ingressos e gestão operacional completa em um único ambiente — do
+        planejamento ao controle financeiro, tudo integrado e em tempo real.
+      </p>
 
-    const state = {
-      activeLink: document.querySelector('.menu a.active') || menuLinks[0]
-    };
+      <div class="plataforma-grid" role="list">
 
-    const sectionLinks = Array.from(menuLinks).filter(link => {
-      const href = link.getAttribute('href');
-      return href && href.startsWith('#') && href.length > 1 && document.querySelector(href);
-    });
+        <div class="plataforma-card" role="listitem" tabindex="0">
+          <div class="pcard-icon" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+              stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="7" height="7" rx="1" />
+              <rect x="14" y="3" width="7" height="7" rx="1" />
+              <rect x="14" y="14" width="7" height="7" rx="1" />
+              <rect x="3" y="14" width="7" height="7" rx="1" />
+            </svg>
+          </div>
+          <h3>Dashboard Executivo</h3>
+          <p>Indicadores em tempo real: eventos ativos, ingressos vendidos, receita total, taxa de ocupação e consumo de
+            Open Bar — tudo em uma tela.</p>
+        </div>
 
-    const sectionTargets = sectionLinks.map(link => document.querySelector(link.getAttribute('href')));
+        <div class="plataforma-card" role="listitem" tabindex="0">
+          <div class="pcard-icon" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 12V22H4V12" />
+              <path d="M22 7H2v5h20V7z" />
+              <path d="M12 22V7" />
+              <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z" />
+              <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" />
+            </svg>
+          </div>
+          <h3>Gestão de Ingressos</h3>
+          <p>Lotes promocionais, VIP, Camarote e Open Bar com preços e quantidades configuráveis. Encerramento
+            automático ao atingir o limite.</p>
+        </div>
 
-    const updateIndicator = (link) => {
-      if (!link || !menu) return;
-      const menuRect = menu.getBoundingClientRect();
-      const linkRect = link.getBoundingClientRect();
-      const left = linkRect.left - menuRect.left;
-      menu.style.setProperty('--menu-indicator-left', `${left}px`);
-      menu.style.setProperty('--menu-indicator-width', `${linkRect.width}px`);
-    };
+        <div class="plataforma-card" role="listitem" tabindex="0">
+          <div class="pcard-icon" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+            </svg>
+          </div>
+          <h3>Gestão de Participantes</h3>
+          <p>Cadastro completo com CPF, histórico de eventos, verificação automática de idade e acompanhamento por
+            evento.</p>
+        </div>
 
-    const refreshIndicator = () => {
-      window.requestAnimationFrame(() => updateIndicator(state.activeLink));
-    };
+        <div class="plataforma-card" role="listitem" tabindex="0">
+          <div class="pcard-icon" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+              stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+            </svg>
+          </div>
+          <h3>Controle de Portaria</h3>
+          <p>Check-in via QR Code com exibição de nome, idade, tipo de ingresso e horário de entrada. Bloqueio
+            automático de ingressos já usados.</p>
+        </div>
 
-    const updateActiveLinkOnScroll = () => {
-      const scrollPosition = window.scrollY + window.innerHeight * 0.22;
-      let current = sectionLinks[0];
+        <div class="plataforma-card" role="listitem" tabindex="0">
+          <div class="pcard-icon" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" />
+            </svg>
+          </div>
+          <h3>Controle de Open Bar</h3>
+          <p>Estoque inicial, reposições, consumo por produto e por participante. Previsão automática de reposição e
+            análise de desperdício.</p>
+        </div>
 
-      sectionTargets.forEach((section, index) => {
-        if (section && scrollPosition >= section.offsetTop) {
-          current = sectionLinks[index];
-        }
-      });
+        <div class="plataforma-card" role="listitem" tabindex="0">
+          <div class="pcard-icon" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+              stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="1" x2="12" y2="23" />
+              <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+            </svg>
+          </div>
+          <h3>Controle Financeiro</h3>
+          <p>Receitas de ingressos, patrocínios e despesas por categoria: segurança, DJs, marketing, bebidas, estrutura
+            — ROI e ticket médio por evento.</p>
+        </div>
 
-      if (current !== state.activeLink) {
-        state.activeLink.classList.remove('active');
-        current.classList.add('active');
-        state.activeLink = current;
-        refreshIndicator();
-      }
-    };
+      </div>
+    </div>
+  </section>
 
-    window.addEventListener('load', () => {
-      refreshIndicator();
-      updateActiveLinkOnScroll();
-    });
-    window.addEventListener('resize', () => {
-      refreshIndicator();
-      refreshCarouselMeasurements();
-      updateCarousel(true);
-      updateActiveLinkOnScroll();
-    });
+  <!-- ===================== MÓDULOS (detalhe) ===================== -->
+  <section class="modulos" id="modulos" aria-label="Módulos da plataforma">
+    <div class="modulos-inner">
 
-    window.addEventListener('scroll', () => {
-      header.classList.toggle('scrolled', window.scrollY > 20);
-      const total = document.documentElement.scrollHeight - window.innerHeight;
-      if (total > 0) {
-        progressBar.style.width = `${(window.scrollY / total) * 100}%`;
-      }
-      updateActiveLinkOnScroll();
-    });
+      <div class="section-label" aria-hidden="true">Área Administrativa</div>
+      <h2 class="section-heading">Módulos para cada perfil de acesso</h2>
+      <p class="section-sub">Quatro perfis com permissões específicas: Administrador, Financeiro, Produção e Portaria.
+        Cada equipe vê e acessa apenas o que precisa.</p>
 
-    hamburger.addEventListener('click', (event) => {
-      event.stopPropagation();
-      const active = !mobileMenu.classList.contains('open');
-      mobileMenu.classList.toggle('open', active);
-      hamburger.classList.toggle('active', active);
-      document.body.classList.toggle('nav-open', active);
-    });
+      <div class="modulos-tabs" role="tablist" aria-label="Perfis de acesso">
+        <button class="mod-tab active" role="tab" data-tab="admin" aria-selected="true"
+          tabindex="0">Administrador</button>
+        <button class="mod-tab" role="tab" data-tab="financeiro" aria-selected="false" tabindex="-1">Financeiro</button>
+        <button class="mod-tab" role="tab" data-tab="producao" aria-selected="false" tabindex="-1">Produção</button>
+        <button class="mod-tab" role="tab" data-tab="portaria" aria-selected="false" tabindex="-1">Portaria</button>
+      </div>
 
-    document.addEventListener('click', (event) => {
-      if (!mobileMenu.contains(event.target) && !hamburger.contains(event.target)) {
-        mobileMenu.classList.remove('open');
-        hamburger.classList.remove('active');
-        document.body.classList.remove('nav-open');
-      }
-    });
+      <div class="modulos-panels">
+        <div class="mod-panel active" id="panel-admin" role="tabpanel" aria-label="Perfil Administrador">
+          <div class="mod-panel-content">
+            <div class="mod-panel-text">
+              <span class="mod-badge">Acesso completo</span>
+              <h3>Administrador</h3>
+              <p>Controle total da plataforma: configurações, gerenciamento de eventos, perfis de acesso, relatórios
+                gerenciais e indicadores financeiros. Visão 360° de toda a operação.</p>
+              <ul class="mod-features" aria-label="Funcionalidades do administrador">
+                <li>Gestão completa de eventos e atrações</li>
+                <li>Controle de usuários e permissões</li>
+                <li>Dashboard executivo com todos os indicadores</li>
+                <li>Relatórios e exportação de dados</li>
+                <li>Configurações gerais da plataforma</li>
+              </ul>
+            </div>
+            <div class="mod-panel-visual" aria-hidden="true">
+              <div class="mod-dashboard-mock">
+                <div class="mock-header">
+                  <span class="mock-dot red"></span><span class="mock-dot yellow"></span><span
+                    class="mock-dot green"></span>
+                  <span class="mock-title">Dashboard Executivo</span>
+                </div>
+                <div class="mock-stats">
+                  <div class="mock-stat"><span class="mock-stat-value">14</span><span class="mock-stat-label">Eventos
+                      ativos</span></div>
+                  <div class="mock-stat"><span class="mock-stat-value">3.284</span><span
+                      class="mock-stat-label">Ingressos vendidos</span></div>
+                  <div class="mock-stat highlight"><span class="mock-stat-value">R$ 287k</span><span
+                      class="mock-stat-label">Receita total</span></div>
+                </div>
+                <div class="mock-bar-chart" aria-hidden="true">
+                  <div class="mock-bar" style="height:45%"></div>
+                  <div class="mock-bar" style="height:72%"></div>
+                  <div class="mock-bar" style="height:58%"></div>
+                  <div class="mock-bar" style="height:89%"></div>
+                  <div class="mock-bar active" style="height:94%"></div>
+                  <div class="mock-bar" style="height:67%"></div>
+                  <div class="mock-bar" style="height:51%"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
-    menuLinks.forEach(link => {
-      link.addEventListener('click', (event) => {
-        event.preventDefault();
-        const href = link.getAttribute('href');
-        if (href && href.startsWith('#')) {
-          if (href === '#mainHeader' || href === '#') {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          } else {
-            const target = document.querySelector(href);
-            if (target) {
-              target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-          }
-        }
+        <div class="mod-panel" id="panel-financeiro" role="tabpanel" aria-label="Perfil Financeiro" hidden>
+          <div class="mod-panel-content">
+            <div class="mod-panel-text">
+              <span class="mod-badge">Finanças</span>
+              <h3>Perfil Financeiro</h3>
+              <p>Acompanhamento completo de receitas e despesas, emissão de relatórios e análise de rentabilidade por
+                evento.</p>
+              <ul class="mod-features">
+                <li>Receitas: ingressos, patrocínios e outros</li>
+                <li>Despesas por categoria (segurança, DJ, marketing…)</li>
+                <li>Lucro líquido, ROI e ticket médio</li>
+                <li>Relatórios diários, semanais e mensais</li>
+                <li>Custo médio e receita por participante</li>
+              </ul>
+            </div>
+            <div class="mod-panel-visual" aria-hidden="true">
+              <div class="mod-dashboard-mock">
+                <div class="mock-header">
+                  <span class="mock-dot red"></span><span class="mock-dot yellow"></span><span
+                    class="mock-dot green"></span>
+                  <span class="mock-title">Controle Financeiro</span>
+                </div>
+                <div class="mock-stats">
+                  <div class="mock-stat"><span class="mock-stat-value">R$ 287k</span><span
+                      class="mock-stat-label">Receita total</span></div>
+                  <div class="mock-stat"><span class="mock-stat-value">R$ 134k</span><span
+                      class="mock-stat-label">Despesas</span></div>
+                  <div class="mock-stat highlight"><span class="mock-stat-value">53%</span><span
+                      class="mock-stat-label">Margem</span></div>
+                </div>
+                <div class="mock-expense-list">
+                  <div class="mock-expense"><span>Segurança</span><span class="mock-expense-val">R$ 42k</span></div>
+                  <div class="mock-expense"><span>Marketing</span><span class="mock-expense-val">R$ 28k</span></div>
+                  <div class="mock-expense"><span>Bebidas</span><span class="mock-expense-val">R$ 38k</span></div>
+                  <div class="mock-expense"><span>Estrutura</span><span class="mock-expense-val">R$ 26k</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
-        if (state.activeLink === link) return;
-        state.activeLink.classList.remove('active');
-        link.classList.add('active');
-        state.activeLink = link;
-        refreshIndicator();
-      });
-    });
+        <div class="mod-panel" id="panel-producao" role="tabpanel" aria-label="Perfil Produção" hidden>
+          <div class="mod-panel-content">
+            <div class="mod-panel-text">
+              <span class="mod-badge">Operação</span>
+              <h3>Perfil de Produção</h3>
+              <p>Gestão operacional dos eventos: cadastro de atrações, cronograma de apresentações, controle de
+                participantes e acompanhamento do Open Bar.</p>
+              <ul class="mod-features">
+                <li>Cadastro e gerenciamento de atrações</li>
+                <li>Programação e cronograma de shows</li>
+                <li>Controle de estoque do Open Bar</li>
+                <li>Monitoramento de participantes em tempo real</li>
+                <li>Gestão de lotes de ingressos</li>
+              </ul>
+            </div>
+            <div class="mod-panel-visual" aria-hidden="true">
+              <div class="mod-dashboard-mock">
+                <div class="mock-header">
+                  <span class="mock-dot red"></span><span class="mock-dot yellow"></span><span
+                    class="mock-dot green"></span>
+                  <span class="mock-title">Controle de Open Bar</span>
+                </div>
+                <div class="mock-openbar">
+                  <div class="mock-ob-item"><span class="mock-ob-name">🍺 Cerveja</span>
+                    <div class="mock-ob-bar">
+                      <div class="mock-ob-fill" style="width:68%"></div>
+                    </div><span class="mock-ob-val">68%</span>
+                  </div>
+                  <div class="mock-ob-item"><span class="mock-ob-name">🥃 Vodka</span>
+                    <div class="mock-ob-bar">
+                      <div class="mock-ob-fill" style="width:42%"></div>
+                    </div><span class="mock-ob-val">42%</span>
+                  </div>
+                  <div class="mock-ob-item"><span class="mock-ob-name">🍹 Gin</span>
+                    <div class="mock-ob-bar">
+                      <div class="mock-ob-fill" style="width:55%"></div>
+                    </div><span class="mock-ob-val">55%</span>
+                  </div>
+                  <div class="mock-ob-item"><span class="mock-ob-name">⚡ Energético</span>
+                    <div class="mock-ob-bar">
+                      <div class="mock-ob-fill warning" style="width:21%"></div>
+                    </div><span class="mock-ob-val warn">21%</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
-    document.querySelectorAll('#mobileMenu a').forEach(link => {
-      link.addEventListener('click', () => {
-        mobileMenu.classList.remove('open');
-        hamburger.classList.remove('active');
-        document.body.classList.remove('nav-open');
-      });
-    });
+        <div class="mod-panel" id="panel-portaria" role="tabpanel" aria-label="Perfil Portaria" hidden>
+          <div class="mod-panel-content">
+            <div class="mod-panel-text">
+              <span class="mod-badge">Acesso</span>
+              <h3>Perfil de Portaria</h3>
+              <p>Controle de entrada ágil e seguro com leitura de QR Code. Validação instantânea, bloqueio de ingressos
+                duplicados e alertas automáticos.</p>
+              <ul class="mod-features">
+                <li>Check-in via QR Code ou código do ingresso</li>
+                <li>Exibição de nome, idade e tipo de ingresso</li>
+                <li>Bloqueio automático de ingressos já utilizados</li>
+                <li>Alertas para menores de idade</li>
+                <li>Histórico completo de entradas e saídas</li>
+              </ul>
+            </div>
+            <div class="mod-panel-visual" aria-hidden="true">
+              <div class="mod-dashboard-mock">
+                <div class="mock-header">
+                  <span class="mock-dot red"></span><span class="mock-dot yellow"></span><span
+                    class="mock-dot green"></span>
+                  <span class="mock-title">Controle de Portaria</span>
+                </div>
+                <div class="mock-portaria">
+                  <div class="mock-qr-area">
+                    <svg width="64" height="64" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+                      <rect x="8" y="8" width="20" height="20" rx="2" stroke="rgba(34,197,94,.8)" stroke-width="2"
+                        fill="none" />
+                      <rect x="36" y="8" width="20" height="20" rx="2" stroke="rgba(34,197,94,.8)" stroke-width="2"
+                        fill="none" />
+                      <rect x="8" y="36" width="20" height="20" rx="2" stroke="rgba(34,197,94,.8)" stroke-width="2"
+                        fill="none" />
+                      <rect x="12" y="12" width="12" height="12" rx="1" fill="rgba(34,197,94,.5)" />
+                      <rect x="40" y="12" width="12" height="12" rx="1" fill="rgba(34,197,94,.5)" />
+                      <rect x="12" y="40" width="12" height="12" rx="1" fill="rgba(34,197,94,.5)" />
+                      <rect x="36" y="36" width="5" height="5" fill="rgba(34,197,94,.4)" />
+                      <rect x="44" y="36" width="5" height="5" fill="rgba(34,197,94,.4)" />
+                      <rect x="36" y="44" width="5" height="5" fill="rgba(34,197,94,.4)" />
+                      <rect x="44" y="44" width="5" height="5" fill="rgba(34,197,94,.4)" />
+                    </svg>
+                    <span class="mock-qr-label">Aguardando leitura…</span>
+                  </div>
+                  <div class="mock-checkin-info">
+                    <div class="mock-ci-row"><span>Último check-in:</span><span class="mock-ci-val">João Silva</span>
+                    </div>
+                    <div class="mock-ci-row"><span>Tipo:</span><span class="mock-ci-val green">VIP</span></div>
+                    <div class="mock-ci-row"><span>Entrada:</span><span class="mock-ci-val">22:14</span></div>
+                    <div class="mock-ci-status ok">✓ Válido</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
-    document.querySelectorAll('a[href^="#"]').forEach(link => {
-      link.addEventListener('click', (event) => {
-        const targetId = link.getAttribute('href');
-        const target = targetId && targetId.startsWith('#') && targetId.length > 1
-          ? document.querySelector(targetId)
-          : null;
-        if (target) {
-          event.preventDefault();
-          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-      });
-    });
+    </div>
+  </section>
 
-    const carousel = document.querySelector('.banner-carousel');
-    const slider = document.querySelector('.banner-list');
-    const slides = Array.from(document.querySelectorAll('.banner-slide'));
-    const dots = Array.from(document.querySelectorAll('.banner-dot'));
-    const prevButton = document.querySelector('.banner-arrow.prev');
-    const nextButton = document.querySelector('.banner-arrow.next');
-    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    let currentSlide = 0;
-    let autoplayTimer = null;
-    let interactionTimer = null;
-    let isUserInteracting = false;
-    let isPointerDown = false;
-    let dragStartX = 0;
-    let dragDeltaX = 0;
-    const slideCount = slides.length;
-    const autoplayDelay = 3000;
-    const swipeThreshold = 70;
-    const dragThreshold = 10;
-    const easeCurve = 'cubic-bezier(.22,.61,.36,1)';
+  <!-- ===================== DIFERENCIAIS ===================== -->
+  <section class="diferenciais" id="diferenciais" aria-label="Diferenciais da plataforma">
+    <div class="diferenciais-inner">
+      <div class="section-label" aria-hidden="true">Por que a EvoTech</div>
+      <h2 class="section-heading">Diferenciais que fazem a diferença</h2>
+      <p class="section-sub">Uma plataforma pensada do zero para quem organiza eventos de verdade — com foco em
+        operação, dados e experiência.</p>
 
-    const setActiveSlide = (index) => {
-      const nextIndex = ((index % slideCount) + slideCount) % slideCount;
-      slides.forEach((slide, slideIndex) => {
-        const isActive = slideIndex === nextIndex;
-        slide.classList.toggle('active', isActive);
-        slide.setAttribute('aria-hidden', String(!isActive));
-        slide.tabIndex = isActive ? 0 : -1;
-      });
-      dots.forEach((dot, dotIndex) => {
-        const isSelected = dotIndex === nextIndex;
-        dot.classList.toggle('active', isSelected);
-        dot.setAttribute('aria-selected', String(isSelected));
-      });
-      currentSlide = nextIndex;
-    };
+      <div class="diferenciais-grid" role="list">
 
-    const stopAutoplay = () => {
-      clearInterval(autoplayTimer);
-      autoplayTimer = null;
-    };
+        <div class="dif-card featured" role="listitem" tabindex="0">
+          <div class="dif-icon" aria-hidden="true">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 20V10" />
+              <path d="M12 20V4" />
+              <path d="M6 20v-6" />
+            </svg>
+          </div>
+          <div class="dif-tag">Destaque</div>
+          <h3>Dashboard Inteligente</h3>
+          <p>Monitoramento em tempo real de todos os indicadores estratégicos: vendas, ocupação, receita, consumo e
+            equipe — sem sair de uma tela.</p>
+        </div>
 
-    const startAutoplay = () => {
-      if (slideCount < 2 || document.hidden) {
-        return;
-      }
-      stopAutoplay();
-      autoplayTimer = window.setInterval(() => {
-        showSlide(currentSlide + 1);
-      }, autoplayDelay);
-    };
+        <div class="dif-card" role="listitem" tabindex="0">
+          <div class="dif-icon" aria-hidden="true">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+              stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2" />
+              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+            </svg>
+          </div>
+          <h3>Portaria com QR Code</h3>
+          <p>Check-in instantâneo e seguro. Ingressos duplicados são bloqueados automaticamente. Alertas em tempo real
+            para sua equipe.</p>
+        </div>
 
-    const holdInteraction = () => {
-      stopAutoplay();
-      isUserInteracting = true;
-      clearTimeout(interactionTimer);
-    };
+        <div class="dif-card" role="listitem" tabindex="0">
+          <div class="dif-icon" aria-hidden="true">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" />
+            </svg>
+          </div>
+          <h3>Open Bar Inteligente</h3>
+          <p>Controle de estoque em tempo real com consumo por produto e por participante. Previsão de reposição para
+            eliminar desperdícios.</p>
+        </div>
 
-    const releaseInteraction = (delay = 1400) => {
-      clearTimeout(interactionTimer);
-      interactionTimer = window.setTimeout(() => {
-        isUserInteracting = false;
-        if (!document.hidden) {
-          scheduleAutoplay();
-        }
-      }, delay);
-    };
+        <div class="dif-card" role="listitem" tabindex="0">
+          <div class="dif-icon" aria-hidden="true">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+              stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="1" x2="12" y2="23" />
+              <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+            </svg>
+          </div>
+          <h3>Gestão Financeira Completa</h3>
+          <p>Receitas e despesas por categoria, ROI por evento, ticket médio e comparativos de desempenho. Tomada de
+            decisão baseada em dados.</p>
+        </div>
 
-    const scheduleAutoplay = () => {
-      if (autoplayTimer || isUserInteracting || slideCount < 2 || document.hidden) {
-        return;
-      }
-      startAutoplay();
-    };
+        <div class="dif-card" role="listitem" tabindex="0">
+          <div class="dif-icon" aria-hidden="true">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 12V22H4V12" />
+              <path d="M22 7H2v5h20V7z" />
+              <path d="M12 22V7" />
+              <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z" />
+              <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" />
+            </svg>
+          </div>
+          <h3>Ingressos Digitais</h3>
+          <p>Compra simplificada, geração instantânea e envio automático. Histórico de participações acessível a
+            qualquer momento na área do participante.</p>
+        </div>
 
-    const applySliderOffset = (offset) => {
-      if (!slider) return;
-      slider.style.transform = `translateX(${offset}px)`;
-    };
+        <div class="dif-card" role="listitem" tabindex="0">
+          <div class="dif-icon" aria-hidden="true">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+              stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3" />
+              <path d="M19.07 4.93l-1.41 1.41" />
+              <path d="M4.93 4.93l1.41 1.41" />
+              <path d="M2 12h2" />
+              <path d="M20 12h2" />
+              <path d="M19.07 19.07l-1.41-1.41" />
+              <path d="M4.93 19.07l1.41-1.41" />
+              <path d="M12 2v2" />
+              <path d="M12 20v2" />
+            </svg>
+          </div>
+          <h3>Tudo em tempo real</h3>
+          <p>Vendas, acessos, consumo e financeiro atualizados em tempo real. Sem planilhas, sem retrabalho — decisões
+            mais rápidas e seguras durante o evento.</p>
+        </div>
 
-    const resetSliderOffset = () => {
-      if (!slider) return;
-      slider.style.transition = `transform .26s ${easeCurve}`;
-      applySliderOffset(0);
-      window.setTimeout(() => {
-        if (slider) slider.style.transition = '';
-      }, 280);
-    };
+      </div>
+    </div>
+  </section>
 
-    const clearSliderOffset = () => {
-      if (!slider) return;
-      slider.style.transition = '';
-      slider.style.transform = '';
-    };
+  <!-- ===================== PLANOS ===================== -->
+  <section class="planos" id="planos" aria-label="Planos da plataforma">
+    <div class="planos-inner">
+      <div class="section-label" aria-hidden="true">Planos e Preços</div>
+      <h2 class="section-heading">Escolha o plano ideal para seu evento</h2>
+      <p class="section-sub">Comece grátis e escale conforme sua operação cresce. Sem taxas ocultas.</p>
 
-    const showSlide = (index) => {
-      setActiveSlide(index);
-      clearSliderOffset();
-      if (!isUserInteracting) {
-        scheduleAutoplay();
-      }
-    };
+      <div class="planos-grid" role="list">
 
-    const nextSlide = () => {
-      showSlide(currentSlide + 1);
-    };
+        <div class="plano-card" role="listitem" tabindex="0">
+          <div class="plano-header">
+            <div class="plano-name">Starter</div>
+            <div class="plano-price"><span class="plano-currency">R$</span>0<span class="plano-period">/mês</span></div>
+            <div class="plano-desc">Ideal para eventos pontuais e testes da plataforma.</div>
+          </div>
+          <ul class="plano-features" aria-label="Recursos do plano Starter">
+            <li><span aria-hidden="true">✓</span> Até 1 evento ativo</li>
+            <li><span aria-hidden="true">✓</span> Até 100 ingressos</li>
+            <li><span aria-hidden="true">✓</span> Venda de ingressos básica</li>
+            <li><span aria-hidden="true">✓</span> Portaria com QR Code</li>
+            <li class="disabled"><span aria-hidden="true">✗</span> Dashboard executivo</li>
+            <li class="disabled"><span aria-hidden="true">✗</span> Controle financeiro</li>
+            <li class="disabled"><span aria-hidden="true">✗</span> Open Bar</li>
+          </ul>
+          <a href="#" class="btn-secondary plano-btn" data-plano="Starter">Começar grátis</a>
+        </div>
 
-    const prevSlide = () => {
-      showSlide(currentSlide - 1);
-    };
+        <div class="plano-card featured" role="listitem" tabindex="0">
+          <div class="plano-tag">Mais popular</div>
+          <div class="plano-header">
+            <div class="plano-name">Pro</div>
+            <div class="plano-price"><span class="plano-currency">R$</span>299<span class="plano-period">/mês</span>
+            </div>
+            <div class="plano-desc">Para organizadores que querem operação profissional completa.</div>
+          </div>
+          <ul class="plano-features" aria-label="Recursos do plano Pro">
+            <li><span aria-hidden="true">✓</span> Até 10 eventos simultâneos</li>
+            <li><span aria-hidden="true">✓</span> Ingressos ilimitados</li>
+            <li><span aria-hidden="true">✓</span> Dashboard executivo</li>
+            <li><span aria-hidden="true">✓</span> Controle financeiro completo</li>
+            <li><span aria-hidden="true">✓</span> Controle de Open Bar</li>
+            <li><span aria-hidden="true">✓</span> Gestão de atrações</li>
+            <li><span aria-hidden="true">✓</span> Relatórios e exportação</li>
+          </ul>
+          <a href="#" class="btn-primary plano-btn" data-plano="Pro">Assinar Pro</a>
+        </div>
 
-    const onPointerDown = (event) => {
-      if (!carousel || !slider || slideCount < 2) return;
-      if (event.pointerType !== 'touch' && event.pointerType !== 'pen') return;
-      if (event.target.closest('button, a, input, textarea, select, label')) return;
-      event.preventDefault();
-      holdInteraction();
-      isPointerDown = true;
-      dragStartX = event.clientX;
-      dragDeltaX = 0;
-      slider.style.transition = 'none';
-      document.addEventListener('pointermove', onPointerMove);
-      document.addEventListener('pointerup', onPointerUp);
-      document.addEventListener('pointercancel', onPointerUp);
-      if (event.pointerId && carousel.setPointerCapture) {
-        carousel.setPointerCapture(event.pointerId);
-      }
-    };
+        <div class="plano-card" role="listitem" tabindex="0">
+          <div class="plano-header">
+            <div class="plano-name">Enterprise</div>
+            <div class="plano-price"><span class="plano-currency"></span>Sob consulta</div>
+            <div class="plano-desc">Para grandes organizações com múltiplas equipes e eventos.</div>
+          </div>
+          <ul class="plano-features" aria-label="Recursos do plano Enterprise">
+            <li><span aria-hidden="true">✓</span> Eventos ilimitados</li>
+            <li><span aria-hidden="true">✓</span> Multi-organização</li>
+            <li><span aria-hidden="true">✓</span> Tudo do plano Pro</li>
+            <li><span aria-hidden="true">✓</span> Suporte dedicado 24/7</li>
+            <li><span aria-hidden="true">✓</span> API de integração</li>
+            <li><span aria-hidden="true">✓</span> SLA garantido</li>
+            <li><span aria-hidden="true">✓</span> Onboarding presencial</li>
+          </ul>
+          <a href="#contato" class="btn-secondary plano-btn">Falar com vendas</a>
+        </div>
 
-    const onPointerMove = (event) => {
-      if (!isPointerDown) return;
-      dragDeltaX = event.clientX - dragStartX;
-      if (Math.abs(dragDeltaX) > dragThreshold) {
-        event.preventDefault();
-        applySliderOffset(dragDeltaX);
-      }
-    };
+      </div>
+    </div>
+  </section>
 
-    const onPointerUp = (event) => {
-      if (!isPointerDown) return;
-      isPointerDown = false;
-      if (event?.pointerId && carousel.releasePointerCapture) {
-        carousel.releasePointerCapture(event.pointerId);
-      }
-      if (Math.abs(dragDeltaX) > swipeThreshold) {
-        if (dragDeltaX < 0) {
-          nextSlide();
-        } else {
-          prevSlide();
-        }
-      } else {
-        resetSliderOffset();
-      }
-      releaseInteraction();
-    };
+  <!-- ===================== ÁREA DO PARTICIPANTE ===================== -->
+  <section class="participante" id="participante" aria-label="Área do participante">
+    <div class="participante-inner">
+      <div class="participante-text">
+        <div class="section-label" aria-hidden="true">Área do Participante</div>
+        <h2>Uma experiência moderna para quem vai ao evento</h2>
+        <p>Área exclusiva para participantes cadastrados: consulte ingressos, baixe digitais, atualize dados e acompanhe
+          todo o histórico de participações em um só lugar.</p>
+        <ul class="participante-features" role="list" aria-label="Funcionalidades para participantes">
+          <li role="listitem">
+            <span class="feat-icon" aria-hidden="true">✓</span>
+            Visualização e download de ingressos digitais
+          </li>
+          <li role="listitem">
+            <span class="feat-icon" aria-hidden="true">✓</span>
+            Histórico completo de eventos participados
+          </li>
+          <li role="listitem">
+            <span class="feat-icon" aria-hidden="true">✓</span>
+            Atualização de dados pessoais
+          </li>
+          <li role="listitem">
+            <span class="feat-icon" aria-hidden="true">✓</span>
+            Acompanhamento de todas as compras realizadas
+          </li>
+        </ul>
+        <a href="#" class="btn-primary" id="btnCriarConta" aria-label="Criar conta de participante">Criar conta
+          grátis</a>
+      </div>
+      <div class="participante-visual" aria-hidden="true">
+        <div class="part-card-mockup">
+          <div class="part-card-header">
+            <div class="part-avatar">JC</div>
+            <div>
+              <div class="part-name">João Cardoso</div>
+              <div class="part-email">joao@email.com</div>
+            </div>
+            <div class="part-badge-ok">● Ativo</div>
+          </div>
+          <div class="part-ingresso">
+            <div class="part-ing-label">Próximo evento</div>
+            <div class="part-ing-evento">Halloween OffCampus</div>
+            <div class="part-ing-info">
+              <span>🎫 VIP</span>
+              <span>📍 Curitiba, PR</span>
+              <span>📅 EM BREVE</span>
+            </div>
+            <div class="part-qr-placeholder">
+              <svg width="48" height="48" viewBox="0 0 48 48" fill="none" aria-label="QR Code do ingresso">
+                <rect x="4" y="4" width="16" height="16" rx="2" stroke="rgba(34,197,94,.9)" stroke-width="1.5"
+                  fill="none" />
+                <rect x="28" y="4" width="16" height="16" rx="2" stroke="rgba(34,197,94,.9)" stroke-width="1.5"
+                  fill="none" />
+                <rect x="4" y="28" width="16" height="16" rx="2" stroke="rgba(34,197,94,.9)" stroke-width="1.5"
+                  fill="none" />
+                <rect x="7" y="7" width="10" height="10" rx="1" fill="rgba(34,197,94,.4)" />
+                <rect x="31" y="7" width="10" height="10" rx="1" fill="rgba(34,197,94,.4)" />
+                <rect x="7" y="31" width="10" height="10" rx="1" fill="rgba(34,197,94,.4)" />
+                <rect x="28" y="28" width="4" height="4" fill="rgba(34,197,94,.3)" />
+                <rect x="34" y="28" width="4" height="4" fill="rgba(34,197,94,.3)" />
+                <rect x="28" y="34" width="4" height="4" fill="rgba(34,197,94,.3)" />
+                <rect x="34" y="34" width="4" height="4" fill="rgba(34,197,94,.3)" />
+                <rect x="40" y="28" width="4" height="4" fill="rgba(34,197,94,.3)" />
+                <rect x="40" y="34" width="4" height="4" fill="rgba(34,197,94,.3)" />
+              </svg>
+              <span>Ingresso digital</span>
+            </div>
+          </div>
+          <div class="part-historico">
+            <div class="part-hist-title">Histórico recente</div>
+            <div class="part-hist-item"><span>Resenha do Portes</span><span class="part-hist-tag">✓ Compareceu</span>
+            </div>
+            <div class="part-hist-item"><span>OFFCampus Verão</span><span class="part-hist-tag">✓ Compareceu</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-    const initCarousel = () => {
-      if (!carousel || slideCount === 0) return;
-      setActiveSlide(currentSlide);
-      carousel.addEventListener('pointerenter', () => {
-        holdInteraction();
-      });
-      carousel.addEventListener('pointerleave', () => {
-        releaseInteraction(900);
-      });
-      carousel.addEventListener('keydown', (event) => {
-        if (event.key === 'ArrowRight') {
-          event.preventDefault();
-          holdInteraction();
-          nextSlide();
-          releaseInteraction();
-        }
-        if (event.key === 'ArrowLeft') {
-          event.preventDefault();
-          holdInteraction();
-          prevSlide();
-          releaseInteraction();
-        }
-      });
-      carousel.addEventListener('pointerdown', onPointerDown);
-      prevButton?.addEventListener('click', () => {
-        holdInteraction();
-        prevSlide();
-        releaseInteraction();
-      });
-      nextButton?.addEventListener('click', () => {
-        holdInteraction();
-        nextSlide();
-        releaseInteraction();
-      });
-      dots.forEach((dot, index) => {
-        dot.addEventListener('click', () => {
-          holdInteraction();
-          showSlide(index);
-          releaseInteraction();
-        });
-      });
-      document.addEventListener('visibilitychange', () => {
-        if (document.hidden) {
-          stopAutoplay();
-        } else {
-          releaseInteraction(400);
-        }
-      });
-      window.addEventListener('resize', () => {
-        resetSliderOffset();
-      });
-      scheduleAutoplay();
-    };
+  <!-- ===================== INDICADORES ===================== -->
+  <section class="indicadores" id="indicadores" aria-label="Indicadores financeiros">
+    <div class="indicadores-inner">
+      <div class="section-label" aria-hidden="true">Indicadores Financeiros</div>
+      <h2 class="section-heading">Métricas que importam, em tempo real</h2>
+      <p class="section-sub">Painel atualizado continuamente com os indicadores mais relevantes para a saúde financeira
+        de cada evento.</p>
 
-    initCarousel();
+      <div class="indicadores-grid" role="list" aria-label="Indicadores financeiros da plataforma">
+        <div class="ind-card" role="listitem" tabindex="0">
+          <div class="ind-icon" aria-hidden="true">💰</div>
+          <div class="ind-label">Receita Total</div>
+          <div class="ind-desc">Soma de todas as fontes: ingressos, patrocínios e outros ganhos por evento.</div>
+        </div>
+        <div class="ind-card" role="listitem" tabindex="0">
+          <div class="ind-icon" aria-hidden="true">📊</div>
+          <div class="ind-label">Lucro Líquido</div>
+          <div class="ind-desc">Receita menos todas as despesas registradas, visualizado por evento ou período.</div>
+        </div>
+        <div class="ind-card" role="listitem" tabindex="0">
+          <div class="ind-icon" aria-hidden="true">📈</div>
+          <div class="ind-label">ROI por Evento</div>
+          <div class="ind-desc">Retorno sobre investimento calculado automaticamente para cada evento realizado.</div>
+        </div>
+        <div class="ind-card" role="listitem" tabindex="0">
+          <div class="ind-icon" aria-hidden="true">🎯</div>
+          <div class="ind-label">Ticket Médio</div>
+          <div class="ind-desc">Receita média gerada por participante confirmado em cada evento.</div>
+        </div>
+        <div class="ind-card" role="listitem" tabindex="0">
+          <div class="ind-icon" aria-hidden="true">👥</div>
+          <div class="ind-label">Taxa de Ocupação</div>
+          <div class="ind-desc">Percentual de capacidade preenchida com comparativo entre eventos.</div>
+        </div>
+        <div class="ind-card" role="listitem" tabindex="0">
+          <div class="ind-icon" aria-hidden="true">⚡</div>
+          <div class="ind-label">Custo por Participante</div>
+          <div class="ind-desc">Custo médio operacional dividido pelo número de participantes presentes.</div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-    if (window.ResizeObserver) {
-      new ResizeObserver(refreshIndicator).observe(menu);
-    }
-  </script>
+  <!-- ===================== CONTATO ===================== -->
+  <section class="contato" id="contato" aria-label="Solicitar acesso à plataforma">
+    <div class="contato-inner">
+      <div class="contato-text">
+        <div class="section-label" aria-hidden="true">Comece agora</div>
+        <h2>Pronto para centralizar toda a sua operação?</h2>
+        <p>Solicite acesso à plataforma EvoTech Events e transforme a gestão dos seus eventos com tecnologia de ponta.
+        </p>
+        <div class="contato-bullets" role="list">
+          <div role="listitem"><span aria-hidden="true">✓</span> Acesso completo a todos os módulos</div>
+          <div role="listitem"><span aria-hidden="true">✓</span> Suporte em campo antes, durante e após o evento</div>
+          <div role="listitem"><span aria-hidden="true">✓</span> Dashboard com indicadores em tempo real</div>
+          <div role="listitem"><span aria-hidden="true">✓</span> Onboarding assistido pela equipe EvoTech</div>
+        </div>
+      </div>
+      <form class="contato-form" novalidate aria-label="Formulário de contato">
+        <div class="form-group">
+          <label for="nome">Nome completo <span aria-hidden="true">*</span></label>
+          <input type="text" id="nome" name="nome" placeholder="Seu nome completo" required autocomplete="name"
+            aria-required="true">
+          <span class="field-error" id="nome-error" role="alert" aria-live="polite"></span>
+        </div>
+        <div class="form-group">
+          <label for="email">E-mail <span aria-hidden="true">*</span></label>
+          <input type="email" id="email" name="email" placeholder="seu@email.com" required autocomplete="email"
+            aria-required="true">
+          <span class="field-error" id="email-error" role="alert" aria-live="polite"></span>
+        </div>
+        <div class="form-group">
+          <label for="telefone">Telefone <span aria-hidden="true">*</span></label>
+          <input type="tel" id="telefone" name="telefone" placeholder="(00) 00000-0000" required autocomplete="tel"
+            aria-required="true" maxlength="15">
+          <span class="field-error" id="telefone-error" role="alert" aria-live="polite"></span>
+        </div>
+        <div class="form-group">
+          <label for="organizacao">Nome da organização</label>
+          <input type="text" id="organizacao" name="organizacao" placeholder="Nome da sua empresa ou evento"
+            autocomplete="organization">
+        </div>
+        <div class="form-group">
+          <label for="mensagem">Mensagem</label>
+          <textarea id="mensagem" name="mensagem" rows="3"
+            placeholder="Conte sobre seus eventos e como podemos ajudar…"></textarea>
+        </div>
+        <button type="submit" class="btn-primary btn-large btn-full" aria-label="Enviar solicitação de acesso">
+          Solicitar Acesso
+        </button>
+        <div class="form-success" id="formSuccess" role="status" aria-live="polite" hidden>
+          <span aria-hidden="true">✓</span> Mensagem enviada com sucesso! Entraremos em contato em breve.
+        </div>
+      </form>
+    </div>
+  </section>
 
+  <!-- ===================== FOOTER ===================== -->
+  <footer class="footer" role="contentinfo">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <a href="#hero" class="logo" aria-label="EvoTech Events — Voltar ao início">
+          <div class="logo-icon">
+            <img src="imagens/favicon.png" alt="Logo EvoTech" loading="lazy">
+          </div>
+          EvoTech<span>Events</span>
+        </a>
+        <p>Plataforma inteligente para gestão completa de eventos — do planejamento ao controle financeiro.</p>
+      </div>
+      <nav class="footer-links" aria-label="Links do rodapé">
+        <div class="footer-col">
+          <h4>Plataforma</h4>
+          <a href="#plataforma">Visão geral</a>
+          <a href="#modulos">Módulos</a>
+          <a href="#diferenciais">Diferenciais</a>
+          <a href="#indicadores">Indicadores</a>
+        </div>
+        <div class="footer-col">
+          <h4>Para organizadores</h4>
+          <a href="#modulos">Dashboard</a>
+          <a href="#modulos">Controle financeiro</a>
+          <a href="#modulos">Portaria & QR Code</a>
+          <a href="#modulos">Open Bar</a>
+        </div>
+        <div class="footer-col">
+          <h4>Para participantes</h4>
+          <a href="#events">Eventos</a>
+          <a href="#participante">Área do participante</a>
+          <a href="#contato">Criar conta</a>
+        </div>
+      </nav>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 EvoTech. Todos os direitos reservados.</p>
+      <p>Desenvolvido por Murilo Abreu & Gabriel Perugorria</p>
+    </div>
+  </footer>
+
+  <!-- ===================== MODAL OVERLAY ===================== -->
+  <div class="modal-overlay" id="modalOverlay" role="dialog" aria-modal="true" aria-hidden="true">
+
+    <!-- LOGIN -->
+    <div class="modal" id="modalLogin" aria-label="Entrar na plataforma">
+      <button class="modal-close" id="modalLoginClose" aria-label="Fechar">✕</button>
+      <div class="modal-logo">
+        <img src="imagens/favicon.png" alt="EvoTech" width="36" height="36">
+        <span>EvoTech<b>Events</b></span>
+      </div>
+      <h2 class="modal-title">Bem-vindo de volta</h2>
+      <p class="modal-sub">Entre na sua conta para acessar eventos e ingressos.</p>
+      <div class="mform-group">
+        <label for="loginEmail">E-mail</label>
+        <input type="email" id="loginEmail" placeholder="seu@email.com" autocomplete="email">
+        <span class="mfield-error" id="loginEmail-error"></span>
+      </div>
+      <div class="mform-group">
+        <label for="loginSenha">Senha</label>
+        <input type="password" id="loginSenha" placeholder="Sua senha" autocomplete="current-password">
+        <span class="mfield-error" id="loginSenha-error"></span>
+      </div>
+      <div class="mform-row">
+        <a href="#" class="modal-link" id="linkEsqueci">Esqueci minha senha</a>
+      </div>
+      <button class="btn-primary btn-full modal-submit" id="btnLoginSubmit">Entrar</button>
+      <div class="modal-alt">Não tem conta? <a href="#" class="modal-link" id="linkParaCadastro">Cadastre-se grátis</a>
+      </div>
+      <!-- Demo admin shortcut -->
+      <div class="modal-demo-hint">
+        <span>Demo rápida:</span>
+        <a href="#" id="linkDemoAdmin" class="modal-demo-btn">Admin</a>
+        <a href="#" id="linkDemoParticipante" class="modal-demo-btn">Participante</a>
+      </div>
+    </div>
+
+    <!-- CADASTRO -->
+    <div class="modal" id="modalCadastro" aria-label="Criar conta" style="display:none">
+      <button class="modal-close" id="modalCadastroClose" aria-label="Fechar">✕</button>
+      <div class="modal-logo">
+        <img src="imagens/favicon.png" alt="EvoTech" width="36" height="36">
+        <span>EvoTech<b>Events</b></span>
+      </div>
+      <h2 class="modal-title">Criar conta grátis</h2>
+      <p class="modal-sub">Cadastre-se e compre ingressos, acesse seu histórico e muito mais.</p>
+      <div class="mform-group">
+        <label for="cadNome">Nome completo</label>
+        <input type="text" id="cadNome" placeholder="Seu nome completo" autocomplete="name">
+        <span class="mfield-error" id="cadNome-error"></span>
+      </div>
+      <div class="mform-group">
+        <label for="cadEmail">E-mail</label>
+        <input type="email" id="cadEmail" placeholder="seu@email.com" autocomplete="email">
+        <span class="mfield-error" id="cadEmail-error"></span>
+      </div>
+      <div class="mform-group">
+        <label for="cadCpf">CPF</label>
+        <input type="text" id="cadCpf" placeholder="000.000.000-00" maxlength="14" autocomplete="off">
+        <span class="mfield-error" id="cadCpf-error"></span>
+      </div>
+      <div class="mform-group">
+        <label for="cadTel">Telefone</label>
+        <input type="tel" id="cadTel" placeholder="(00) 00000-0000" maxlength="15" autocomplete="tel">
+        <span class="mfield-error" id="cadTel-error"></span>
+      </div>
+      <div class="mform-group">
+        <label for="cadDt">Data de nascimento</label>
+        <input type="date" id="cadDt" autocomplete="bday">
+        <span class="mfield-error" id="cadDt-error"></span>
+      </div>
+      <div class="mform-group">
+        <label for="cadSenha">Senha</label>
+        <input type="password" id="cadSenha" placeholder="Mínimo 6 caracteres" autocomplete="new-password">
+        <span class="mfield-error" id="cadSenha-error"></span>
+      </div>
+      <button class="btn-primary btn-full modal-submit" id="btnCadastroSubmit">Criar conta</button>
+      <div class="modal-alt">Já tem conta? <a href="#" class="modal-link" id="linkParaLogin">Entrar</a></div>
+    </div>
+
+    <!-- RECUPERAR SENHA -->
+    <div class="modal" id="modalRecuperar" aria-label="Recuperar senha" style="display:none">
+      <button class="modal-close" id="modalRecuperarClose" aria-label="Fechar">✕</button>
+      <div class="modal-logo">
+        <img src="imagens/favicon.png" alt="EvoTech" width="36" height="36">
+        <span>EvoTech<b>Events</b></span>
+      </div>
+      <h2 class="modal-title">Recuperar senha</h2>
+      <p class="modal-sub">Informe seu e-mail e enviaremos as instruções de recuperação.</p>
+      <div class="mform-group">
+        <label for="recEmail">E-mail cadastrado</label>
+        <input type="email" id="recEmail" placeholder="seu@email.com" autocomplete="email">
+        <span class="mfield-error" id="recEmail-error"></span>
+      </div>
+      <button class="btn-primary btn-full modal-submit" id="btnRecuperarSubmit">Enviar instruções</button>
+      <div id="recSuccess" class="modal-success" style="display:none">✓ Instruções enviadas! Verifique seu e-mail.</div>
+      <div class="modal-alt"><a href="#" class="modal-link" id="linkVoltarLogin">← Voltar ao login</a></div>
+    </div>
+
+    <!-- ÁREA DO PARTICIPANTE -->
+    <div class="modal modal-wide" id="modalParticipante" aria-label="Área do participante" style="display:none">
+      <button class="modal-close" id="modalParticipanteClose" aria-label="Fechar">✕</button>
+      <div class="part-header">
+        <div class="part-avatar-big" id="partAvatar">JC</div>
+        <div>
+          <div class="part-name-big" id="partNomeBig">João Cardoso</div>
+          <div class="part-email-big" id="partEmailBig">joao@email.com</div>
+        </div>
+        <button class="btn-secondary btn-sm" id="btnLogout">Sair</button>
+      </div>
+      <div class="part-tabs">
+        <button class="part-tab active" data-ptab="ingressos">Meus Ingressos</button>
+        <button class="part-tab" data-ptab="historico">Histórico</button>
+        <button class="part-tab" data-ptab="perfil">Meu Perfil</button>
+      </div>
+      <div class="part-panel" id="ptab-ingressos">
+        <div id="meusIngressos" class="ingressos-list"></div>
+      </div>
+      <div class="part-panel" id="ptab-historico" style="display:none">
+        <div id="meuHistorico" class="historico-list"></div>
+      </div>
+      <div class="part-panel" id="ptab-perfil" style="display:none">
+        <div class="perfil-form">
+          <div class="mform-group">
+            <label>Nome completo</label>
+            <input type="text" id="perfilNome" placeholder="Nome completo">
+          </div>
+          <div class="mform-group">
+            <label>E-mail</label>
+            <input type="email" id="perfilEmail" placeholder="E-mail" readonly>
+          </div>
+          <div class="mform-group">
+            <label>Telefone</label>
+            <input type="tel" id="perfilTel" placeholder="(00) 00000-0000">
+          </div>
+          <button class="btn-primary" id="btnSalvarPerfil">Salvar alterações</button>
+          <div id="perfilSuccess" class="modal-success" style="display:none">✓ Perfil atualizado!</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DASHBOARD ADMIN -->
+    <div class="modal modal-wide modal-dashboard" id="modalDashboard" aria-label="Dashboard Administrativo"
+      style="display:none">
+      <button class="modal-close" id="modalDashboardClose" aria-label="Fechar">✕</button>
+      <div class="dash-header">
+        <div>
+          <h2 class="dash-title">Dashboard Executivo</h2>
+          <p class="dash-sub">Visão geral em tempo real</p>
+        </div>
+        <button class="btn-secondary btn-sm" id="btnLogoutAdmin">Sair</button>
+      </div>
+      <div class="dash-kpis">
+        <div class="dash-kpi">
+          <div class="dash-kpi-val">14</div>
+          <div class="dash-kpi-label">Eventos Ativos</div>
+        </div>
+        <div class="dash-kpi accent">
+          <div class="dash-kpi-val">3.284</div>
+          <div class="dash-kpi-label">Ingressos Vendidos</div>
+        </div>
+        <div class="dash-kpi">
+          <div class="dash-kpi-val">R$ 287k</div>
+          <div class="dash-kpi-label">Receita Total</div>
+        </div>
+        <div class="dash-kpi">
+          <div class="dash-kpi-val">89%</div>
+          <div class="dash-kpi-label">Taxa de Ocupação</div>
+        </div>
+        <div class="dash-kpi">
+          <div class="dash-kpi-val">R$ 87</div>
+          <div class="dash-kpi-label">Ticket Médio</div>
+        </div>
+        <div class="dash-kpi accent">
+          <div class="dash-kpi-val">53%</div>
+          <div class="dash-kpi-label">Margem Líquida</div>
+        </div>
+      </div>
+      <div class="dash-grid">
+        <div class="dash-card">
+          <h3 class="dash-card-title">Vendas por Período</h3>
+          <div class="dash-chart">
+            <div class="dash-bars">
+              <div class="dash-bar" style="--h:45%"><span>Seg</span></div>
+              <div class="dash-bar" style="--h:72%"><span>Ter</span></div>
+              <div class="dash-bar" style="--h:58%"><span>Qua</span></div>
+              <div class="dash-bar active" style="--h:89%"><span>Qui</span></div>
+              <div class="dash-bar" style="--h:94%"><span>Sex</span></div>
+              <div class="dash-bar" style="--h:67%"><span>Sáb</span></div>
+              <div class="dash-bar" style="--h:51%"><span>Dom</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="dash-card">
+          <h3 class="dash-card-title">Despesas por Categoria</h3>
+          <div class="dash-expenses">
+            <div class="dash-exp-row"><span>🛡️ Segurança</span>
+              <div class="dash-exp-bar">
+                <div style="width:62%"></div>
+              </div><span>R$ 42k</span>
+            </div>
+            <div class="dash-exp-row"><span>📣 Marketing</span>
+              <div class="dash-exp-bar">
+                <div style="width:41%"></div>
+              </div><span>R$ 28k</span>
+            </div>
+            <div class="dash-exp-row"><span>🍺 Bebidas</span>
+              <div class="dash-exp-bar">
+                <div style="width:56%"></div>
+              </div><span>R$ 38k</span>
+            </div>
+            <div class="dash-exp-row"><span>🏗️ Estrutura</span>
+              <div class="dash-exp-bar">
+                <div style="width:38%"></div>
+              </div><span>R$ 26k</span>
+            </div>
+            <div class="dash-exp-row"><span>🎤 DJs/Atrações</span>
+              <div class="dash-exp-bar">
+                <div style="width:73%"></div>
+              </div><span>R$ 49k</span>
+            </div>
+          </div>
+        </div>
+        <div class="dash-card">
+          <h3 class="dash-card-title">Open Bar — Estoque</h3>
+          <div class="dash-openbar">
+            <div class="dash-ob-row"><span>🍺 Cerveja</span>
+              <div class="dash-ob-bar">
+                <div style="width:68%"></div>
+              </div><span class="green">68%</span>
+            </div>
+            <div class="dash-ob-row"><span>🥃 Vodka</span>
+              <div class="dash-ob-bar">
+                <div style="width:42%"></div>
+              </div><span class="yellow">42%</span>
+            </div>
+            <div class="dash-ob-row"><span>🍹 Gin</span>
+              <div class="dash-ob-bar">
+                <div style="width:55%"></div>
+              </div><span class="green">55%</span>
+            </div>
+            <div class="dash-ob-row"><span>⚡ Energético</span>
+              <div class="dash-ob-bar warn">
+                <div style="width:21%"></div>
+              </div><span class="red">21% ⚠</span>
+            </div>
+          </div>
+        </div>
+        <div class="dash-card">
+          <h3 class="dash-card-title">Participantes por Evento</h3>
+          <div class="dash-events-list" id="dashEventosList"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL EVENTO (detalhe) -->
+    <div class="modal modal-wide" id="modalEvento" aria-label="Detalhes do evento" style="display:none">
+      <button class="modal-close" id="modalEventoClose" aria-label="Fechar">✕</button>
+      <div class="evento-detail" id="eventoDetailContent"></div>
+    </div>
+
+    <!-- MODAL COMPRA DE INGRESSO -->
+    <div class="modal" id="modalCompra" aria-label="Comprar ingresso" style="display:none">
+      <button class="modal-close" id="modalCompraClose" aria-label="Fechar">✕</button>
+      <h2 class="modal-title" id="compraTitulo">Comprar Ingresso</h2>
+      <p class="modal-sub" id="compraEvento">Evento</p>
+      <div class="compra-lotes" id="compraLotes"></div>
+      <div id="compraForm" style="display:none">
+        <div class="compra-resumo" id="compraResumo"></div>
+        <div class="mform-group">
+          <label for="compraNome">Nome completo</label>
+          <input type="text" id="compraNome" placeholder="Como aparece no documento">
+          <span class="mfield-error" id="compraNome-error"></span>
+        </div>
+        <div class="mform-group">
+          <label for="compraEmail">E-mail</label>
+          <input type="email" id="compraEmail" placeholder="seu@email.com">
+          <span class="mfield-error" id="compraEmail-error"></span>
+        </div>
+        <div class="mform-group">
+          <label for="compraCpf">CPF</label>
+          <input type="text" id="compraCpf" placeholder="000.000.000-00" maxlength="14">
+          <span class="mfield-error" id="compraCpf-error"></span>
+        </div>
+        <div class="compra-card-row">
+          <div class="mform-group" style="flex:1">
+            <label for="compraCard">Número do cartão</label>
+            <input type="text" id="compraCard" placeholder="0000 0000 0000 0000" maxlength="19">
+          </div>
+          <div class="mform-group" style="width:90px">
+            <label for="compraValidade">Validade</label>
+            <input type="text" id="compraValidade" placeholder="MM/AA" maxlength="5">
+          </div>
+          <div class="mform-group" style="width:70px">
+            <label for="compraCvv">CVV</label>
+            <input type="text" id="compraCvv" placeholder="000" maxlength="3">
+          </div>
+        </div>
+        <button class="btn-primary btn-full modal-submit" id="btnConfirmarCompra">Confirmar compra</button>
+      </div>
+      <div id="compraSuccess" style="display:none" class="compra-success">
+        <div class="compra-check">✓</div>
+        <h3>Ingresso confirmado!</h3>
+        <p>Seu ingresso foi gerado e está disponível na área do participante.</p>
+        <div class="compra-ticket" id="compraTicket"></div>
+        <button class="btn-primary" id="btnVerIngresso">Ver meus ingressos</button>
+      </div>
+    </div>
+
+  </div>
+  <!-- ===================== FIM MODAIS ===================== -->
+
+  <script src="script.js"></script>
 </body>
+
 </html>
