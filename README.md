@@ -1,188 +1,131 @@
-EvoTech Events — OffCampus Event Management Platform
+🚀 EvoTech Events — OffCampus System
 
+Plataforma completa para gestão de eventos, ingressos, participantes, portaria, Open Bar e financeiro.
 
+O OffCampus System é uma solução desenvolvida pela EvoTech Events para centralizar toda a operação de eventos em uma única plataforma. O sistema possui uma área pública para participantes e uma área administrativa para organizadores, permitindo acompanhar vendas, acessos, estoque e indicadores operacionais em tempo real.
 
-
-
-
-
-
-Plataforma completa para gestão de eventos, ingressos e operação em tempo real
-
-O OffCampus System é uma plataforma desenvolvida pela EvoTech Events para centralizar toda a operação de eventos em um único ambiente.
-
-Desde a venda de ingressos até o controle de entrada na portaria, gestão financeira, participantes, fornecedores e Open Bar, o sistema foi projetado para oferecer uma visão completa do evento em tempo real.
-
-Principais benefícios
-
-✅ Venda de ingressos online
-
-✅ Controle de acesso e portaria
-
-✅ Gestão de participantes
-
-✅ Dashboard executivo com métricas em tempo real
-
-✅ Controle de Open Bar e estoque
-
-✅ Gestão financeira integrada
-
-✅ Administração de equipes e fornecedores
-
-✅ Plataforma responsiva e moderna
-
-✅ Arquitetura preparada para futura migração para SaaS
-
-Demonstração
-Site Institucional
-Landing Page comercial
-Vitrine de eventos
-Compra de ingressos
+✨ Principais Recursos
+🎟️ Gestão de Ingressos
+Venda de ingressos online
+Controle de lotes
+Emissão de ingressos digitais
+Histórico de compras
 Área do participante
-Cadastro e autenticação
-Painel Administrativo
-Dashboard executivo
-Gestão de eventos
-Gestão de lotes
-Controle financeiro
-Controle de Open Bar
-Gestão de participantes
-Gestão de contatos
-Portaria digital
-Visão Geral da Plataforma
-┌──────────────────────┐
-│      Visitantes      │
-└──────────┬───────────┘
-           │
-           ▼
-┌──────────────────────┐
-│  Site Institucional  │
-│     index.html       │
-└──────────┬───────────┘
-           │
-           ▼
-┌──────────────────────┐
-│    Autenticação      │
-└──────────┬───────────┘
-           │
-   ┌───────┴────────┐
-   ▼                ▼
-
-Participante      Administrador
-   │                │
-   ▼                ▼
-
-Área do Usuário   Painel Admin
-                  admin.html
-Destaques do Sistema
-Dashboard Executivo
-
-Monitore em tempo real:
-
+📊 Dashboard Executivo
+Eventos ativos
 Receita total
 Despesas
 Saldo operacional
-Ingressos vendidos
-Eventos ativos
 Entradas registradas
-Taxa de ocupação
-Gestão de Eventos
-Criação de eventos
-Edição de informações
-Controle de lotes
-Definição de capacidade
-Gestão de preços
-Gestão de Ingressos
-Emissão digital
-Código único por ingresso
-Controle de lotes
-Histórico de compras
-Portaria Inteligente
+Ocupação por evento
+🚪 Portaria
 Check-in manual
 Validação por código
-Registro em tempo real
-Histórico de acessos
-Open Bar
+Registro de entradas
+Controle de capacidade
+🍻 Open Bar
 Controle de estoque
+Alertas de reposição
 Custos unitários
-Alertas automáticos
-Indicadores de reposição
-Financeiro
+Indicadores de consumo
+💰 Financeiro
 Controle de despesas
 Categorias financeiras
-Indicadores operacionais
+Relatórios operacionais
 Exportação de dados
-Arquitetura
-Frontend
-│
-├── HTML5
-├── CSS3
-├── JavaScript ES6+
-│
-└── LocalStorage
-     │
-     ├── Usuários
-     ├── Sessão
-     ├── Eventos
-     ├── Financeiro
-     ├── Participantes
-     └── Open Bar
-Tecnologias Utilizadas
-Tecnologia	Finalidade
-HTML5	Estrutura da aplicação
-CSS3	Interface e responsividade
-JavaScript ES6+	Regras de negócio
-LocalStorage	Persistência local
-Google Fonts	Tipografia
-Diferenciais Competitivos
-Operação Centralizada
+👥 Participantes
+Cadastro de usuários
+Gestão de participantes
+Bloqueio e ativação
+Histórico de presença
+🏗️ Estrutura da Plataforma
+Módulo	Arquivo	Descrição
+Landing Page	index.html	Site institucional e venda de ingressos
+Área do Participante	index.html	Perfil, histórico e ingressos
+Painel Administrativo	admin.html	Gestão completa dos eventos
+🛠️ Tecnologias
+HTML5
+CSS3
+JavaScript (ES6+)
+LocalStorage
+Google Fonts (Inter e Sora)
+Sem Dependências
 
-Todos os setores do evento operam dentro da mesma plataforma.
+O projeto não utiliza:
 
-Dados em Tempo Real
-
-Acompanhe vendas, ocupação e movimentações instantaneamente.
-
-Escalabilidade
-
-Arquitetura preparada para futura migração para:
-
+React
+Vue
+Angular
 Node.js
-NestJS
-Supabase
-PostgreSQL
-Firebase
-AWS
-UX Moderna
+Bundlers
+Frameworks CSS
 
-Interface desenvolvida com foco em:
+Tudo foi desenvolvido utilizando tecnologias nativas da web.
 
-Performance
-Responsividade
-Acessibilidade
-Experiência do usuário
-Roadmap
-Versão 2.0
- Backend em Node.js
- Banco PostgreSQL
+📂 Estrutura do Projeto
+OffCampusSystem/
+│
+├── index.html
+├── admin.html
+├── style.css
+├── script.js
+├── README.md
+│
+└── imagens/
+    ├── favicon.png
+    ├── offcampushexa.png
+    ├── resenhadoportes.png
+    ├── halloween.png
+    ├── brazil.svg
+    └── brazil-wireframe.svg
+🚀 Como Executar
+Python
+python -m http.server 8080
+Node.js
+npx serve .
+VS Code
+
+Utilize a extensão Live Server.
+
+🔑 Contas de Demonstração
+Perfil	E-mail	Senha
+Administrador	admin@evotech.com	admin123
+Participante	demo@evotech.com	demo123
+💾 Persistência de Dados
+
+Todos os dados são armazenados localmente através do LocalStorage.
+
+Chave	Função
+evo_users	Usuários cadastrados
+evo_session	Sessão ativa
+evotech_admin	Dados administrativos
+⚠️ Limitações
+
+Este projeto foi desenvolvido para demonstração e prototipação.
+
+Atualmente não possui:
+
+Backend
+Banco de dados real
+Autenticação segura
+Integração com pagamentos
+QR Code real
+Sincronização entre dispositivos
+🗺️ Roadmap
+Próximas versões
  API REST
- QR Code real
+ Banco PostgreSQL
  Integração PIX
- Integração Mercado Pago
- Controle multi-eventos
+ Mercado Pago
+ QR Code real
  Multiusuários
- Sistema de permissões
- Relatórios avançados
- Dashboard em tempo real via WebSocket
-Versão 3.0
- Aplicativo Android
- Aplicativo iOS
- Leitor QR Code offline
- BI executivo
- Integração WhatsApp
- Integração Email Marketing
-Futuro do Projeto
+ Controle de permissões
+ Aplicativo Mobile
+ Dashboard em tempo real
+🎯 Objetivo
 
-O objetivo do OffCampus System é evoluir de um sistema de demonstração para uma plataforma SaaS completa para produtoras, casas noturnas, eventos universitários, festivais e organizadores independentes.
+Transformar o OffCampus System em uma plataforma SaaS completa para gestão de eventos, festivais, festas universitárias, casas noturnas e produtoras de eventos.
 
-A visão é transformar a EvoTech Events em uma solução capaz de gerenciar toda a jornada operacional de um evento, desde a venda do ingresso até a análise financeira pós-evento.
+📄 Licença
+
+Projeto de uso interno e demonstração.
