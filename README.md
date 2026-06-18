@@ -1,8 +1,8 @@
-🚀 EvoTech Events — OffCampus System
+🚀 EvoTech Events — EvotechWeb 
 
 Plataforma completa para gestão de eventos, ingressos, participantes, portaria, Open Bar e financeiro.
 
-O OffCampus System é uma solução desenvolvida pela EvoTech Events para centralizar toda a operação de eventos em uma única plataforma. O sistema possui uma área pública para participantes e uma área administrativa para organizadores, permitindo acompanhar vendas, acessos, estoque e indicadores operacionais em tempo real.
+O EvoTech Events é uma solução desenvolvida pela EvoTechWeb para centralizar toda a operação de eventos em uma única plataforma. O sistema possui uma área pública para participantes e uma área administrativa para organizadores, permitindo acompanhar vendas, acessos, estoque e indicadores operacionais em tempo real.
 
 ✨ Principais Recursos
 🎟️ Gestão de Ingressos
@@ -124,7 +124,7 @@ Próximas versões
  Dashboard em tempo real
 🎯 Objetivo
 
-Transformar o OffCampus System em uma plataforma SaaS completa para gestão de eventos, festivais, festas universitárias, casas noturnas e produtoras de eventos.
+Transformar o EvoTech Events em uma plataforma SaaS completa para gestão de eventos, festivais, festas universitárias, casas noturnas e produtoras de eventos.
 
 📄 Licença
 
