@@ -758,7 +758,6 @@ const modals = {
     cadastro: document.getElementById('modalCadastro'),
     recuperar: document.getElementById('modalRecuperar'),
     participante: document.getElementById('modalParticipante'),
-    dashboard: document.getElementById('modalDashboard'),
     evento: document.getElementById('modalEvento'),
     compra: document.getElementById('modalCompra'),
 };
@@ -794,7 +793,6 @@ document.getElementById('modalLoginClose')?.addEventListener('click', closeModal
 document.getElementById('modalCadastroClose')?.addEventListener('click', closeModal);
 document.getElementById('modalRecuperarClose')?.addEventListener('click', closeModal);
 document.getElementById('modalParticipanteClose')?.addEventListener('click', closeModal);
-document.getElementById('modalDashboardClose')?.addEventListener('click', closeModal);
 document.getElementById('modalEventoClose')?.addEventListener('click', closeModal);
 document.getElementById('modalCompraClose')?.addEventListener('click', closeModal);
 
@@ -817,7 +815,7 @@ function updateNavUI() {
         <span>${session.nome.split(' ')[0]}</span>
       </div>`;
         document.getElementById('navAvatarBtn')?.addEventListener('click', () => {
-            if (session.role === 'admin') { buildDashboard(); openModal('dashboard'); }
+            if (session.role === 'admin') { window.location.href = 'admin.html'; }
             else { buildParticipante(session); openModal('participante'); }
         });
         document.getElementById('navAvatarBtn')?.addEventListener('keydown', e => {
@@ -843,7 +841,7 @@ document.getElementById('linkVoltarLogin')?.addEventListener('click', e => { e.p
 document.getElementById('linkDemoAdmin')?.addEventListener('click', e => {
     e.preventDefault();
     const u = getUsers().find(x => x.email === 'admin@evotech.com');
-    if (u) { saveSession(u); closeModal(); updateNavUI(); }
+    if (u) { saveSession(u); window.location.href = 'admin.html'; }
 });
 document.getElementById('linkDemoParticipante')?.addEventListener('click', e => {
     e.preventDefault();
@@ -875,6 +873,7 @@ document.getElementById('btnLoginSubmit')?.addEventListener('click', () => {
     }
     saveSession(user);
     closeModal();
+    if (user.role === 'admin') { window.location.href = 'admin.html'; return; }
     updateNavUI();
 });
 
@@ -960,7 +959,6 @@ document.getElementById('btnRecuperarSubmit')?.addEventListener('click', () => {
 
 /* ---------- LOGOUT ---------- */
 document.getElementById('btnLogout')?.addEventListener('click', () => { clearSession(); closeModal(); updateNavUI(); });
-document.getElementById('btnLogoutAdmin')?.addEventListener('click', () => { clearSession(); closeModal(); updateNavUI(); });
 
 /* ---------- ÁREA DO PARTICIPANTE ---------- */
 function buildParticipante(user) {
@@ -1058,23 +1056,6 @@ document.getElementById('btnSalvarPerfil')?.addEventListener('click', () => {
 });
 
 /* ---------- DASHBOARD ADMIN ---------- */
-function buildDashboard() {
-    const el = document.getElementById('dashEventosList');
-    if (!el) return;
-    const evts = [
-        { nome: 'Halloween OffCampus', pct: 94 },
-        { nome: 'Resenha do Portes', pct: 78 },
-        { nome: 'OFFCampus na Copa', pct: 62 },
-        { nome: 'Reveillon EvoTech', pct: 45 },
-    ];
-    el.innerHTML = evts.map(e => `
-    <div class="dash-ev-item">
-      <div class="dash-ev-name">${e.nome}</div>
-      <div class="dash-ev-bar"><div style="width:${e.pct}%"></div></div>
-      <div class="dash-ev-pct">${e.pct}%</div>
-    </div>`).join('');
-}
-
 /* ---------- EVENTO DETAIL ---------- */
 function openEvento(idx) {
     const ev = EVENTOS[idx];
