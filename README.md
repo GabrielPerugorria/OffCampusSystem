@@ -67,9 +67,16 @@ OffCampusSystem/
 │
 ├── index.html
 ├── admin.html
-├── style.css
-├── script.js
 ├── README.md
+│
+├── css/
+│   ├── main.css        (estilos da landing page / área do participante)
+│   └── admin.css       (estilos do painel administrativo)
+│
+├── js/
+│   ├── main.js          (lógica da landing page / área do participante)
+│   ├── admin.js         (lógica do painel administrativo)
+│   └── admin-guard.js   (verificação de sessão de admin, carregada antes do CSS)
 │
 └── imagens/
     ├── favicon.png
