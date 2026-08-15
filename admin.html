@@ -11,6 +11,10 @@
 </head>
 <body>
 
+<!-- Controle (somente CSS) do menu mobile em formato gaveta -->
+<input type="checkbox" id="nav-toggle" class="nav-toggle-checkbox">
+<label for="nav-toggle" class="mobile-backdrop" aria-hidden="true"></label>
+
 <!-- SIDEBAR -->
 <aside class="sidebar">
   <a href="index.html" class="sidebar-logo" style="text-decoration:none; color:inherit" aria-label="Voltar ao site EvoTech Events">
@@ -48,6 +52,31 @@
     <button class="nav-item" onclick="goPanel('contatos')">
       <span class="nav-icon">📇</span><span>Contatos</span>
     </button>
+
+    <div class="nav-section-label">Inteligência &amp; Controle</div>
+    <button class="nav-item" onclick="goPanel('metas')">
+      <span class="nav-icon">🎯</span><span>Metas &amp; ROI</span>
+    </button>
+    <button class="nav-item" onclick="goPanel('comparativo')">
+      <span class="nav-icon">📈</span><span>Comparativo &amp; IA</span>
+    </button>
+    <button class="nav-item" onclick="goPanel('unitecon')">
+      <span class="nav-icon">🧮</span><span>Unit Economics</span>
+    </button>
+    <button class="nav-item" onclick="goPanel('relatorios')">
+      <span class="nav-icon">📤</span><span>Relatórios</span>
+    </button>
+
+    <div class="nav-section-label">Governança</div>
+    <button class="nav-item" onclick="goPanel('equipe')">
+      <span class="nav-icon">🔐</span><span>Equipe &amp; Permissões</span>
+    </button>
+    <button class="nav-item" onclick="goPanel('auditoria')">
+      <span class="nav-icon">🧾</span><span>Auditoria</span>
+    </button>
+    <button class="nav-item" onclick="goPanel('sistema')">
+      <span class="nav-icon">🛰️</span><span>Sistema &amp; Contingência</span>
+    </button>
   </nav>
 
   <div class="sidebar-footer">
@@ -67,12 +96,16 @@
 
   <!-- TOP BAR -->
   <div class="topbar" id="topbar">
-    <div style="flex:1">
+    <label for="nav-toggle" class="hamburger-btn" aria-label="Abrir menu de navegação">☰</label>
+    <div style="flex:1; min-width:0">
       <div class="topbar-title" id="topbar-title">Dashboard</div>
       <span class="topbar-sub" id="topbar-sub">Visão geral em tempo real</span>
     </div>
-    <button class="btn btn-outline btn-sm" onclick="exportData()">⬇ Exportar</button>
-    <button class="btn btn-primary btn-sm" id="topbar-action" onclick="openPrimaryAction()">+ Novo Evento</button>
+    <div class="topbar-actions">
+      <span class="live-indicator"><span class="dot"></span>Ao vivo</span>
+      <button class="btn btn-outline btn-sm" onclick="exportData()">⬇ Exportar</button>
+      <button class="btn btn-primary btn-sm" id="topbar-action" onclick="openPrimaryAction()">+ Novo Evento</button>
+    </div>
   </div>
 
   <!-- CONTENT -->
@@ -80,7 +113,17 @@
 
     <!-- ====== DASHBOARD ====== -->
     <div class="panel active" id="panel-dashboard">
+
+      <!-- Countdown do próximo evento -->
+      <div id="dash-countdown"></div>
+
+      <!-- Central de Alertas Inteligentes -->
+      <div id="dash-alerts-central"></div>
+
+      <div class="section-label">Visão Geral</div>
       <div class="kpi-grid" id="kpi-grid"></div>
+
+      <div class="section-label">Desempenho &amp; Operação</div>
       <div class="grid-2">
         <div class="card">
           <div class="card-header">
@@ -96,6 +139,24 @@
           <div id="dash-bar-levels"></div>
         </div>
       </div>
+
+      <div class="section-label">Vendas &amp; Previsão</div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header">
+            <div><div class="card-title">Funil de Conversão (estimado)</div><div class="card-sub">Descoberta → Carrinho → Compra</div></div>
+          </div>
+          <div id="dash-funnel"></div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div><div class="card-title">Projeção de Faturamento (IA)</div><div class="card-sub">Baseada no ritmo de vendas atual</div></div>
+          </div>
+          <div id="dash-projecao"></div>
+        </div>
+      </div>
+
+      <div class="section-label">Portaria &amp; Financeiro</div>
       <div class="grid-2">
         <div class="card">
           <div class="card-header">
@@ -106,7 +167,7 @@
         </div>
         <div class="card">
           <div class="card-header">
-            <div><div class="card-title">Despesas por Categoria</div></div>
+            <div class="card-title">Despesas por Categoria</div>
           </div>
           <div id="dash-expenses"></div>
         </div>
@@ -279,6 +340,170 @@
       <div class="contact-grid" id="contatos-grid"></div>
     </div>
 
+    <!-- ====== METAS & ROI ====== -->
+    <div class="panel" id="panel-metas">
+      <div class="kpi-grid" id="metas-kpis"></div>
+      <div id="metas-cards"></div>
+    </div>
+
+    <!-- ====== COMPARATIVO & IA ====== -->
+    <div class="panel" id="panel-comparativo">
+      <div id="comparativo-insights"></div>
+      <div class="card">
+        <div class="card-header">
+          <div><div class="card-title">Ranking Comparativo de Eventos</div><div class="card-sub">Performance lado a lado — igual à IA comparativa do plano estratégico</div></div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>#</th><th>Evento</th><th>Público</th><th>Ocupação</th><th>Receita</th><th>Ticket Médio</th><th>Margem</th><th>ROI</th>
+            </tr></thead>
+            <tbody id="comp-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card" style="margin-top:18px">
+        <div class="card-header">
+          <div><div class="card-title">Heatmap de Entradas por Horário</div><div class="card-sub">Identifique horários de pico para reforçar portaria e bar</div></div>
+        </div>
+        <div class="heatmap-grid" id="heatmap-grid"></div>
+      </div>
+    </div>
+
+    <!-- ====== UNIT ECONOMICS ====== -->
+    <div class="panel" id="panel-unitecon">
+      <div class="card" style="margin-bottom:18px">
+        <div class="card-header">
+          <div><div class="card-title">Parâmetros do Modelo</div><div class="card-sub">Ajuste as premissas para recalcular os indicadores</div></div>
+        </div>
+        <div class="form-grid">
+          <div class="form-group"><label>CAC — Custo de Aquisição por Produtor (R$)</label><input id="ue-cac" type="number" step="0.01" oninput="atualizarUnitEcon()"></div>
+          <div class="form-group"><label>Churn Mensal Estimado (%)</label><input id="ue-churn" type="number" step="0.1" oninput="atualizarUnitEcon()"></div>
+          <div class="form-group"><label>Take Rate do Marketplace (%)</label><input id="ue-take" type="number" step="0.1" oninput="atualizarUnitEcon()"></div>
+        </div>
+      </div>
+      <div class="kpi-grid" id="ue-kpis"></div>
+      <div class="card">
+        <div class="card-title" style="margin-bottom:10px">Como cada indicador é calculado</div>
+        <div style="font-size:12px; color:var(--text2); line-height:1.9">
+          <b style="color:var(--text)">GMV</b> = soma de toda a receita transacionada na plataforma (todos os eventos).<br>
+          <b style="color:var(--text)">ARPU</b> = receita total ÷ nº de produtores(eventos) ativos.<br>
+          <b style="color:var(--text)">Take Rate Receita</b> = GMV × Take Rate.<br>
+          <b style="color:var(--text)">LTV</b> = ARPU ÷ (Churn Mensal ÷ 100), representando o valor gerado durante a permanência média.<br>
+          <b style="color:var(--text)">Payback</b> = CAC ÷ (ARPU × margem de contribuição estimada).
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== RELATÓRIOS ====== -->
+    <div class="panel" id="panel-relatorios">
+      <div class="report-grid">
+        <div class="report-card">
+          <div class="r-icon">📊</div>
+          <div class="r-title">Relatório Executivo (TXT)</div>
+          <div class="r-sub">Resumo completo: KPIs, eventos, financeiro e insights de IA.</div>
+          <button class="btn btn-primary btn-sm" onclick="exportRelatorioExecutivo()">Gerar Relatório</button>
+        </div>
+        <div class="report-card">
+          <div class="r-icon">🎉</div>
+          <div class="r-title">Eventos (CSV)</div>
+          <div class="r-sub">Lista de eventos com vendas, receita e ocupação.</div>
+          <button class="btn btn-outline btn-sm" onclick="exportCSV('eventos')">Exportar CSV</button>
+        </div>
+        <div class="report-card">
+          <div class="r-icon">👥</div>
+          <div class="r-title">Participantes (CSV)</div>
+          <div class="r-sub">Base completa de compradores para CRM ou marketing.</div>
+          <button class="btn btn-outline btn-sm" onclick="exportCSV('participantes')">Exportar CSV</button>
+        </div>
+        <div class="report-card">
+          <div class="r-icon">💰</div>
+          <div class="r-title">Financeiro (CSV)</div>
+          <div class="r-sub">Todas as despesas categorizadas do período.</div>
+          <button class="btn btn-outline btn-sm" onclick="exportCSV('despesas')">Exportar CSV</button>
+        </div>
+        <div class="report-card">
+          <div class="r-icon">🍺</div>
+          <div class="r-title">Estoque do Bar (CSV)</div>
+          <div class="r-sub">Posição de estoque, custo unitário e status.</div>
+          <button class="btn btn-outline btn-sm" onclick="exportCSV('bar')">Exportar CSV</button>
+        </div>
+        <div class="report-card">
+          <div class="r-icon">🗄️</div>
+          <div class="r-title">Backup Completo (JSON)</div>
+          <div class="r-sub">Snapshot integral do sistema para migração ou auditoria.</div>
+          <button class="btn btn-outline btn-sm" onclick="exportData()">Exportar JSON</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== EQUIPE & PERMISSÕES ====== -->
+    <div class="panel" id="panel-equipe">
+      <div class="search-bar">
+        <input type="text" placeholder="Buscar membro da equipe…" oninput="renderEquipe(this.value)">
+        <button class="btn btn-primary" onclick="openModalEquipe()">+ Novo Membro</button>
+      </div>
+      <div class="card" style="margin-bottom:18px">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Status</th><th>Ações</th></tr></thead>
+            <tbody id="equipe-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="margin-bottom:14px">Matriz de Permissões por Perfil</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Módulo</th><th>Admin</th><th>Financeiro</th><th>Op. Portaria</th><th>Op. Bar</th><th>Visualizador</th></tr></thead>
+            <tbody id="perm-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== AUDITORIA ====== -->
+    <div class="panel" id="panel-auditoria">
+      <div class="card">
+        <div class="card-header">
+          <div><div class="card-title">Log de Auditoria</div><div class="card-sub" id="audit-sub">Histórico de ações realizadas no sistema</div></div>
+          <button class="btn btn-danger btn-sm" onclick="if(confirm('Limpar todo o log de auditoria?')){ STATE.auditLog=[]; saveState(); renderAuditoria(); toast('Log de auditoria limpo','success'); }">Limpar Log</button>
+        </div>
+        <div id="audit-log"></div>
+      </div>
+    </div>
+
+    <!-- ====== SISTEMA & CONTINGÊNCIA ====== -->
+    <div class="panel" id="panel-sistema">
+      <div class="kpi-grid" id="sistema-kpis"></div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title" style="margin-bottom:6px">Controles de Estabilidade</div>
+          <div class="toggle-row">
+            <div class="toggle-info">
+              <div class="t-title">Modo Contingência / Offline</div>
+              <div class="t-sub">Mantém o check-in e vendas funcionando localmente se a internet cair, sincronizando depois.</div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="toggle-contingencia" onchange="toggleContingencia()">
+              <span class="switch-track"></span>
+            </label>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-info">
+              <div class="t-title">Backup Automático</div>
+              <div class="t-sub">Gera uma cópia de segurança dos dados do evento.</div>
+            </div>
+            <button class="btn btn-outline btn-sm" onclick="fazerBackupAgora()">Fazer backup agora</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title" style="margin-bottom:14px">Status dos Módulos Operacionais</div>
+          <div class="status-grid" id="status-modulos"></div>
+        </div>
+      </div>
+    </div>
+
   </div><!-- /content -->
 </main>
 
@@ -419,6 +644,32 @@
     <div class="form-actions">
       <button class="btn btn-outline" onclick="closeModal('modal-contato')">Cancelar</button>
       <button class="btn btn-primary" onclick="salvarContato()">Salvar Contato</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Equipe -->
+<div class="modal-overlay hidden" id="modal-equipe">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('modal-equipe')">✕</button>
+    <div class="modal-title" id="modal-equipe-title">Novo Membro da Equipe</div>
+    <input type="hidden" id="eq-edit-idx" value="-1">
+    <div class="form-grid">
+      <div class="form-group full"><label>Nome</label><input id="eq-nome" placeholder="Nome completo"></div>
+      <div class="form-group full"><label>E-mail</label><input id="eq-email" type="email" placeholder="email@evotech.com"></div>
+      <div class="form-group"><label>Perfil de Acesso</label>
+        <select id="eq-perfil">
+          <option>Admin</option><option>Financeiro</option><option>Operador Portaria</option>
+          <option>Operador Bar</option><option>Visualizador</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Status</label>
+        <select id="eq-status"><option value="ativo">Ativo</option><option value="inativo">Inativo</option></select>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-outline" onclick="closeModal('modal-equipe')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarEquipe()">Salvar Membro</button>
     </div>
   </div>
 </div>

@@ -9,6 +9,7 @@
     content="EvoTech Events — plataforma completa para gestão de eventos: ingressos, portaria, financeiro, Open Bar, dashboard e muito mais.">
 
   <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/brand-story.css">
   <link rel="preload" href="imagens/offcampushexa.png" as="image">
   <link rel="preload" href="imagens/resenhadoportes.png" as="image">
   <link rel="preload" href="imagens/halloween.png" as="image">
@@ -84,26 +85,26 @@
 
     <div class="hero-content">
 
-      <div class="hero-badge" aria-label="Plataforma operacional completa">
+      <div class="hero-badge" aria-label="Sistema operacional inteligente de eventos">
         <span class="badge-dot" aria-hidden="true"></span>
-        Plataforma operacional completa
+        Sistema operacional inteligente de eventos
       </div>
 
       <h1>
-        Eventos memoráveis <span>começam antes</span> da primeira pessoa entrar.
+        O futuro dos eventos <span>é inteligente.</span>
       </h1>
 
       <p>
-        Da venda dos ingressos ao controle financeiro — centralize toda a operação do seu evento em uma única plataforma
-        inteligente. Dashboard em tempo real, portaria com QR Code, Open Bar e muito mais.
+        Conectamos ingressos, operação, financeiro, público e inteligência artificial em uma única plataforma.
+        A EvoTech não administra apenas eventos — ela aprende com eles.
       </p>
 
       <div class="hero-buttons">
-        <a href="#" class="btn-primary btn-large" id="heroBtnCadastro">
-          Cadastrar Grátis
+        <a href="#plataforma" class="btn-primary btn-large" id="heroBtnConhecer">
+          Conhecer a plataforma
         </a>
-        <a href="#events" class="btn-outline btn-large">
-          Ver Eventos
+        <a href="#contato" class="btn-outline btn-large">
+          Sou produtor de eventos
         </a>
       </div>
 
@@ -126,17 +127,12 @@
     </div>
 
     <div class="hero-image" aria-hidden="true">
-      <div class="brazil-container" id="brazilContainer">
-        <div class="brazil-inner" id="brazilInner">
-          <svg class="brazil-svg" viewBox="0 0 613 639" id="brazilSvg" aria-hidden="true">
-            <image href="imagens/brazil-wireframe.svg" x="0" y="0" width="613" height="639"
-              preserveAspectRatio="xMidYMid meet" opacity=".75" />
-            <g id="brazilOverlay"></g>
-          </svg>
-        </div>
-        <div class="brazil-stats" id="brazilStats">
-          <div class="brazil-stats-title">● Pontos ativos</div>
-          <div class="brazil-stats-list" id="brazilStatsList"></div>
+      <div class="globe-container" id="globeContainer">
+        <div class="globe-glow"></div>
+        <canvas id="globeCanvas" aria-hidden="true"></canvas>
+        <div class="globe-stats" id="globeStats">
+          <div class="globe-stats-title">● Estados do Brasil</div>
+          <div class="globe-stats-list" id="globeStatsList"></div>
         </div>
       </div>
     </div>
@@ -177,118 +173,383 @@
     </div>
   </section>
 
-  <!-- ===================== EVENTOS ===================== -->
-  <section class="events hero-banner" id="events" aria-label="Eventos em destaque">
-    <div class="hero-banner-grid">
-      <div class="banner-intro">
-        <span aria-hidden="true">Ingressos em destaque</span>
-        <h2>Eventos disponíveis para compra agora</h2>
-        <p>Os melhores eventos do momento, com ingressos disponíveis agora para você garantir sua presença.</p>
+  <!-- ===================== EVENTOS EM DESTAQUE ===================== -->
+  <section class="premium-events-section" id="events" aria-label="Eventos em destaque">
+
+    <!-- Decoracoes de Fundo -->
+    <div class="events-bg-decor" aria-hidden="true">
+
+      <!-- Faixas de texto animadas diagonais -->
+      <div class="decor-band decor-band--far-top">
+        <div class="decor-band__track decor-band__track--reverse">
+          <span>2025</span><span>—</span><span>TEMPORADA</span><span>—</span><span>EVOTECH</span><span>—</span><span>OFFCAMPUS</span><span>—</span><span>NIGHTOUT</span><span>—</span><span>2025</span><span>—</span><span>TEMPORADA</span><span>—</span><span>EVOTECH</span><span>—</span><span>OFFCAMPUS</span><span>—</span><span>NIGHTOUT</span><span>—</span><span>2025</span><span>—</span><span>TEMPORADA</span><span>—</span><span>EVOTECH</span><span>—</span><span>OFFCAMPUS</span><span>—</span><span>NIGHTOUT</span><span>—</span><span>2025</span><span>—</span><span>TEMPORADA</span><span>—</span><span>EVOTECH</span><span>—</span><span>OFFCAMPUS</span><span>—</span><span>NIGHTOUT</span><span>—</span>
+        </div>
+      </div>
+      <div class="decor-band decor-band--top">
+        <div class="decor-band__track">
+          <span>EVENTOS EXCLUSIVOS</span><span>★</span><span>PREMIUM EXPERIENCE</span><span>★</span><span>INGRESSOS DISPONÍVEIS</span><span>★</span><span>VIP ACCESS</span><span>★</span><span>EVOTECH EVENTS</span><span>★</span><span>EXPERIÊNCIA ÚNICA</span><span>★</span><span>EVENTOS EXCLUSIVOS</span><span>★</span><span>PREMIUM EXPERIENCE</span><span>★</span><span>INGRESSOS DISPONÍVEIS</span><span>★</span><span>VIP ACCESS</span><span>★</span><span>EVOTECH EVENTS</span><span>★</span><span>EXPERIÊNCIA ÚNICA</span><span>★</span><span>EVENTOS EXCLUSIVOS</span><span>★</span><span>PREMIUM EXPERIENCE</span><span>★</span><span>INGRESSOS DISPONÍVEIS</span><span>★</span><span>VIP ACCESS</span><span>★</span><span>EVOTECH EVENTS</span><span>★</span><span>EXPERIÊNCIA ÚNICA</span><span>★</span><span>EVENTOS EXCLUSIVOS</span><span>★</span><span>PREMIUM EXPERIENCE</span><span>★</span><span>INGRESSOS DISPONÍVEIS</span><span>★</span><span>VIP ACCESS</span><span>★</span><span>EVOTECH EVENTS</span><span>★</span><span>EXPERIÊNCIA ÚNICA</span><span>★</span>
+        </div>
+      </div>
+      <div class="decor-band decor-band--mid">
+        <div class="decor-band__track decor-band__track--reverse">
+          <span>NIGHTLIFE</span><span>◆</span><span>OPEN BAR</span><span>◆</span><span>LINE-UP EXCLUSIVO</span><span>◆</span><span>OPEN FOOD</span><span>◆</span><span>MÚSICA AO VIVO</span><span>◆</span><span>AMBIENTE VIP</span><span>◆</span><span>NIGHTLIFE</span><span>◆</span><span>OPEN BAR</span><span>◆</span><span>LINE-UP EXCLUSIVO</span><span>◆</span><span>OPEN FOOD</span><span>◆</span><span>MÚSICA AO VIVO</span><span>◆</span><span>AMBIENTE VIP</span><span>◆</span><span>NIGHTLIFE</span><span>◆</span><span>OPEN BAR</span><span>◆</span><span>LINE-UP EXCLUSIVO</span><span>◆</span><span>OPEN FOOD</span><span>◆</span><span>MÚSICA AO VIVO</span><span>◆</span><span>AMBIENTE VIP</span><span>◆</span><span>NIGHTLIFE</span><span>◆</span><span>OPEN BAR</span><span>◆</span><span>LINE-UP EXCLUSIVO</span><span>◆</span><span>OPEN FOOD</span><span>◆</span><span>MÚSICA AO VIVO</span><span>◆</span><span>AMBIENTE VIP</span><span>◆</span>
+        </div>
+      </div>
+      <div class="decor-band decor-band--bottom">
+        <div class="decor-band__track">
+          <span>COMPRE JÁ</span><span>●</span><span>GARANTA SUA VAGA</span><span>●</span><span>EDIÇÃO LIMITADA</span><span>●</span><span>EXCLUSIVO</span><span>●</span><span>ESGOTANDO RÁPIDO</span><span>●</span><span>NÃO PERCA</span><span>●</span><span>COMPRE JÁ</span><span>●</span><span>GARANTA SUA VAGA</span><span>●</span><span>EDIÇÃO LIMITADA</span><span>●</span><span>EXCLUSIVO</span><span>●</span><span>ESGOTANDO RÁPIDO</span><span>●</span><span>NÃO PERCA</span><span>●</span><span>COMPRE JÁ</span><span>●</span><span>GARANTA SUA VAGA</span><span>●</span><span>EDIÇÃO LIMITADA</span><span>●</span><span>EXCLUSIVO</span><span>●</span><span>ESGOTANDO RÁPIDO</span><span>●</span><span>NÃO PERCA</span><span>●</span><span>COMPRE JÁ</span><span>●</span><span>GARANTA SUA VAGA</span><span>●</span><span>EDIÇÃO LIMITADA</span><span>●</span><span>EXCLUSIVO</span><span>●</span><span>ESGOTANDO RÁPIDO</span><span>●</span><span>NÃO PERCA</span><span>●</span>
+        </div>
+      </div>
+      <div class="decor-band decor-band--far-bottom">
+        <div class="decor-band__track decor-band__track--slow">
+          <span>100%</span><span>♦</span><span>SEGURO</span><span>♦</span><span>PAGAMENTO RÁPIDO</span><span>♦</span><span>QR CODE</span><span>♦</span><span>ANTI-FRAUDE</span><span>♦</span><span>100%</span><span>♦</span><span>SEGURO</span><span>♦</span><span>PAGAMENTO RÁPIDO</span><span>♦</span><span>QR CODE</span><span>♦</span><span>ANTI-FRAUDE</span><span>♦</span><span>100%</span><span>♦</span><span>SEGURO</span><span>♦</span><span>PAGAMENTO RÁPIDO</span><span>♦</span><span>QR CODE</span><span>♦</span><span>ANTI-FRAUDE</span><span>♦</span><span>100%</span><span>♦</span><span>SEGURO</span><span>♦</span><span>PAGAMENTO RÁPIDO</span><span>♦</span><span>QR CODE</span><span>♦</span><span>ANTI-FRAUDE</span><span>♦</span>
+        </div>
       </div>
 
-      <div class="banner-carousel" aria-roledescription="carrossel" aria-label="Eventos em destaque" tabindex="0">
-        <div class="banner-list" role="list">
+      <!-- Linhas diagonais decorativas extras -->
+      <div class="decor-line decor-line--1"></div>
+      <div class="decor-line decor-line--2"></div>
+      <div class="decor-line decor-line--3"></div>
+      <div class="decor-line decor-line--4"></div>
 
-          <article class="banner-slide active" data-index="0" role="listitem"
-            aria-label="Evento 1 de 3: OFFCampus na copa" aria-hidden="false" tabindex="0">
-            <div class="banner-media">
-              <div class="banner-image">
-                <img src="imagens/offcampushexa.png"
-                  alt="Banner do evento OFFCampus na Copa — experiência premium com música ao vivo e áreas VIP"
-                  loading="lazy">
-                <div class="banner-visual-overlay" aria-hidden="true"></div>
-              </div>
-              <div class="banner-ribbon" aria-label="Status: Próximo">Próximo</div>
-            </div>
-            <div class="banner-copy">
-              <div>
-                <div class="banner-type">Experiência premium</div>
-                <h3>OFFCampus na copa?</h3>
-                <p>Música ao vivo, áreas VIP e networking com convidados especiais para quem busca uma experiência
-                  premium. Vamos em busca do hexa com estilo e exclusividade!</p>
-              </div>
-              <div class="banner-meta" aria-label="Informações do evento">
-                <span>EM BREVE</span>
-                <span>EXPERIÊNCIA PREMIUM</span>
-              </div>
-              <div class="banner-action-group">
-                <a href="#" class="btn-primary banner-buy" data-evento="OFFCampus na Copa"
-                  aria-label="Comprar ingresso para OFFCampus na Copa">Comprar ingresso</a>
-                <a href="#" class="btn-secondary banner-info" data-evento="0"
-                  aria-label="Saiba mais sobre OFFCampus na Copa">Saiba Mais</a>
-              </div>
-            </div>
-          </article>
+    </div>
 
-          <article class="banner-slide" data-index="1" role="listitem" aria-label="Evento 2 de 3: Resenha do Portes"
-            aria-hidden="true" tabindex="-1">
-            <div class="banner-media">
-              <div class="banner-image">
-                <img src="imagens/resenhadoportes.png"
-                  alt="Banner do evento Resenha do Portes — festival eletrônico com line-up exclusivo" loading="lazy">
-                <div class="banner-visual-overlay" aria-hidden="true"></div>
-              </div>
-              <div class="banner-ribbon" aria-label="Tipo: Festival Eletrônico">Festival Eletrônico</div>
-            </div>
-            <div class="banner-copy">
-              <div>
-                <div class="banner-type">Line-up exclusivo</div>
-                <h3>Resenha do Portes</h3>
-                <p>Line-up exclusivo, produção premium e acesso controlado para uma noite inesquecível.</p>
-              </div>
-              <div class="banner-meta" aria-label="Informações do evento">
-                <span>EM BREVE</span>
-                <span>NOITE VIP</span>
-              </div>
-              <div class="banner-action-group">
-                <a href="#" class="btn-primary banner-buy" data-evento="Resenha do Portes"
-                  aria-label="Comprar ingresso para Resenha do Portes">Comprar ingresso</a>
-                <a href="#" class="btn-secondary banner-info" data-evento="1"
-                  aria-label="Saiba mais sobre Resenha do Portes">Saiba Mais</a>
-              </div>
-            </div>
-          </article>
+    <div class="premium-events-inner">
+      <div class="premium-events-header">
+        <div class="ev-label-badge">
+          <span class="ev-label-dot"></span>
+          Destaques Patrocinados
+        </div>
+        <h2>Eventos <span class="text-gradient">em Alta</span></h2>
+        <p>Os eventos mais badalados do momento com ingressos disponíveis agora.</p>
+      </div>
 
-          <article class="banner-slide" data-index="2" role="listitem" aria-label="Evento 3 de 3: Halloween OffCampus"
-            aria-hidden="true" tabindex="-1">
-            <div class="banner-media">
-              <div class="banner-image">
-                <img src="imagens/halloween.png"
-                  alt="Banner do evento Halloween OffCampus — experiência completa com open food e música VIP"
-                  loading="lazy">
-                <div class="banner-visual-overlay" aria-hidden="true"></div>
-              </div>
-              <div class="banner-ribbon" aria-label="Status: Destaque">Destaque</div>
+      <div class="events-grid" role="list" aria-label="Lista de eventos">
+
+        <!-- Card 1 -->
+        <article class="event-card" role="listitem">
+          <div class="event-card-media">
+            <img src="imagens/offcampushexa.png" alt="Banner do evento OFFCampus na Copa" loading="lazy">
+            <span class="event-badge pulse">Próximo</span>
+          </div>
+          <div class="event-card-content">
+            <div class="event-tags">
+              <span class="tag">Premium</span>
+              <span class="tag">Em breve</span>
             </div>
-            <div class="banner-copy">
-              <div>
-                <div class="banner-type">Experience completa</div>
-                <h3>Halloween OffCampus</h3>
-                <p>Experience completa para estudantes com open food, música e ambiente vip.</p>
-              </div>
-              <div class="banner-meta" aria-label="Informações do evento">
-                <span>EM BREVE</span>
-                <span>AMBIENTE VIP</span>
-              </div>
-              <div class="banner-action-group">
-                <a href="#" class="btn-primary banner-buy" data-evento="Halloween OffCampus"
-                  aria-label="Comprar ingresso para Halloween OffCampus">Comprar ingresso</a>
-                <a href="#" class="btn-secondary banner-info" data-evento="2"
-                  aria-label="Saiba mais sobre Halloween OffCampus">Saiba Mais</a>
-              </div>
+            <h3 class="event-title">OFFCampus na copa?</h3>
+            <p class="event-desc">Música ao vivo, áreas VIP e networking exclusivo. Vamos em busca do hexa com estilo!</p>
+            <div class="event-actions">
+              <button class="btn-primary banner-buy" data-evento="OFFCampus na Copa">
+                🎟 Comprar Ingresso
+              </button>
+              <button class="btn-secondary banner-info" data-evento="0">
+                Saiba Mais
+              </button>
             </div>
-          </article>
+          </div>
+        </article>
+
+        <!-- Card 2 -->
+        <article class="event-card" role="listitem">
+          <div class="event-card-media">
+            <img src="imagens/resenhadoportes.png" alt="Banner do evento Resenha do Portes" loading="lazy">
+            <span class="event-badge">Eletrônico</span>
+          </div>
+          <div class="event-card-content">
+            <div class="event-tags">
+              <span class="tag">Exclusivo</span>
+              <span class="tag">Em breve</span>
+            </div>
+            <h3 class="event-title">Resenha do Portes</h3>
+            <p class="event-desc">Festival com line-up exclusivo, produção premium e acesso controlado.</p>
+            <div class="event-actions">
+              <button class="btn-primary banner-buy" data-evento="Resenha do Portes">
+                🎟 Comprar Ingresso
+              </button>
+              <button class="btn-secondary banner-info" data-evento="1">
+                Saiba Mais
+              </button>
+            </div>
+          </div>
+        </article>
+
+        <!-- Card 3 -->
+        <article class="event-card" role="listitem">
+          <div class="event-card-media">
+            <img src="imagens/halloween.png" alt="Banner do evento Halloween OffCampus" loading="lazy">
+            <span class="event-badge highlight">Destaque</span>
+          </div>
+          <div class="event-card-content">
+            <div class="event-tags">
+              <span class="tag">Open Food</span>
+              <span class="tag">VIP</span>
+            </div>
+            <h3 class="event-title">Halloween OffCampus</h3>
+            <p class="event-desc">Experience completa para estudantes com open food, música e ambiente vip.</p>
+            <div class="event-actions">
+              <button class="btn-primary banner-buy" data-evento="Halloween OffCampus">
+                🎟 Comprar Ingresso
+              </button>
+              <button class="btn-secondary banner-info" data-evento="2">
+                Saiba Mais
+              </button>
+            </div>
+          </div>
+        </article>
+
+      </div>
+      
+      <div class="events-view-all">
+        <a href="#todos-eventos" class="btn-view-all">Ver Todos os Eventos &rarr;</a>
+      </div>
+    </div><!-- /.premium-events-inner -->
+  </section>
+
+  <!-- ===================== TODOS OS EVENTOS ===================== -->
+  <section class="all-events-section" id="todos-eventos" aria-label="Todos os eventos">
+    <div class="all-events-inner">
+      <div class="section-label" aria-hidden="true">Catálogo Completo</div>
+      <h2 class="section-heading">Explore Nossos Eventos</h2>
+      <p class="section-sub">
+        Confira a lista completa de eventos que preparamos para você.
+      </p>
+
+      <div class="events-grid all-events-grid" role="list">
+        
+        <!-- Placeholder Card 1 -->
+        <article class="event-card placeholder-card" role="listitem">
+          <div class="event-card-media">
+            <div class="placeholder-img"></div>
+            <span class="event-badge">Breve</span>
+          </div>
+          <div class="event-card-content">
+            <h3 class="event-title">Evento Futuro 1</h3>
+            <p class="event-desc">Fique ligado! Mais informações sobre este evento serão divulgadas em breve.</p>
+            <div class="event-actions">
+              <button class="btn-secondary banner-info" disabled style="opacity:0.5;cursor:not-allowed;">Em breve</button>
+            </div>
+          </div>
+        </article>
+
+        <!-- Placeholder Card 2 -->
+        <article class="event-card placeholder-card" role="listitem">
+          <div class="event-card-media">
+            <div class="placeholder-img"></div>
+            <span class="event-badge">Breve</span>
+          </div>
+          <div class="event-card-content">
+            <h3 class="event-title">Evento Futuro 2</h3>
+            <p class="event-desc">Fique ligado! Mais informações sobre este evento serão divulgadas em breve.</p>
+            <div class="event-actions">
+              <button class="btn-secondary banner-info" disabled style="opacity:0.5;cursor:not-allowed;">Em breve</button>
+            </div>
+          </div>
+        </article>
+
+        <!-- Placeholder Card 3 -->
+        <article class="event-card placeholder-card" role="listitem">
+          <div class="event-card-media">
+            <div class="placeholder-img"></div>
+            <span class="event-badge">Breve</span>
+          </div>
+          <div class="event-card-content">
+            <h3 class="event-title">Evento Futuro 3</h3>
+            <p class="event-desc">Fique ligado! Mais informações sobre este evento serão divulgadas em breve.</p>
+            <div class="event-actions">
+              <button class="btn-secondary banner-info" disabled style="opacity:0.5;cursor:not-allowed;">Em breve</button>
+            </div>
+          </div>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== COMO FUNCIONA ===================== -->
+  <section class="how-it-works" id="como-funciona" aria-label="Como a EvoTech funciona">
+    <div class="hiw-inner">
+      <div class="section-label reveal">Como funciona</div>
+      <h2 class="section-heading reveal">A camada inteligente que conecta cada etapa do evento.</h2>
+      <p class="section-sub reveal">
+        A EvoTech não é apenas ticketing. É a infraestrutura que transforma cada evento em dados, e cada dado em uma
+        decisão melhor para o próximo.
+      </p>
+
+      <div class="hiw-flow" role="list" aria-label="Fluxo da plataforma" data-reveal-group>
+        <div class="hiw-step" role="listitem" data-reveal>
+          <span class="hiw-step-num" aria-hidden="true">01</span>
+          <span class="hiw-step-label">Evento</span>
+        </div>
+        <div class="hiw-arrow" aria-hidden="true"></div>
+        <div class="hiw-step" role="listitem" data-reveal>
+          <span class="hiw-step-num" aria-hidden="true">02</span>
+          <span class="hiw-step-label">Ingressos</span>
+        </div>
+        <div class="hiw-arrow" aria-hidden="true"></div>
+        <div class="hiw-step" role="listitem" data-reveal>
+          <span class="hiw-step-num" aria-hidden="true">03</span>
+          <span class="hiw-step-label">Check-in</span>
+        </div>
+        <div class="hiw-arrow" aria-hidden="true"></div>
+        <div class="hiw-step" role="listitem" data-reveal>
+          <span class="hiw-step-num" aria-hidden="true">04</span>
+          <span class="hiw-step-label">PDV</span>
+        </div>
+        <div class="hiw-arrow" aria-hidden="true"></div>
+        <div class="hiw-step" role="listitem" data-reveal>
+          <span class="hiw-step-num" aria-hidden="true">05</span>
+          <span class="hiw-step-label">Estoque</span>
+        </div>
+        <div class="hiw-arrow" aria-hidden="true"></div>
+        <div class="hiw-step" role="listitem" data-reveal>
+          <span class="hiw-step-num" aria-hidden="true">06</span>
+          <span class="hiw-step-label">Financeiro</span>
+        </div>
+        <div class="hiw-arrow" aria-hidden="true"></div>
+        <div class="hiw-step" role="listitem" data-reveal>
+          <span class="hiw-step-num" aria-hidden="true">07</span>
+          <span class="hiw-step-label">Marketing</span>
+        </div>
+        <div class="hiw-arrow" aria-hidden="true"></div>
+        <div class="hiw-step" role="listitem" data-reveal>
+          <span class="hiw-step-num" aria-hidden="true">08</span>
+          <span class="hiw-step-label">Dados</span>
+        </div>
+        <div class="hiw-arrow" aria-hidden="true"></div>
+        <div class="hiw-step" role="listitem" data-reveal>
+          <span class="hiw-step-num" aria-hidden="true">09</span>
+          <span class="hiw-step-label">Inteligência artificial</span>
+        </div>
+        <div class="hiw-arrow" aria-hidden="true"></div>
+        <div class="hiw-step is-final" role="listitem" data-reveal>
+          <span class="hiw-step-num" aria-hidden="true">10</span>
+          <span class="hiw-step-label">Decisões melhores</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== ANTES vs DEPOIS ===================== -->
+  <section class="before-after" aria-label="Antes e depois da EvoTech">
+    <div class="ba-inner">
+      <div class="section-label reveal">A transformação</div>
+      <h2 class="section-heading reveal">De planilhas soltas a inteligência conectada.</h2>
+
+      <div class="ba-grid">
+        <div class="ba-col is-antes reveal">
+          <div class="ba-col-title">Antes</div>
+          <ul class="ba-list">
+            <li><span class="ba-mark" aria-hidden="true">✕</span> Sistemas separados para cada etapa do evento</li>
+            <li><span class="ba-mark" aria-hidden="true">✕</span> Planilhas manuais e informação espalhada</li>
+            <li><span class="ba-mark" aria-hidden="true">✕</span> Dados que chegam atrasados, quando já não ajudam</li>
+            <li><span class="ba-mark" aria-hidden="true">✕</span> Decisões baseadas em experiência e intuição</li>
+            <li><span class="ba-mark" aria-hidden="true">✕</span> Nenhuma visão completa da operação</li>
+          </ul>
         </div>
 
-        <div class="banner-controls" aria-hidden="true">
-          <button class="banner-arrow prev" aria-label="Evento anterior" tabindex="0">‹</button>
-          <button class="banner-arrow next" aria-label="Próximo evento" tabindex="0">›</button>
+        <div class="ba-divider" aria-hidden="true">
+          <span class="ba-divider-arrow">→</span>
         </div>
 
-        <div class="banner-dots" role="tablist" aria-label="Selecionar evento">
-          <button class="banner-dot active" role="tab" aria-label="Evento 1" aria-selected="true" tabindex="0"></button>
-          <button class="banner-dot" role="tab" aria-label="Evento 2" aria-selected="false" tabindex="-1"></button>
-          <button class="banner-dot" role="tab" aria-label="Evento 3" aria-selected="false" tabindex="-1"></button>
+        <div class="ba-col is-depois reveal">
+          <div class="ba-col-title">Com a EvoTech</div>
+          <ul class="ba-list">
+            <li><span class="ba-mark" aria-hidden="true">✓</span> Dados conectados em uma única plataforma</li>
+            <li><span class="ba-mark" aria-hidden="true">✓</span> Operação acompanhada em tempo real</li>
+            <li><span class="ba-mark" aria-hidden="true">✓</span> Inteligência artificial lendo cada evento</li>
+            <li><span class="ba-mark" aria-hidden="true">✓</span> Histórico completo de todos os eventos</li>
+            <li><span class="ba-mark" aria-hidden="true">✓</span> Decisões baseadas em dados, não em achismo</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== DASHBOARD AO VIVO ===================== -->
+  <section class="live-dash" aria-label="Dashboard ao vivo da plataforma">
+    <div class="live-dash-inner">
+      <div class="live-dash-text">
+        <div class="section-label reveal">O produto em ação</div>
+        <h2 class="section-heading reveal">Cada evento, acompanhado em tempo real.</h2>
+        <p class="section-sub reveal">
+          Público, vendas, receita e margem — atualizados ao vivo. A EvoTech avisa antes de você precisar perguntar,
+          com alertas inteligentes sobre o ritmo do seu evento.
+        </p>
+      </div>
+
+      <div class="dash-panel reveal" role="group" aria-label="Painel do evento ao vivo">
+        <div class="dash-panel-head">
+          <span class="dash-live-badge"><span class="dash-live-dot" aria-hidden="true"></span> Evento ao vivo</span>
+          <span class="dash-event-name">OFFCampus na Copa</span>
+        </div>
+
+        <div class="dash-stats">
+          <div class="dash-stat">
+            <div class="dash-stat-label">Público</div>
+            <div class="dash-stat-value" data-count-to="2184">0</div>
+          </div>
+          <div class="dash-stat">
+            <div class="dash-stat-label">Ingressos vendidos</div>
+            <div class="dash-stat-value" data-count-to="2431">0</div>
+          </div>
+          <div class="dash-stat">
+            <div class="dash-stat-label">Receita</div>
+            <div class="dash-stat-value is-accent" data-count-to="187420" data-count-prefix="R$ ">R$ 0</div>
+          </div>
+          <div class="dash-stat">
+            <div class="dash-stat-label">Margem</div>
+            <div class="dash-stat-value is-accent" data-count-to="58" data-count-suffix="%">0%</div>
+          </div>
+        </div>
+
+        <div class="dash-alerts">
+          <div class="dash-alert"><span class="dash-alert-icon" aria-hidden="true"></span> Consumo de energético está 27% acima da média.</div>
+          <div class="dash-alert"><span class="dash-alert-icon" aria-hidden="true"></span> O ritmo de vendas está abaixo do esperado.</div>
+          <div class="dash-alert"><span class="dash-alert-icon" aria-hidden="true"></span> O evento deve atingir 92% da capacidade.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== EVO INTELLIGENCE ===================== -->
+  <section class="evo-intel" id="evo-intelligence" aria-label="Evo Intelligence — assistente operacional">
+    <div class="evo-intel-inner">
+      <div class="evo-intel-text">
+        <span class="evo-chip reveal">✦ Evo Intelligence</span>
+        <h2 class="section-heading reveal">Um assistente que entende o seu evento.</h2>
+        <p class="section-sub reveal">
+          A Evo Intelligence lê o histórico de cada evento, cruza dados de público, vendas e consumo, e responde como
+          um assistente operacional real — não como um relatório genérico.
+        </p>
+      </div>
+
+      <div class="evo-panel reveal" role="group" aria-label="Exemplo de conversa com a Evo Intelligence">
+        <div class="evo-panel-head">
+          <span class="evo-panel-orb" aria-hidden="true"></span>
+          <div>
+            <div class="evo-panel-title">Evo Intelligence</div>
+            <div class="evo-panel-sub">Assistente operacional</div>
+          </div>
+        </div>
+        <div class="evo-msgs">
+          <div class="evo-msg is-user">
+            <span class="evo-msg-label">Produtor</span>
+            Como está meu evento?
+          </div>
+          <div class="evo-msg is-ai">
+            <span class="evo-msg-label">Evo Intelligence</span>
+            Seu evento está performando 14% acima da média dos últimos cinco eventos. O maior crescimento veio do
+            público VIP.
+          </div>
+          <div class="evo-msg is-user">
+            <span class="evo-msg-label">Produtor</span>
+            Quanto devo investir no próximo evento?
+          </div>
+          <div class="evo-msg is-ai">
+            <span class="evo-msg-label">Evo Intelligence</span>
+            Baseado no histórico, recomendamos aumentar o investimento em marketing em 18%.
+          </div>
         </div>
       </div>
     </div>
@@ -1191,7 +1452,11 @@
   </div>
   <!-- ===================== FIM MODAIS ===================== -->
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://unpkg.com/topojson-client@3/dist/topojson-client.min.js"></script>
+  <script src="js/globe_v2.js"></script>
   <script src="js/main.js"></script>
+  <script src="js/brand-story.js"></script>
 </body>
 
 </html>
