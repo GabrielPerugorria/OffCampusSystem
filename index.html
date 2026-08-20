@@ -10,6 +10,8 @@
 
   <link rel="stylesheet" href="css/main.css">
   <link rel="stylesheet" href="css/brand-story.css">
+  <link rel="stylesheet" href="css/intro-splash.css">
+  <link rel="preload" href="imagens/favicon.png" as="image">
   <link rel="preload" href="imagens/offcampushexa.png" as="image">
   <link rel="preload" href="imagens/resenhadoportes.png" as="image">
   <link rel="preload" href="imagens/halloween.png" as="image">
@@ -22,6 +24,36 @@
 </head>
 
 <body>
+
+  <!-- ===================== INTRO SPLASH — EvoTech Digital Activation ===================== -->
+  <div id="introSplash" role="presentation" aria-hidden="true" data-scene="discovery">
+    <canvas id="introCanvas"></canvas>
+    <div class="intro-vignette"></div>
+    <div class="intro-flash"></div>
+
+    <div class="intro-mark">
+      <div class="intro-wordmark" aria-label="EvoTech Events">
+        <span class="wm-word wm-primary" data-text="EvoTech">
+          <span class="wm-letter">E</span><span class="wm-letter">v</span><span class="wm-letter">o</span><span class="wm-letter">T</span><span class="wm-letter">e</span><span class="wm-letter">c</span><span class="wm-letter">h</span>
+        </span>
+        <span class="wm-word wm-secondary" data-text="Events">
+          <span class="wm-letter">E</span><span class="wm-letter">v</span><span class="wm-letter">e</span><span class="wm-letter">n</span><span class="wm-letter">t</span><span class="wm-letter">s</span>
+        </span>
+      </div>
+      <div class="intro-tagline">
+        <span>Inteligência</span><span>operacional</span><span>de</span><span>eventos</span>
+      </div>
+    </div>
+
+    <div class="intro-progress">
+      <div class="intro-progress-track">
+        <div class="intro-progress-fill"></div>
+      </div>
+      <div class="intro-progress-label" data-label="conectando">Conectando</div>
+    </div>
+
+    <button type="button" class="intro-skip">Pular</button>
+  </div>
 
   <!-- ===================== HEADER ===================== -->
   <header id="mainHeader">
@@ -1453,6 +1485,7 @@
   <!-- ===================== FIM MODAIS ===================== -->
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="js/intro-splash.js"></script>
   <script src="https://unpkg.com/topojson-client@3/dist/topojson-client.min.js"></script>
   <script src="js/globe_v2.js"></script>
   <script src="js/main.js"></script>
