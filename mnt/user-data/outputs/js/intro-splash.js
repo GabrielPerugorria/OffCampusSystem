@@ -19,6 +19,28 @@
        removidos em teardown() — nunca ficam acumulando;
      - nenhum estado é lido de sessionStorage/localStorage — cada
        carregamento de página começa do zero, de forma determinística.
+
+   REVISÃO — esfera "constelação" (não mais wireframe sólido):
+     - a rede de nós deixou de vir de uma IcosahedronGeometry (que
+       gerava dezenas de arestas por vértice e "enchia" a esfera).
+       Agora são ~50–80 nós amostrados por espiral de Fibonacci na
+       casca da esfera, ligados só aos vizinhos mais próximos, com
+       um orçamento total de arestas e grau máximo por nó — sobra
+       bastante superfície sem nenhuma conexão, de propósito;
+     - profundidade real: os nós usam um ShaderMaterial com tamanho
+       e opacidade por vértice (não um PointsMaterial uniforme), então
+       o que está longe da câmera fica visivelmente menor, mais
+       transparente e menos brilhante do que o que está perto;
+     - a "poeira" inicial nasce em pequenos aglomerados espalhados
+       (não uma nuvem única homogênea), com deriva própria — parte
+       sobe, parte desce — antes de migrar para a posição final;
+     - a montagem é de baixo para cima: o atraso de cada nó depende
+       da altura do seu alvo (base primeiro, topo por último);
+     - as arestas só nascem quando os dois nós já chegaram, e mesmo
+       assim crescem de um ponto até o outro (não aparecem prontas),
+       em pequenos grupos escalonados — efeito "constelação";
+     - glow contido: nós luminosos, linhas discretas, fundo escuro;
+       a camada externa de "wireframe duplo" foi removida.
    ============================================================ */
 (function () {
   'use strict';
@@ -81,10 +103,13 @@
   var caps = pickTier();
   var tier = caps.tier;
 
+  /* nodeCount/edgeBudget/maxDegree controlam a REDE (a esfera-constelação);
+     particles/orbitDots controlam a poeira de fundo e os pulsos de energia —
+     ambos foram reduzidos para não competir com a rede nem exagerar o glow. */
   var TIER = {
-    high: { particles: 2600, orbitDots: 220, dotSize: 1.7, bloom: true, targetFps: 55, dpr: 2 },
-    med: { particles: 1300, orbitDots: 120, dotSize: 1.5, bloom: true, targetFps: 45, dpr: 1.5 },
-    low: { particles: 550, orbitDots: 60, dotSize: 1.4, bloom: false, targetFps: 30, dpr: 1.25 }
+    high: { particles: 900, orbitDots: 14, dotSize: 1.7, bloom: true, targetFps: 55, dpr: 2, nodeCount: 80, edgeBudget: 68, maxDegree: 3 },
+    med: { particles: 600, orbitDots: 10, dotSize: 1.5, bloom: true, targetFps: 45, dpr: 1.5, nodeCount: 65, edgeBudget: 54, maxDegree: 3 },
+    low: { particles: 320, orbitDots: 6, dotSize: 1.4, bloom: false, targetFps: 30, dpr: 1.25, nodeCount: 50, edgeBudget: 40, maxDegree: 2 }
   };
 
   function applyTierClass(t) {
@@ -102,9 +127,9 @@
   }
 
   /* ============================================================
-     2) MOTOR 3D — planeta em camadas (núcleo, atmosfera, rede
-        orbital, partículas de profundidade) via Three.js;
-        fallback Canvas2D se WebGL indisponível.
+     2) MOTOR 3D — esfera-constelação (nós esparsos + arestas
+        seletivas) via Three.js; fallback Canvas2D se WebGL
+        indisponível.
      ============================================================ */
   var engine = null;
 
@@ -123,84 +148,109 @@
     scene.add(world);
 
     var radius = 3.3;
+    var cfg = TIER[tier];
 
     /* ============================================================
-       O PLANETA É A LOGO — não um sólido facetado com uma marca
-       colada em cima, e sim uma REDE PURA de nós+arestas (sem
-       nenhuma face preenchida), exatamente como uma esfera
-       geodésica de rede digital: só pontos luminosos e linhas
-       finas. É essa mesma geometria geodésica (nós + arestas) que
-       forma o ícone EvoTech, construída aqui em 3D, em escala
-       planetária. Quando a câmera se aproxima na Cena 3, essa
-       estrutura É o ícone da marca — a logo não aparece: ela é
-       revelada.
+       REDE DE CONSTELAÇÃO — poucos nós, poucas conexões, muito
+       espaço vazio. Os nós ficam numa casca esférica (amostragem em
+       espiral de Fibonacci, com uma leve desordem para não parecer
+       uma malha geodésica perfeita) e as arestas ligam só os
+       vizinhos mais próximos, dentro de um orçamento pequeno —
+       exatamente como uma constelação, e não uma bola de wireframe.
        ============================================================ */
-    var detail = tier === 'high' ? 3 : tier === 'med' ? 2 : 1;
-    var geoGeometry = new THREE.IcosahedronGeometry(radius, detail);
-
-    /* ============================================================
-       MONTAGEM — os nós nascem embaralhados (nuvem caótica) e se
-       deslocam até o vértice geodésico que lhes cabe; as arestas só
-       existem entre dois nós já "vivos" e seguem suas posições em
-       tempo real, então a rede parece se costurar sozinha enquanto
-       os pontos se encontram. Cada nó tem um atraso próprio (stagger)
-       para que a montagem pareça orgânica, não um bloco só.
-       ============================================================ */
-    var rawPos = geoGeometry.attributes.position.array;
-    var vKey = function (x, y, z) { return Math.round(x * 400) + '_' + Math.round(y * 400) + '_' + Math.round(z * 400); };
-
-    // deduplica vértices (a geometria facetada repete posições por face)
-    var uniqueMap = {};
-    var vTarget = []; // Vector3 alvo (posição final geodésica)
-    var rawToUnique = new Int32Array(rawPos.length / 3);
-    for (var rv = 0; rv < rawPos.length / 3; rv++) {
-      var kx = rawPos[rv * 3], ky = rawPos[rv * 3 + 1], kz = rawPos[rv * 3 + 2];
-      var key = vKey(kx, ky, kz);
-      if (uniqueMap[key] === undefined) {
-        uniqueMap[key] = vTarget.length;
-        vTarget.push(new THREE.Vector3(kx, ky, kz));
-      }
-      rawToUnique[rv] = uniqueMap[key];
+    var nodeCount = cfg.nodeCount;
+    var GOLDEN = Math.PI * (3 - Math.sqrt(5));
+    var vTarget = []; // posição final de cada nó (Vector3), na casca da esfera
+    for (var ni = 0; ni < nodeCount; ni++) {
+      var yN = 1 - (ni / (nodeCount - 1)) * 2; // 1 (topo) → -1 (base)
+      var rN = Math.sqrt(Math.max(0, 1 - yN * yN));
+      var thN = GOLDEN * ni;
+      var jitter = 0.05; // leve desordem — não é uma malha perfeita
+      var vx = (Math.cos(thN) * rN) + (Math.random() - 0.5) * jitter;
+      var vy = yN + (Math.random() - 0.5) * jitter;
+      var vz = (Math.sin(thN) * rN) + (Math.random() - 0.5) * jitter;
+      var vlen = Math.sqrt(vx * vx + vy * vy + vz * vz) || 1;
+      vTarget.push(new THREE.Vector3((vx / vlen) * radius, (vy / vlen) * radius, (vz / vlen) * radius));
     }
-    var nodeCount = vTarget.length;
 
-    // topologia das arestas (pares de índices únicos), derivada da EdgesGeometry oficial
-    var edgeTopoSrc = new THREE.EdgesGeometry(geoGeometry);
-    var edgeTopoPos = edgeTopoSrc.attributes.position.array;
+    // topologia esparsa: cada nó liga só aos ~2 vizinhos mais próximos, com um
+    // orçamento total de arestas e um grau máximo por nó — sobra bastante
+    // superfície sem nenhuma conexão, de propósito (menos é mais).
     var edgeIndexPairs = [];
-    var seenEdge = {};
-    for (var ee = 0; ee < edgeTopoPos.length / 6; ee++) {
-      var ax = edgeTopoPos[ee * 6], ay = edgeTopoPos[ee * 6 + 1], az = edgeTopoPos[ee * 6 + 2];
-      var bx = edgeTopoPos[ee * 6 + 3], by = edgeTopoPos[ee * 6 + 4], bz = edgeTopoPos[ee * 6 + 5];
-      var ia = uniqueMap[vKey(ax, ay, az)], ib = uniqueMap[vKey(bx, by, bz)];
-      if (ia === undefined || ib === undefined || ia === ib) continue;
-      var ek = ia < ib ? ia + '-' + ib : ib + '-' + ia;
-      if (seenEdge[ek]) continue;
-      seenEdge[ek] = true;
-      edgeIndexPairs.push(ia, ib);
-    }
-    edgeTopoSrc.dispose();
+    (function buildSparseEdges() {
+      var maxDegree = cfg.maxDegree;
+      var degree = new Int32Array(nodeCount);
+      var candidates = [];
+      for (var a = 0; a < nodeCount; a++) {
+        var dists = [];
+        for (var b = 0; b < nodeCount; b++) {
+          if (a === b) continue;
+          dists.push({ b: b, d: vTarget[a].distanceToSquared(vTarget[b]) });
+        }
+        dists.sort(function (p, q) { return p.d - q.d; });
+        var take = 2 + (Math.random() < 0.3 ? 1 : 0); // maioria com 2 vizinhos, alguns com 3
+        for (var k = 0; k < take && k < dists.length; k++) {
+          var bb = dists[k].b;
+          var ek = a < bb ? a + '-' + bb : bb + '-' + a;
+          candidates.push({ key: ek, ia: Math.min(a, bb), ib: Math.max(a, bb), d: dists[k].d });
+        }
+      }
+      candidates.sort(function (p, q) { return p.d - q.d; });
+      var seen = {};
+      for (var c = 0; c < candidates.length && edgeIndexPairs.length / 2 < cfg.edgeBudget; c++) {
+        var cd = candidates[c];
+        if (seen[cd.key]) continue;
+        if (degree[cd.ia] >= maxDegree || degree[cd.ib] >= maxDegree) continue;
+        // descarta uma fração das candidatas mesmo quando cabem — deixa regiões
+        // inteiras sem nenhuma linha, de propósito (itens 1 e 8 do briefing)
+        if (Math.random() < 0.18) continue;
+        seen[cd.key] = true;
+        degree[cd.ia]++; degree[cd.ib]++;
+        edgeIndexPairs.push(cd.ia, cd.ib);
+      }
+    })();
+    var edgeCount = edgeIndexPairs.length / 2;
 
-    // posição de partida: nuvem verdadeiramente embaralhada no espaço 3D — sem
-    // nenhum padrão esférico (evita que o caos inicial já "pareça" uma esfera
-    // difusa). Distribuição em caixa, com profundidade ampla e assimétrica.
+    // posição inicial ("poeira estelar"): pequenos aglomerados espalhados no
+    // espaço, não uma nuvem única e homogênea — alguns grupos ficam acima,
+    // outros abaixo, alguns de lado, cada um com sua própria deriva.
+    var clusterN = 7;
+    var clusters = [];
+    for (var cl = 0; cl < clusterN; cl++) {
+      clusters.push({
+        x: (Math.random() - 0.5) * radius * 10,
+        y: (Math.random() - 0.5) * radius * 8.5,
+        z: (Math.random() - 0.5) * radius * 10 - radius * 1.2
+      });
+    }
+
     var nodeStart = new Float32Array(nodeCount * 3);
-    var nodeDelay = new Float32Array(nodeCount); // atraso individual — montagem escalonada, orgânica
-    var nodeSpin = new Float32Array(nodeCount * 3); // eixo/velocidade de "deriva" própria antes de encaixar
+    var nodeDelay = new Float32Array(nodeCount);
+    var nodeSpin = new Float32Array(nodeCount * 3);
+    var nodeDriftSign = new Float32Array(nodeCount);
     for (var nv = 0; nv < nodeCount; nv++) {
-      nodeStart[nv * 3] = (Math.random() - 0.5) * radius * 9.5;
-      nodeStart[nv * 3 + 1] = (Math.random() - 0.5) * radius * 7.5;
-      nodeStart[nv * 3 + 2] = (Math.random() - 0.5) * radius * 11 - radius * 1.4;
-      // piso de atraso (>0) garante uma janela inicial em que nada converge ainda —
-      // puro caos — antes de os primeiros nós começarem a viajar para seus lugares
-      nodeDelay[nv] = 0.1 + Math.random() * 0.62;
-      nodeSpin[nv * 3] = (Math.random() - 0.5) * 2.4;
-      nodeSpin[nv * 3 + 1] = (Math.random() - 0.5) * 2.4;
-      nodeSpin[nv * 3 + 2] = (Math.random() - 0.5) * 2.4;
+      var c = clusters[nv % clusterN];
+      nodeStart[nv * 3] = c.x + (Math.random() - 0.5) * radius * 2.6;
+      nodeStart[nv * 3 + 1] = c.y + (Math.random() - 0.5) * radius * 2.6;
+      nodeStart[nv * 3 + 2] = c.z + (Math.random() - 0.5) * radius * 2.6;
+
+      // formação de baixo para cima: nós cujo alvo é mais baixo recebem um
+      // atraso menor (chegam primeiro); cada um ainda tem uma variação própria
+      // para não parecer um bloco sincronizado.
+      var normY = (vTarget[nv].y + radius) / (2 * radius); // 0 = base, 1 = topo
+      var d = 0.14 + normY * 0.56 + (Math.random() - 0.5) * 0.14;
+      nodeDelay[nv] = Math.max(0.05, Math.min(0.86, d));
+
+      nodeSpin[nv * 3] = (Math.random() - 0.5) * 2.2;
+      nodeSpin[nv * 3 + 1] = (Math.random() - 0.5) * 2.2;
+      nodeSpin[nv * 3 + 2] = (Math.random() - 0.5) * 2.2;
+      nodeDriftSign[nv] = Math.random() < 0.5 ? -1 : 1; // algumas partículas sobem, outras descem
     }
     var nodeCurrent = nodeStart.slice();
-    var nodeFacing = new Float32Array(nodeCount); // 0 = de costas (longe da câmera) .. 1 = de frente
-    var assembly = 0; // 0..1 global, avançado no update()
+    var nodeFacing = new Float32Array(nodeCount);
+    var nodeArriveT = new Float32Array(nodeCount); // instante (em globalT) em que o nó "chega"
+    for (var na = 0; na < nodeCount; na++) nodeArriveT[na] = nodeDelay[na] + 0.82 * (1 - nodeDelay[na]);
+
     var _facingV = new THREE.Vector3();
 
     function easeOutBack(t) {
@@ -208,16 +258,37 @@
       return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
     }
 
-    function updateAssembly(globalT) {
+    /* ---- Arestas: nascem como constelação — só depois que os DOIS nós já
+       chegaram, e mesmo assim crescem de um ponto até o outro (não aparecem
+       prontas), com um pequeno atraso extra por aresta. ---- */
+    var edgeReadyT = new Float32Array(edgeCount);
+    var edgeGrowDur = new Float32Array(edgeCount);
+    for (var eg = 0; eg < edgeCount; eg++) {
+      var eia = edgeIndexPairs[eg * 2], eib = edgeIndexPairs[eg * 2 + 1];
+      edgeReadyT[eg] = Math.max(nodeArriveT[eia], nodeArriveT[eib]) + Math.random() * 0.08;
+      edgeGrowDur[eg] = 0.05 + Math.random() * 0.09;
+    }
+
+    var assembly = 0;
+    var clockT = 0; // tempo real acumulado — só para a "respiração" sutil dos nós
+
+    function updateAssembly(globalT, dtClock) {
       assembly = globalT;
+      clockT += dtClock || 0;
       var nColor = nodesGeo.attributes.color.array;
+      var nSize = nodesGeo.attributes.aSize.array;
+      var nAlpha = nodesGeo.attributes.aAlpha.array;
+
       for (var i = 0; i < nodeCount; i++) {
         var local = (globalT - nodeDelay[i]) / (1 - nodeDelay[i]);
-        if (local <= 0) {
-          // ainda "à deriva" — leve flutuação orgânica antes de ser chamado para o encaixe
-          nodeCurrent[i * 3] = nodeStart[i * 3] + Math.sin(globalT * 6 + nodeSpin[i * 3]) * 0.12;
-          nodeCurrent[i * 3 + 1] = nodeStart[i * 3 + 1] + Math.sin(globalT * 6 + nodeSpin[i * 3 + 1]) * 0.12;
-          nodeCurrent[i * 3 + 2] = nodeStart[i * 3 + 2] + Math.sin(globalT * 6 + nodeSpin[i * 3 + 2]) * 0.12;
+        var arrived = local > 0;
+        if (!arrived) {
+          // poeira: ainda solta, com deriva orgânica — algumas partículas sobem,
+          // outras descem, cada uma na sua própria profundidade
+          var drift = Math.min(1, globalT / Math.max(0.02, nodeDelay[i]));
+          nodeCurrent[i * 3] = nodeStart[i * 3] + Math.sin(clockT * 0.9 + nodeSpin[i * 3]) * 0.18;
+          nodeCurrent[i * 3 + 1] = nodeStart[i * 3 + 1] + nodeDriftSign[i] * drift * 0.9 + Math.sin(clockT * 0.7 + nodeSpin[i * 3 + 1]) * 0.16;
+          nodeCurrent[i * 3 + 2] = nodeStart[i * 3 + 2] + Math.sin(clockT * 0.8 + nodeSpin[i * 3 + 2]) * 0.18;
         } else {
           local = Math.min(1, local);
           var e = easeOutBack(local);
@@ -226,50 +297,68 @@
           nodeCurrent[i * 3 + 2] = nodeStart[i * 3 + 2] + (vTarget[i].z - nodeStart[i * 3 + 2]) * e;
         }
 
-        // profundidade 3D real: aplica a rotação atual do mundo à posição do nó e
-        // usa o eixo Z resultante (voltado pra câmera) pra decidir o quão visível
-        // esse nó está — pontos traseiros ficam discretos, frontais bem visíveis
+        // profundidade 3D real: usa a rotação atual do mundo pra saber o quanto
+        // esse nó está de frente pra câmera, e disso deriva tamanho, brilho e
+        // opacidade — é isso que faz a esfera parecer volumétrica mesmo parada.
         _facingV.set(nodeCurrent[i * 3], nodeCurrent[i * 3 + 1], nodeCurrent[i * 3 + 2]).applyQuaternion(world.quaternion);
         var facing = Math.max(0, Math.min(1, (_facingV.z / (radius * 1.15) + 1) * 0.5));
         nodeFacing[i] = facing;
-        var bright = 0.22 + facing * 0.86;
+
+        var bright = 0.28 + facing * 0.82;
         nColor[i * 3] = 0.525 * bright;
         nColor[i * 3 + 1] = 0.937 * bright;
         nColor[i * 3 + 2] = 0.675 * bright;
+
+        var breathe = arrived ? (1 + Math.sin(clockT * 1.6 + nodeSpin[i * 3]) * 0.06) : 1;
+        if (!arrived) {
+          nSize[i] = 0.55 * breathe; // especks de poeira: pequenos e discretos
+          nAlpha[i] = 0.35;
+        } else {
+          nSize[i] = (0.85 + facing * 1.05) * breathe; // perto = maior, longe = menor
+          nAlpha[i] = 0.4 + facing * 0.6; // perto = mais opaco/brilhante, longe = mais transparente
+        }
       }
       nodesGeo.attributes.position.needsUpdate = true;
       nodesGeo.attributes.color.needsUpdate = true;
+      nodesGeo.attributes.aSize.needsUpdate = true;
+      nodesGeo.attributes.aAlpha.needsUpdate = true;
 
       var eArr = edgesGeo.attributes.position.array;
       var eColor = edgesGeo.attributes.color.array;
-      for (var j = 0; j < edgeIndexPairs.length / 2; j++) {
+      for (var j = 0; j < edgeCount; j++) {
         var ia2 = edgeIndexPairs[j * 2], ib2 = edgeIndexPairs[j * 2 + 1];
-        // uma aresta só "existe" (deixa de ficar em 0,0,0) quando os dois nós já chegaram
-        var readyA = (globalT - nodeDelay[ia2]) / (1 - nodeDelay[ia2]) >= 0.8;
-        var readyB = (globalT - nodeDelay[ib2]) / (1 - nodeDelay[ib2]) >= 0.8;
-        if (readyA && readyB) {
-          eArr[j * 6] = nodeCurrent[ia2 * 3]; eArr[j * 6 + 1] = nodeCurrent[ia2 * 3 + 1]; eArr[j * 6 + 2] = nodeCurrent[ia2 * 3 + 2];
-          eArr[j * 6 + 3] = nodeCurrent[ib2 * 3]; eArr[j * 6 + 4] = nodeCurrent[ib2 * 3 + 1]; eArr[j * 6 + 5] = nodeCurrent[ib2 * 3 + 2];
-          var ba = 0.16 + nodeFacing[ia2] * 0.6, bb = 0.16 + nodeFacing[ib2] * 0.6;
-          eColor[j * 6] = 0.133 * ba; eColor[j * 6 + 1] = 0.773 * ba; eColor[j * 6 + 2] = 0.369 * ba;
-          eColor[j * 6 + 3] = 0.133 * bb; eColor[j * 6 + 4] = 0.773 * bb; eColor[j * 6 + 5] = 0.369 * bb;
-        } else {
-          // colapsada num ponto invisível até os dois extremos estarem prontos
-          eArr[j * 6] = eArr[j * 6 + 3] = nodeCurrent[ia2 * 3];
-          eArr[j * 6 + 1] = eArr[j * 6 + 4] = nodeCurrent[ia2 * 3 + 1];
-          eArr[j * 6 + 2] = eArr[j * 6 + 5] = nodeCurrent[ia2 * 3 + 2];
+        var growT = (globalT - edgeReadyT[j]) / edgeGrowDur[j];
+        var ax = nodeCurrent[ia2 * 3], ay = nodeCurrent[ia2 * 3 + 1], az = nodeCurrent[ia2 * 3 + 2];
+        if (growT <= 0) {
+          // ainda não nasceu — colapsada num ponto, invisível
+          eArr[j * 6] = eArr[j * 6 + 3] = ax;
+          eArr[j * 6 + 1] = eArr[j * 6 + 4] = ay;
+          eArr[j * 6 + 2] = eArr[j * 6 + 5] = az;
+          eColor[j * 6] = eColor[j * 6 + 1] = eColor[j * 6 + 2] = 0;
+          eColor[j * 6 + 3] = eColor[j * 6 + 4] = eColor[j * 6 + 5] = 0;
+          continue;
         }
+        growT = Math.min(1, growT);
+        var bx = nodeCurrent[ib2 * 3], by = nodeCurrent[ib2 * 3 + 1], bz = nodeCurrent[ib2 * 3 + 2];
+        // a linha nasce de um ponto e cresce até o outro — não aparece pronta
+        var gx = ax + (bx - ax) * growT, gy = ay + (by - ay) * growT, gz = az + (bz - az) * growT;
+        eArr[j * 6] = ax; eArr[j * 6 + 1] = ay; eArr[j * 6 + 2] = az;
+        eArr[j * 6 + 3] = gx; eArr[j * 6 + 4] = gy; eArr[j * 6 + 5] = gz;
+        var fade = 0.3 + growT * 0.7;
+        var ba = (0.14 + nodeFacing[ia2] * 0.5) * fade, bb = (0.14 + nodeFacing[ib2] * 0.5) * fade;
+        eColor[j * 6] = 0.133 * ba; eColor[j * 6 + 1] = 0.773 * ba; eColor[j * 6 + 2] = 0.369 * ba;
+        eColor[j * 6 + 3] = 0.133 * bb; eColor[j * 6 + 4] = 0.773 * bb; eColor[j * 6 + 5] = 0.369 * bb;
       }
       edgesGeo.attributes.position.needsUpdate = true;
       edgesGeo.attributes.color.needsUpdate = true;
     }
 
-    /* Malha de arestas — a "rede" da marca, idêntica em espírito ao ícone; geometria
-       dinâmica própria, redesenhada a cada quadro a partir da posição atual dos nós.
-       Cor por vértice (não sólida) para carregar a atenuação de profundidade. */
+    /* Malha de arestas — poucas, finas e discretas, redesenhadas a cada quadro
+       a partir da posição/estágio de crescimento atual. Cor por vértice (não
+       sólida) para carregar a atenuação de profundidade e o fade de nascimento. */
     var edgesGeo = new THREE.BufferGeometry();
-    edgesGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(edgeIndexPairs.length * 3), 3));
-    edgesGeo.setAttribute('color', new THREE.BufferAttribute(new Float32Array(edgeIndexPairs.length * 3), 3));
+    edgesGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(Math.max(1, edgeCount) * 6), 3));
+    edgesGeo.setAttribute('color', new THREE.BufferAttribute(new Float32Array(Math.max(1, edgeCount) * 6), 3));
     var edgesMat = new THREE.LineBasicMaterial({
       transparent: true, opacity: 0, vertexColors: true,
       blending: THREE.AdditiveBlending, depthWrite: false
@@ -277,56 +366,83 @@
     var network = new THREE.LineSegments(edgesGeo, edgesMat);
     world.add(network);
 
-    /* Nós — um ponto de energia em cada vértice do poliedro; pequenos, luminosos,
-       com cor por vértice para dar profundidade 3D real (frente vívida, fundo discreto) */
+    /* Nós — pequenos, luminosos, com tamanho e opacidade por vértice via
+       shader próprio: é isso que garante que o que está longe da câmera
+       fique visivelmente menor/mais apagado do que o que está perto. */
     var nodesGeo = new THREE.BufferGeometry();
     nodesGeo.setAttribute('position', new THREE.BufferAttribute(nodeCurrent, 3));
     nodesGeo.setAttribute('color', new THREE.BufferAttribute(new Float32Array(nodeCount * 3), 3));
-    var nodesMat = new THREE.PointsMaterial({
-      size: 0.1, transparent: true, opacity: 0, sizeAttenuation: true,
-      vertexColors: true, blending: THREE.AdditiveBlending, depthWrite: false
+    nodesGeo.setAttribute('aSize', new THREE.BufferAttribute(new Float32Array(nodeCount), 1));
+    nodesGeo.setAttribute('aAlpha', new THREE.BufferAttribute(new Float32Array(nodeCount), 1));
+    var nodesMat = new THREE.ShaderMaterial({
+      transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+      uniforms: {
+        uOpacity: { value: 0 },
+        uPixelRatio: { value: renderer.getPixelRatio() },
+        uBase: { value: cfg.dotSize }
+      },
+      vertexShader: [
+        'attribute float aSize;',
+        'attribute float aAlpha;',
+        'varying vec3 vColor;',
+        'varying float vAlpha;',
+        'uniform float uPixelRatio;',
+        'uniform float uBase;',
+        'void main() {',
+        '  vColor = color;',
+        '  vAlpha = aAlpha;',
+        '  vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);',
+        '  gl_PointSize = clamp(aSize * uBase * uPixelRatio * (5.5 / -mvPosition.z), 1.4, 16.0);',
+        '  gl_Position = projectionMatrix * mvPosition;',
+        '}'
+      ].join('\n'),
+      fragmentShader: [
+        'varying vec3 vColor;',
+        'varying float vAlpha;',
+        'uniform float uOpacity;',
+        'void main() {',
+        '  vec2 uv = gl_PointCoord - vec2(0.5);',
+        '  float d = length(uv);',
+        '  float a = smoothstep(0.5, 0.05, d) * vAlpha * uOpacity;',
+        '  if (a < 0.015) discard;',
+        '  gl_FragColor = vec4(vColor, a);',
+        '}'
+      ].join('\n')
     });
     var nodes = new THREE.Points(nodesGeo, nodesMat);
     world.add(nodes);
-    updateAssembly(0);
+    updateAssembly(0, 0);
 
-    /* Segunda camada, levemente maior e mais lenta — profundidade de campo tecnológica */
-    var outerGeo = new THREE.IcosahedronGeometry(radius * 1.22, Math.max(0, detail - 1));
-    var outerEdges = new THREE.EdgesGeometry(outerGeo);
-    var outerMat = new THREE.LineBasicMaterial({ color: 0x22c55e, transparent: true, opacity: 0 });
-    var outerNetwork = new THREE.LineSegments(outerEdges, outerMat);
-    world.add(outerNetwork);
-
-    /* Halo fino — brilho de contorno, sem parecer atmosfera terrestre */
-    var haloGeo = new THREE.SphereGeometry(radius * 1.04, 24, 24);
+    /* Halo finíssimo — só um leve contorno de luz, não uma "atmosfera" cheia */
+    var haloGeo = new THREE.SphereGeometry(radius * 1.05, 20, 20);
     var haloMat = new THREE.MeshBasicMaterial({ color: 0x4ade80, transparent: true, opacity: 0, side: THREE.BackSide });
     var halo = new THREE.Mesh(haloGeo, haloMat);
     world.add(halo);
 
-    /* ---- Pulsos de energia viajando pelas arestas (dados circulando) ---- */
-    var edgePositions = edgesGeo.attributes.position.array;
-    var edgeCount = edgePositions.length / 6; // cada aresta = 2 pontos * 3 componentes
-    var travelerCount = Math.min(edgeCount, TIER[tier].orbitDots);
+    /* ---- Pulsos de energia viajando pelas arestas — poucos e muito discretos ---- */
+    var travelerCount = Math.max(1, Math.min(edgeCount, cfg.orbitDots));
     var travelerEdge = new Int32Array(travelerCount);
     var travelerPhase = new Float32Array(travelerCount);
     var travelerSpeed = new Float32Array(travelerCount);
     for (var t = 0; t < travelerCount; t++) {
-      travelerEdge[t] = Math.floor(Math.random() * edgeCount);
+      travelerEdge[t] = Math.floor(Math.random() * Math.max(1, edgeCount));
       travelerPhase[t] = Math.random();
-      travelerSpeed[t] = 0.25 + Math.random() * 0.4;
+      travelerSpeed[t] = 0.2 + Math.random() * 0.3;
     }
     var travelerGeo = new THREE.BufferGeometry();
     var travelerPos = new Float32Array(travelerCount * 3);
     travelerGeo.setAttribute('position', new THREE.BufferAttribute(travelerPos, 3));
     var travelerMat = new THREE.PointsMaterial({
-      color: 0xeafff1, size: 0.07, transparent: true, opacity: 0,
+      color: 0xeafff1, size: 0.05, transparent: true, opacity: 0,
       blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: true
     });
     var travelers = new THREE.Points(travelerGeo, travelerMat);
     world.add(travelers);
 
     function updateTravelers(dt) {
+      if (edgeCount === 0) return;
       var arr = travelerGeo.attributes.position.array;
+      var eArr = edgesGeo.attributes.position.array;
       for (var i = 0; i < travelerCount; i++) {
         travelerPhase[i] += dt * travelerSpeed[i];
         if (travelerPhase[i] > 1) {
@@ -335,39 +451,38 @@
         }
         var e = travelerEdge[i] * 6;
         var ph = travelerPhase[i];
-        arr[i * 3] = edgePositions[e] + (edgePositions[e + 3] - edgePositions[e]) * ph;
-        arr[i * 3 + 1] = edgePositions[e + 1] + (edgePositions[e + 4] - edgePositions[e + 1]) * ph;
-        arr[i * 3 + 2] = edgePositions[e + 2] + (edgePositions[e + 5] - edgePositions[e + 2]) * ph;
+        arr[i * 3] = eArr[e] + (eArr[e + 3] - eArr[e]) * ph;
+        arr[i * 3 + 1] = eArr[e + 1] + (eArr[e + 4] - eArr[e + 1]) * ph;
+        arr[i * 3 + 2] = eArr[e + 2] + (eArr[e + 5] - eArr[e + 2]) * ph;
       }
       travelerGeo.attributes.position.needsUpdate = true;
     }
 
-    /* ---- Camada 4: partículas em múltiplas profundidades (campo estelar convergente) ---- */
-    var fieldCount = TIER[tier].particles;
+    /* ---- Poeira de fundo: campo estelar em múltiplas profundidades, convergindo
+       para uma casca ampla ao redor da rede (decorativo, nunca preenche a esfera) ---- */
+    var fieldCount = cfg.particles;
     var fieldGeo = new THREE.BufferGeometry();
     var fieldStart = new Float32Array(fieldCount * 3);
     var fieldTarget = new Float32Array(fieldCount * 3);
     for (var p = 0; p < fieldCount; p++) {
-      // posição final: distribuída em uma casca esférica ao redor do planeta (profundidade variável)
       var yF = 1 - (p / (fieldCount - 1)) * 2;
-      var rF = Math.sqrt(1 - yF * yF);
+      var rF = Math.sqrt(Math.max(0, 1 - yF * yF));
       var thF = Math.PI * (3 - Math.sqrt(5)) * p;
       var shell = radius * (1.15 + Math.random() * 0.9);
       fieldTarget[p * 3] = Math.cos(thF) * rF * shell;
       fieldTarget[p * 3 + 1] = yF * shell;
       fieldTarget[p * 3 + 2] = Math.sin(thF) * rF * shell;
 
-      // posição inicial: disperso, distante (a "descoberta" converge para o planeta)
       fieldStart[p * 3] = (Math.random() - 0.5) * 60;
       fieldStart[p * 3 + 1] = (Math.random() - 0.5) * 60;
       fieldStart[p * 3 + 2] = (Math.random() - 0.5) * 60 - 10;
     }
     fieldGeo.setAttribute('position', new THREE.BufferAttribute(fieldStart.slice(), 3));
-    var fieldMat = new THREE.PointsMaterial({ color: 0x86efac, size: TIER[tier].dotSize / 20, transparent: true, opacity: 0.85, sizeAttenuation: true });
+    var fieldMat = new THREE.PointsMaterial({ color: 0x86efac, size: cfg.dotSize / 20, transparent: true, opacity: 0.5, sizeAttenuation: true });
     var field = new THREE.Points(fieldGeo, fieldMat);
     scene.add(field);
 
-    /* ---- Arraste (mouse/touch) — só ativo depois que o planeta "nasce" ---- */
+    /* ---- Arraste (mouse/touch) — só ativo depois que a rede "nasce" ---- */
     var drag = { active: false, lastX: 0, lastY: 0, velX: 0, velY: 0, enabled: false };
     function down(x, y) { if (drag.enabled) { drag.active = true; drag.lastX = x; drag.lastY = y; } }
     function move(x, y) {
@@ -407,45 +522,43 @@
 
     return {
       resize: resize,
-      setConfig: function (cfg) {
-        fieldMat.size = cfg.dotSize / 20;
+      setConfig: function (newCfg) {
+        if (newCfg && fieldMat) fieldMat.size = newCfg.dotSize / 20;
       },
       setDragEnabled: function (v) { drag.enabled = v; },
       /* progress: 0..1 dentro da cena atual; sceneName define o comportamento */
       update: function (sceneName, progress, dt) {
-        // rotação: viva na descoberta/ativação, quase estática na formação
-        // (a estrutura precisa ficar legível como a logo quando a câmera se aproxima)
+        // rotação: viva na descoberta/ativação, MUITO lenta na formação e no
+        // estado final — a estrutura precisa continuar legível e "viva", nunca
+        // girando rápido.
         var spin = sceneName === 'discovery' ? 0.0009
-          : sceneName === 'activation' ? 0.0026
-          : sceneName === 'formation' ? 0.0003
-          : 0.00015;
+          : sceneName === 'activation' ? 0.0022
+          : sceneName === 'formation' ? 0.00015
+          : 0.00008;
         if (!drag.active) {
           world.rotation.y += spin + drag.velX;
           world.rotation.x += drag.velY;
           drag.velX *= 0.94; drag.velY *= 0.94;
         }
-        outerNetwork.rotation.y -= 0.0011;
-        outerNetwork.rotation.x += 0.0004;
 
         updateTravelers(dt);
 
-        // câmera: aproxima suavemente ao longo de toda a sequência — é essa
-        // aproximação que transforma "o planeta" em "o ícone da marca"
+        // câmera: aproxima suavemente ao longo de toda a sequência
         var camZ = cameraDistanceFor(sceneName);
         camera.position.z += (camZ - camera.position.z) * Math.min(1, dt * 1.6);
         camera.position.y = Math.sin(progress * Math.PI) * (sceneName === 'formation' || sceneName === 'transition' ? 0.08 : 0.35);
         camera.lookAt(0, 0, 0);
 
-        // montagem da esfera: nós embaralhados → posição geodésica. Roda ao longo da
-        // descoberta e termina na primeira metade da ativação, para que a rede já
-        // esteja inteira quando os dados começam a circular pelas arestas.
+        // montagem da esfera: poeira → posição geodésica, de baixo para cima.
+        // Roda ao longo da descoberta e termina na primeira metade da
+        // ativação, para que a rede já esteja pronta quando os dados
+        // começam a circular pelas arestas.
         var assemblyGlobal = sceneName === 'discovery' ? progress * 0.7
           : sceneName === 'activation' ? 0.7 + Math.min(1, progress / 0.45) * 0.3
           : 1;
-        updateAssembly(assemblyGlobal);
+        updateAssembly(assemblyGlobal, dt);
 
         if (sceneName === 'discovery') {
-          // partículas convergindo do caos para a casca do planeta — o núcleo ainda nasce
           var posAttr = fieldGeo.attributes.position;
           var arr = posAttr.array;
           var ease = 1 - Math.pow(1 - progress, 3);
@@ -455,28 +568,25 @@
             arr[i2 * 3 + 2] = fieldStart[i2 * 3 + 2] + (fieldTarget[i2 * 3 + 2] - fieldStart[i2 * 3 + 2]) * ease;
           }
           posAttr.needsUpdate = true;
-          edgesMat.opacity = Math.min(0.5, progress * 1.1);
-          nodesMat.opacity = Math.min(0.7, progress * 1.2);
-          outerMat.opacity = 0;
+          edgesMat.opacity = Math.min(0.45, progress * 1.0);
+          nodesMat.uniforms.uOpacity.value = Math.min(0.9, progress * 1.2);
           haloMat.opacity = 0;
           travelerMat.opacity = 0;
-          fieldMat.opacity = 0.85;
+          fieldMat.opacity = 0.5;
         }
 
         if (sceneName === 'activation') {
-          // a rede acorda: arestas e nós ganham brilho pleno, dados começam a circular
-          edgesMat.opacity = Math.min(0.9, 0.5 + progress * 0.5);
-          nodesMat.opacity = Math.min(1, 0.7 + progress * 0.4);
-          outerMat.opacity = Math.min(0.35, progress * 0.5);
-          haloMat.opacity = Math.min(0.18, progress * 0.25);
-          travelerMat.opacity = Math.min(0.95, progress * 1.3);
-          fieldMat.opacity = Math.max(0.2, 0.85 - progress * 0.5);
+          // a rede acorda: nós e linhas ganham brilho pleno, dados começam a
+          // circular — mas sempre discreto, nunca uma esfera inteira brilhando
+          edgesMat.opacity = Math.min(0.8, 0.45 + progress * 0.35);
+          nodesMat.uniforms.uOpacity.value = 1;
+          haloMat.opacity = Math.min(0.1, progress * 0.14);
+          travelerMat.opacity = Math.min(0.6, progress * 0.8);
+          fieldMat.opacity = Math.max(0.12, 0.5 - progress * 0.3);
           drag.enabled = true;
         }
 
         if (sceneName === 'formation') {
-          // a energia dispersa recolhe para dentro da própria rede — não "sobrepõe"
-          // uma logo: alimenta a estrutura que já é a logo
           var posAttr2 = fieldGeo.attributes.position;
           var arr2 = posAttr2.array;
           var collapse = Math.pow(progress, 1.6);
@@ -486,21 +596,19 @@
             arr2[i3 * 3 + 2] = fieldTarget[i3 * 3 + 2] * (1 - collapse * 0.85);
           }
           posAttr2.needsUpdate = true;
-          fieldMat.opacity = Math.max(0, 0.35 - progress * 0.4);
-          edgesMat.opacity = Math.min(1, 0.9 + progress * 0.1);
-          nodesMat.opacity = 1;
-          travelerMat.opacity = Math.max(0.5, 0.95 - progress * 0.3);
-          outerMat.opacity = Math.max(0, 0.35 - progress * 0.35);
-          haloMat.opacity = Math.min(0.3, 0.18 + progress * 0.2);
+          fieldMat.opacity = Math.max(0, 0.2 - progress * 0.22);
+          edgesMat.opacity = Math.min(0.85, 0.8 + progress * 0.05);
+          nodesMat.uniforms.uOpacity.value = 1;
+          travelerMat.opacity = Math.max(0.3, 0.6 - progress * 0.2);
+          haloMat.opacity = Math.min(0.14, 0.1 + progress * 0.08);
         }
 
         if (sceneName === 'transition') {
           fieldMat.opacity = 0;
-          edgesMat.opacity = Math.max(0, 1 - progress * 1.2);
-          nodesMat.opacity = Math.max(0, 1 - progress);
-          travelerMat.opacity = Math.max(0, 0.5 - progress * 1.2);
-          outerMat.opacity = 0;
-          haloMat.opacity = Math.max(0, 0.3 - progress * 0.5);
+          edgesMat.opacity = Math.max(0, 0.85 - progress * 1.0);
+          nodesMat.uniforms.uOpacity.value = Math.max(0, 1 - progress);
+          travelerMat.opacity = Math.max(0, 0.3 - progress * 0.8);
+          haloMat.opacity = Math.max(0, 0.14 - progress * 0.25);
         }
       },
       render: function () { renderer.render(scene, camera); },
@@ -508,8 +616,8 @@
         canvas.removeEventListener('pointerdown', onDown);
         window.removeEventListener('pointermove', onMove);
         window.removeEventListener('pointerup', up);
-        [geoGeometry, edgesGeo, nodesGeo, outerGeo, outerEdges, haloGeo, travelerGeo, fieldGeo].forEach(function (g) { g.dispose(); });
-        [edgesMat, nodesMat, outerMat, haloMat, travelerMat, fieldMat].forEach(function (m) { m.dispose(); });
+        [edgesGeo, nodesGeo, haloGeo, travelerGeo, fieldGeo].forEach(function (g) { g.dispose(); });
+        [edgesMat, nodesMat, haloMat, travelerMat, fieldMat].forEach(function (m) { m.dispose(); });
         renderer.dispose();
       }
     };
