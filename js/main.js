@@ -678,86 +678,89 @@ if (form) {
    ============================================================ */
 
 /* ---------- DATA ---------- */
-const EVENTOS = [
-    {
-        id: 0,
-        nome: 'OFFCampus na Copa',
-        tipo: 'Experiência Premium',
-        data: 'EM BREVE',
-        local: 'Curitiba, PR',
-        img: 'imagens/offcampushexa.png',
-        desc: 'Música ao vivo, áreas VIP e networking com convidados especiais para quem busca uma experiência premium. Vamos em busca do hexa com estilo e exclusividade! Dress code obrigatório. +18.',
-        regras: 'Documento com foto obrigatório. Proibido menores de 18 anos.',
-        lotes: [
-            { nome: 'Lote Promocional', preco: 49.90, disponivel: 50, total: 100 },
-            { nome: '1º Lote', preco: 79.90, disponivel: 200, total: 300 },
-            { nome: 'VIP', preco: 149.90, disponivel: 30, total: 50 },
-            { nome: 'Open Bar', preco: 199.90, disponivel: 20, total: 30 },
-        ]
-    },
-    {
-        id: 1,
-        nome: 'Resenha do Portes',
-        tipo: 'Festival Eletrônico',
-        data: 'EM BREVE',
-        local: 'Curitiba, PR',
-        img: 'imagens/resenhadoportes.png',
-        desc: 'Line-up exclusivo, produção premium e acesso controlado para uma noite inesquecível. Artistas confirmados de diferentes cidades e sets que vão da meia-noite ao amanhecer.',
-        regras: 'Documento obrigatório. Não é permitida a entrada de bebidas externas.',
-        lotes: [
-            { nome: '1º Lote', preco: 69.90, disponivel: 150, total: 250 },
-            { nome: '2º Lote', preco: 99.90, disponivel: 100, total: 200 },
-            { nome: 'Camarote', preco: 179.90, disponivel: 15, total: 20 },
-        ]
-    },
-    {
-        id: 2,
-        nome: 'Halloween OffCampus',
-        tipo: 'Ambiente VIP',
-        data: 'EM BREVE',
-        local: 'Curitiba, PR',
-        img: 'imagens/halloween.png',
-        desc: 'Experience completa para estudantes com open food, música e ambiente vip. A maior festa de Halloween universitária do sul do Brasil. Fantasia obrigatória para desconto.',
-        regras: 'Estudantes com carteirinha têm 20% de desconto. Fantasia incentivada.',
-        lotes: [
-            { nome: 'Lote Estudante', preco: 39.90, disponivel: 80, total: 150 },
-            { nome: '1º Lote', preco: 59.90, disponivel: 200, total: 400 },
-            { nome: 'VIP + Open Food', preco: 129.90, disponivel: 40, total: 60 },
-        ]
-    }
-];
+// Catálogo de eventos. Antes era um array fixo neste arquivo; agora é
+// preenchido por GET /api/public/events. O FORMATO dos objetos foi mantido
+// para que todas as telas e funções existentes continuem funcionando.
+let EVENTOS = [];
 
-/* ---------- STORAGE UTILS ---------- */
-const LS = {
-    get: (k) => { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } },
-    set: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch { } },
-    remove: (k) => { try { localStorage.removeItem(k); } catch { } },
+// Imagens dos banners ficam no frontend (são assets do repositório).
+// O banner_url do banco tem prioridade quando estiver preenchido.
+const IMAGENS_EVENTO = {
+    'OFFCampus na Copa': 'imagens/offcampushexa.png',
+    'Resenha do Portes': 'imagens/resenhadoportes.png',
+    'Halloween OffCampus': 'imagens/halloween.png',
 };
 
-const getUsers = () => LS.get('evo_users') || [];
-const saveUsers = (u) => LS.set('evo_users', u);
-const getSession = () => LS.get('evo_session');
-const saveSession = (s) => LS.set('evo_session', s);
-const clearSession = () => LS.remove('evo_session');
+function formatarDataEvento(iso) {
+    if (!iso) return 'EM BREVE';
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return 'EM BREVE';
+    return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+}
 
-// Seed demo accounts on first load
-(function seedDemo() {
-    const users = getUsers();
-    if (!users.find(u => u.email === 'admin@evotech.com')) {
-        users.push({ nome: 'Admin EvoTech', email: 'admin@evotech.com', senha: 'admin123', role: 'admin', cpf: '000.000.000-00', tel: '(41) 99999-9999', dt: '1990-01-01', ingressos: [], historico: [] });
+function mapearEvento(ev) {
+    return {
+        id: ev.id,
+        slug: ev.slug,
+        nome: ev.name,
+        tipo: ev.type || 'Evento',
+        data: formatarDataEvento(ev.eventDate),
+        local: ev.venue || '',
+        img: ev.bannerUrl || IMAGENS_EVENTO[ev.name] || 'imagens/offcampushexa.png',
+        desc: ev.description || '',
+        regras: ev.rules || '',
+        lotes: (ev.batches || []).map(b => ({
+            id: b.id,
+            nome: b.name,
+            preco: Number(b.price),
+            disponivel: b.available,
+            total: b.quantityTotal,
+        })),
+    };
+}
+
+async function carregarEventos() {
+    try {
+        const data = await EvoAPI.get('/public/events');
+        EVENTOS = data.map(mapearEvento);
+    } catch (err) {
+        // Sem API no ar, a landing page continua navegável; apenas a compra
+        // fica indisponível — e o usuário é avisado, em vez de ver dados falsos.
+        EVENTOS = [];
+        console.warn('Não foi possível carregar os eventos:', err.message);
     }
-    if (!users.find(u => u.email === 'demo@evotech.com')) {
-        users.push({
-            nome: 'João Cardoso', email: 'demo@evotech.com', senha: 'demo123', role: 'participante', cpf: '111.111.111-11', tel: '(41) 98888-8888', dt: '1998-05-12', ingressos: [
-                { id: 'EVT001', evento: 'Resenha do Portes', tipo: 'VIP', data: 'EM BREVE', code: 'RDP-VIP-7891', compradoEm: '2026-06-10' },
-            ], historico: [
-                { evento: 'OFFCampus Verão', data: '2025-12-15', status: 'Compareceu' },
-                { evento: 'Resenha do Portes', data: '2025-10-20', status: 'Compareceu' },
-            ]
-        });
+    return EVENTOS;
+}
+
+/* ---------- SESSÃO ---------- */
+/* Os dados de negócio saíram do localStorage. O que fica no navegador são
+   apenas os tokens da sessão, gerenciados por js/api.js. */
+const getSession = () => EvoAPI.session();
+const clearSession = () => EvoAPI.store.clearAuth();
+
+// Mostra o erro da API no campo correspondente do formulário.
+function aplicarErro(inputId, mensagem) {
+    const input = document.getElementById(inputId);
+    const alvo = document.getElementById(inputId + '-error');
+    if (mensagem) {
+        input?.classList.add('error');
+        if (alvo) alvo.textContent = mensagem;
+    } else {
+        input?.classList.remove('error');
+        if (alvo) alvo.textContent = '';
     }
-    saveUsers(users);
-})();
+}
+
+function ocupado(botao, ocupadoEstado, textoOriginal) {
+    if (!botao) return;
+    botao.disabled = ocupadoEstado;
+    if (ocupadoEstado) {
+        botao.dataset.textoOriginal = botao.textContent;
+        botao.textContent = 'Aguarde…';
+    } else {
+        botao.textContent = textoOriginal || botao.dataset.textoOriginal || botao.textContent;
+    }
+}
 
 /* ---------- MODAL ENGINE ---------- */
 const overlay = document.getElementById('modalOverlay');
@@ -929,7 +932,7 @@ function updateNavUI() {
       </div>`;
         document.getElementById('navAvatarBtn')?.addEventListener('click', () => {
             if (session.role === 'admin') { window.location.href = 'admin.html'; }
-            else { buildParticipante(session); openModal('participante'); }
+            else { openModal('participante'); buildParticipante(session); }
         });
         document.getElementById('navAvatarBtn')?.addEventListener('keydown', e => {
             if (e.key === 'Enter' || e.key === ' ') e.target.click();
@@ -951,43 +954,56 @@ document.getElementById('linkEsqueci')?.addEventListener('click', e => { e.preve
 document.getElementById('linkVoltarLogin')?.addEventListener('click', e => { e.preventDefault(); openModal('login'); });
 
 // Demo shortcuts
+// Atalhos de demonstração: agora fazem login de verdade contra a API,
+// usando as contas criadas pelo seed do banco.
+async function loginDemo(email, senha, destinoAdmin) {
+    try {
+        const user = await EvoAPI.login(email, senha);
+        if (destinoAdmin && user.role === 'admin') { window.location.href = 'admin.html'; return; }
+        updateNavUI();
+        closeModal();
+    } catch (err) {
+        aplicarErro('loginSenha', err.message);
+    }
+}
 document.getElementById('linkDemoAdmin')?.addEventListener('click', e => {
     e.preventDefault();
-    const u = getUsers().find(x => x.email === 'admin@evotech.com');
-    if (u) { saveSession(u); window.location.href = 'admin.html'; }
+    loginDemo('admin@evotech.com', 'admin123', true);
 });
 document.getElementById('linkDemoParticipante')?.addEventListener('click', e => {
     e.preventDefault();
-    const u = getUsers().find(x => x.email === 'demo@evotech.com');
-    if (u) { saveSession(u); updateNavUI(); closeModal(); }
+    loginDemo('demo@evotech.com', 'demo123', false);
 });
 
 /* ---------- LOGIN ---------- */
-document.getElementById('btnLoginSubmit')?.addEventListener('click', () => {
+document.getElementById('btnLoginSubmit')?.addEventListener('click', async () => {
     const email = document.getElementById('loginEmail').value.trim();
     const senha = document.getElementById('loginSenha').value;
     let ok = true;
+
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        document.getElementById('loginEmail').classList.add('error');
-        document.getElementById('loginEmail-error').textContent = 'E-mail inválido.';
-        ok = false;
-    } else { document.getElementById('loginEmail').classList.remove('error'); document.getElementById('loginEmail-error').textContent = ''; }
+        aplicarErro('loginEmail', 'E-mail inválido.'); ok = false;
+    } else { aplicarErro('loginEmail', null); }
+
     if (!senha || senha.length < 4) {
-        document.getElementById('loginSenha').classList.add('error');
-        document.getElementById('loginSenha-error').textContent = 'Informe sua senha.';
-        ok = false;
-    } else { document.getElementById('loginSenha').classList.remove('error'); document.getElementById('loginSenha-error').textContent = ''; }
+        aplicarErro('loginSenha', 'Informe sua senha.'); ok = false;
+    } else { aplicarErro('loginSenha', null); }
+
     if (!ok) return;
-    const user = getUsers().find(u => u.email === email && u.senha === senha);
-    if (!user) {
-        document.getElementById('loginSenha').classList.add('error');
-        document.getElementById('loginSenha-error').textContent = 'E-mail ou senha incorretos.';
-        return;
+
+    const botao = document.getElementById('btnLoginSubmit');
+    ocupado(botao, true);
+    try {
+        // A verificação de senha acontece no servidor, contra o hash bcrypt.
+        const user = await EvoAPI.login(email, senha);
+        if (user.role === 'admin') { window.location.href = 'admin.html'; return; }
+        updateNavUI();
+        closeModal();
+    } catch (err) {
+        aplicarErro('loginSenha', err.message);
+    } finally {
+        ocupado(botao, false, 'Entrar');
     }
-    saveSession(user);
-    if (user.role === 'admin') { window.location.href = 'admin.html'; return; }
-    updateNavUI();
-    closeModal();
 });
 
 /* ---------- CADASTRO ---------- */
@@ -1010,24 +1026,17 @@ document.getElementById('cadCpf')?.addEventListener('input', e => { e.target.val
 document.getElementById('cadTel')?.addEventListener('input', e => { e.target.value = maskTel2(e.target.value); });
 document.getElementById('compraCpf')?.addEventListener('input', e => { e.target.value = maskCpf(e.target.value); });
 
-function maskCard(v) {
-    return v.replace(/\D/g, '').slice(0, 16).replace(/(\d{4})(?=\d)/g, '$1 ');
-}
-function maskValidade(v) {
-    v = v.replace(/\D/g, '').slice(0, 4);
-    if (v.length > 2) return v.slice(0, 2) + '/' + v.slice(2);
-    return v;
-}
-document.getElementById('compraCard')?.addEventListener('input', e => { e.target.value = maskCard(e.target.value); });
-document.getElementById('compraValidade')?.addEventListener('input', e => { e.target.value = maskValidade(e.target.value); });
+// As máscaras de cartão saíram junto com os campos de cartão do modal.
 
-document.getElementById('btnCadastroSubmit')?.addEventListener('click', () => {
+document.getElementById('btnCadastroSubmit')?.addEventListener('click', async () => {
     const nome = document.getElementById('cadNome').value.trim();
     const email = document.getElementById('cadEmail').value.trim();
     const cpf = document.getElementById('cadCpf').value.trim();
     const tel = document.getElementById('cadTel').value.trim();
     const dt = document.getElementById('cadDt').value;
     const senha = document.getElementById('cadSenha').value;
+
+    // Validação local continua (resposta imediata); o servidor valida de novo.
     const erros = {};
     if (nome.length < 3) erros.cadNome = 'Nome muito curto.';
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) erros.cadEmail = 'E-mail inválido.';
@@ -1035,25 +1044,27 @@ document.getElementById('btnCadastroSubmit')?.addEventListener('click', () => {
     if (tel.replace(/\D/g, '').length < 10) erros.cadTel = 'Telefone inválido.';
     if (!dt) erros.cadDt = 'Data obrigatória.';
     if (senha.length < 6) erros.cadSenha = 'Mínimo 6 caracteres.';
-    ['cadNome', 'cadEmail', 'cadCpf', 'cadTel', 'cadDt', 'cadSenha'].forEach(id => {
-        const el = document.getElementById(id);
-        const er = document.getElementById(id + '-error');
-        if (erros[id]) { el?.classList.add('error'); if (er) er.textContent = erros[id]; }
-        else { el?.classList.remove('error'); if (er) er.textContent = ''; }
-    });
+    ['cadNome', 'cadEmail', 'cadCpf', 'cadTel', 'cadDt', 'cadSenha']
+        .forEach(id => aplicarErro(id, erros[id] || null));
     if (Object.keys(erros).length) return;
-    const users = getUsers();
-    if (users.find(u => u.email === email)) {
-        document.getElementById('cadEmail').classList.add('error');
-        document.getElementById('cadEmail-error').textContent = 'E-mail já cadastrado.';
-        return;
+
+    const botao = document.getElementById('btnCadastroSubmit');
+    ocupado(botao, true);
+    try {
+        await EvoAPI.register({ name: nome, email, password: senha, cpf, phone: tel, birthDate: dt });
+        updateNavUI();
+        closeModal();
+    } catch (err) {
+        // Erros de validação vindos do servidor caem no campo certo.
+        const mapa = { name: 'cadNome', email: 'cadEmail', cpf: 'cadCpf', phone: 'cadTel', birthDate: 'cadDt', password: 'cadSenha' };
+        let exibiu = false;
+        (err.details || []).forEach(d => {
+            if (mapa[d.field]) { aplicarErro(mapa[d.field], d.message); exibiu = true; }
+        });
+        if (!exibiu) aplicarErro('cadEmail', err.message);
+    } finally {
+        ocupado(botao, false, 'Criar conta');
     }
-    const newUser = { nome, email, cpf, tel, dt, senha, role: 'participante', ingressos: [], historico: [] };
-    users.push(newUser);
-    saveUsers(users);
-    saveSession(newUser);
-    updateNavUI();
-    closeModal();
 });
 
 /* ---------- RECUPERAR SENHA ---------- */
@@ -1067,14 +1078,20 @@ document.getElementById('btnRecuperarSubmit')?.addEventListener('click', () => {
     }
     document.getElementById('recEmail').classList.remove('error');
     er.textContent = '';
+    // A API responde a mesma coisa exista ou não o e-mail (não revela cadastros).
+    EvoAPI.post('/auth/forgot-password', { email }).catch(() => { });
     document.getElementById('recSuccess').style.display = 'block';
 });
 
 /* ---------- LOGOUT ---------- */
-document.getElementById('btnLogout')?.addEventListener('click', () => { clearSession(); updateNavUI(); closeModal(); });
+document.getElementById('btnLogout')?.addEventListener('click', async () => {
+    await EvoAPI.logout();     // revoga o refresh token no servidor
+    updateNavUI();
+    closeModal();
+});
 
 /* ---------- ÁREA DO PARTICIPANTE ---------- */
-function buildParticipante(user) {
+async function buildParticipante(user) {
     // Avatar
     const initials = user.nome.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
     const av = document.getElementById('partAvatar');
@@ -1092,12 +1109,39 @@ function buildParticipante(user) {
     const pt = document.getElementById('perfilTel');
     if (pt) pt.value = user.tel || '';
 
-    // Ingressos
     const ingList = document.getElementById('meusIngressos');
+    const histList = document.getElementById('meuHistorico');
+    if (ingList) ingList.innerHTML = '<div class="empty-state"><span>⏳</span>Carregando…</div>';
+    if (histList) histList.innerHTML = '<div class="empty-state"><span>⏳</span>Carregando…</div>';
+
+    let ingressos = [];
+    let historico = [];
+    try {
+        const [tickets, history] = await Promise.all([
+            EvoAPI.get('/me/tickets'),
+            EvoAPI.get('/me/history'),
+        ]);
+        ingressos = tickets.map(t => ({
+            evento: t.event_name,
+            tipo: t.batch_name,
+            data: formatarDataEvento(t.event_date),
+            code: t.code,
+        }));
+        historico = history.map(h => ({
+            evento: h.event_name,
+            data: new Date(h.checked_in_at).toLocaleDateString('pt-BR'),
+            status: 'Compareceu',
+        }));
+    } catch (err) {
+        if (ingList) ingList.innerHTML = `<div class="empty-state"><span>⚠️</span>${err.message}</div>`;
+        if (histList) histList.innerHTML = '';
+        return;
+    }
+
+    // Ingressos
     if (ingList) {
         ingList.innerHTML = '';
-        const ingressos = user.ingressos || [];
-        if (ingressos.length === 0) {
+        if (!ingressos.length) {
             ingList.innerHTML = '<div class="empty-state"><span>🎫</span>Você ainda não comprou ingressos.</div>';
         } else {
             ingressos.forEach(ing => {
@@ -1116,11 +1160,9 @@ function buildParticipante(user) {
     }
 
     // Histórico
-    const histList = document.getElementById('meuHistorico');
     if (histList) {
         histList.innerHTML = '';
-        const historico = user.historico || [];
-        if (historico.length === 0) {
+        if (!historico.length) {
             histList.innerHTML = '<div class="empty-state"><span>📋</span>Nenhum evento no histórico ainda.</div>';
         } else {
             historico.forEach(h => {
@@ -1150,22 +1192,25 @@ document.querySelectorAll('.part-tab').forEach(tab => {
 });
 
 // Salvar perfil
-document.getElementById('btnSalvarPerfil')?.addEventListener('click', () => {
-    const session = getSession();
-    if (!session) return;
+document.getElementById('btnSalvarPerfil')?.addEventListener('click', async () => {
     const nome = document.getElementById('perfilNome').value.trim();
     const tel = document.getElementById('perfilTel').value.trim();
-    const users = getUsers();
-    const idx = users.findIndex(u => u.email === session.email);
-    if (idx >= 0) {
-        users[idx].nome = nome || users[idx].nome;
-        users[idx].tel = tel || users[idx].tel;
-        saveUsers(users);
-        saveSession(users[idx]);
+    const aviso = document.getElementById('perfilSuccess');
+    const botao = document.getElementById('btnSalvarPerfil');
+    ocupado(botao, true);
+    try {
+        const user = await EvoAPI.put('/auth/me', { name: nome || undefined, phone: tel || undefined });
+        EvoAPI.store.setSession(user);
         updateNavUI();
+        if (aviso) {
+            aviso.style.display = 'block';
+            setTimeout(() => { aviso.style.display = 'none'; }, 3000);
+        }
+    } catch (err) {
+        alert(err.message);
+    } finally {
+        ocupado(botao, false, 'Salvar alterações');
     }
-    document.getElementById('perfilSuccess').style.display = 'block';
-    setTimeout(() => { document.getElementById('perfilSuccess').style.display = 'none'; }, 3000);
 });
 
 /* ---------- DASHBOARD ADMIN ---------- */
@@ -1292,65 +1337,76 @@ document.querySelectorAll('.plano-btn[data-plano]').forEach(btn => {
 });
 
 /* ---------- CONFIRMAR COMPRA ---------- */
-document.getElementById('btnConfirmarCompra')?.addEventListener('click', () => {
+document.getElementById('btnConfirmarCompra')?.addEventListener('click', async () => {
     const nome = document.getElementById('compraNome').value.trim();
     const email = document.getElementById('compraEmail').value.trim();
     const cpf = document.getElementById('compraCpf').value.trim();
     let ok = true;
-    if (!nome || nome.length < 3) { document.getElementById('compraNome').classList.add('error'); document.getElementById('compraNome-error').textContent = 'Nome obrigatório.'; ok = false; } else { document.getElementById('compraNome').classList.remove('error'); document.getElementById('compraNome-error').textContent = ''; }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { document.getElementById('compraEmail').classList.add('error'); document.getElementById('compraEmail-error').textContent = 'E-mail inválido.'; ok = false; } else { document.getElementById('compraEmail').classList.remove('error'); document.getElementById('compraEmail-error').textContent = ''; }
-    if (cpf.replace(/\D/g, '').length < 11) { document.getElementById('compraCpf').classList.add('error'); document.getElementById('compraCpf-error').textContent = 'CPF inválido.'; ok = false; } else { document.getElementById('compraCpf').classList.remove('error'); document.getElementById('compraCpf-error').textContent = ''; }
+    if (!nome || nome.length < 3) { aplicarErro('compraNome', 'Nome obrigatório.'); ok = false; } else { aplicarErro('compraNome', null); }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { aplicarErro('compraEmail', 'E-mail inválido.'); ok = false; } else { aplicarErro('compraEmail', null); }
+    if (cpf.replace(/\D/g, '').length < 11) { aplicarErro('compraCpf', 'CPF inválido.'); ok = false; } else { aplicarErro('compraCpf', null); }
     if (!ok) return;
 
     const ev = EVENTOS[compraState.eventoIdx];
     const lote = ev?.lotes[compraState.loteIdx];
     if (!lote) return;
 
-    // Generate ticket
-    const code = ev.nome.slice(0, 3).toUpperCase().replace(/ /g, '') + '-' + lote.nome.slice(0, 3).toUpperCase().replace(/ /g, '') + '-' + Math.floor(1000 + Math.random() * 9000);
-    const ticket = { id: code, evento: ev.nome, tipo: lote.nome, data: ev.data, code, compradoEm: new Date().toLocaleDateString('pt-BR') };
+    const botao = document.getElementById('btnConfirmarCompra');
+    ocupado(botao, true);
 
-    // Save to user
-    const session = getSession();
-    if (session) {
-        const users = getUsers();
-        const idx = users.findIndex(u => u.email === session.email);
-        if (idx >= 0) {
-            users[idx].ingressos = users[idx].ingressos || [];
-            users[idx].ingressos.push(ticket);
-            saveUsers(users);
-            saveSession(users[idx]);
-        }
+    let pedido;
+    try {
+        // O servidor é quem define o preço, reserva a vaga no lote e gera o
+        // código do ingresso. O frontend não decide nada disso.
+        pedido = await EvoAPI.post('/orders', {
+            batchId: lote.id,
+            quantity: 1,
+            buyerName: nome,
+            buyerEmail: email,
+            buyerCpf: cpf,
+        });
+    } catch (err) {
+        aplicarErro('compraCpf', err.message);
+        ocupado(botao, false, 'Confirmar compra');
+        return;
     }
+    ocupado(botao, false, 'Confirmar compra');
 
-    // Show success
+    // Atualiza a disponibilidade exibida com o dado real.
+    await carregarEventos();
+
+    const codigo = pedido.tickets?.[0]?.code || '(aguardando confirmação de pagamento)';
     document.getElementById('compraLotes').style.display = 'none';
     document.getElementById('compraForm').style.display = 'none';
     document.getElementById('compraTitulo').style.display = 'none';
     document.getElementById('compraEvento').style.display = 'none';
     document.getElementById('compraTicket').innerHTML = `
-    <div class="tk-row"><span>Evento:</span><b>${ev.nome}</b></div>
-    <div class="tk-row"><span>Ingresso:</span><b>${lote.nome}</b></div>
+    <div class="tk-row"><span>Evento:</span><b>${pedido.eventName}</b></div>
+    <div class="tk-row"><span>Ingresso:</span><b>${pedido.batchName}</b></div>
     <div class="tk-row"><span>Nome:</span><b>${nome}</b></div>
-    <div class="tk-row"><span>Valor:</span><b>R$ ${lote.preco.toFixed(2).replace('.', ',')}</b></div>
-    <div class="tk-code">#${code}</div>`;
+    <div class="tk-row"><span>Valor:</span><b>R$ ${Number(pedido.total).toFixed(2).replace('.', ',')}</b></div>
+    <div class="tk-code">#${codigo}</div>`;
     document.getElementById('compraSuccess').style.display = 'block';
 });
 
-document.getElementById('btnVerIngresso')?.addEventListener('click', () => {
+document.getElementById('btnVerIngresso')?.addEventListener('click', async () => {
     const session = getSession();
-    if (session) {
-        // Reload session
-        const freshUser = getUsers().find(u => u.email === session.email);
-        if (freshUser) {
-            saveSession(freshUser);
-            buildParticipante(freshUser);
-            openModal('participante');
-        }
-    } else {
-        openModal('login');
-    }
+    if (!session) { openModal('login'); return; }
+    openModal('participante');
+    await buildParticipante(session);
 });
 
 /* ---------- INIT ---------- */
+// A tela monta primeiro e os dados chegam da API em seguida.
 updateNavUI();
+carregarEventos().then(() => {
+    // Se a API não respondeu, avisa em vez de exibir preços desatualizados.
+    if (!EVENTOS.length) {
+        document.querySelectorAll('.banner-buy, .banner-info').forEach(btn => {
+            btn.addEventListener('click', e => {
+                e.preventDefault();
+                alert('Não foi possível carregar os eventos agora. Tente novamente em instantes.');
+            }, { capture: true });
+        });
+    }
+});

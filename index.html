@@ -1456,20 +1456,13 @@
           <input type="text" id="compraCpf" placeholder="000.000.000-00" maxlength="14">
           <span class="mfield-error" id="compraCpf-error"></span>
         </div>
-        <div class="compra-card-row">
-          <div class="mform-group" style="flex:1">
-            <label for="compraCard">Número do cartão</label>
-            <input type="text" id="compraCard" placeholder="0000 0000 0000 0000" maxlength="19">
-          </div>
-          <div class="mform-group" style="width:90px">
-            <label for="compraValidade">Validade</label>
-            <input type="text" id="compraValidade" placeholder="MM/AA" maxlength="5">
-          </div>
-          <div class="mform-group" style="width:70px">
-            <label for="compraCvv">CVV</label>
-            <input type="text" id="compraCvv" placeholder="000" maxlength="3">
-          </div>
-        </div>
+        <!-- Os campos de cartão foram removidos: coletar dados de cartão na
+             própria página cria obrigações de PCI-DSS. O pagamento será feito
+             pelo checkout do gateway (PIX / Mercado Pago) numa próxima fase. -->
+        <p class="compra-pagamento-aviso">
+          O pagamento é processado com segurança pelo provedor de pagamentos.
+          Nenhum dado de cartão é digitado ou armazenado nesta página.
+        </p>
         <button class="btn-primary btn-full modal-submit" id="btnConfirmarCompra">Confirmar compra</button>
       </div>
       <div id="compraSuccess" style="display:none" class="compra-success">
@@ -1488,6 +1481,8 @@
   <script src="js/intro-splash.js"></script>
   <script src="https://unpkg.com/topojson-client@3/dist/topojson-client.min.js"></script>
   <script src="js/globe_v2.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
   <script src="js/main.js"></script>
   <script src="js/brand-story.js"></script>
 </body>

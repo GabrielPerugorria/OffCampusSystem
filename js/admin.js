@@ -1,133 +1,183 @@
 'use strict';
 
-/* ===== STATE (localStorage) ===== */
-const LS = {
-  get: k => { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } },
-  set: (k,v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+/* ============================================================
+   CAMADA DE DADOS
+   Antes: todo o painel vivia em localStorage['evotech_admin'].
+   Agora: os dados vêm da API. O objeto STATE mantém EXATAMENTE o
+   mesmo formato de antes, então as funções de renderização abaixo
+   (renderDashboard, renderEventos, renderBar, ...) não mudaram.
+   ============================================================ */
+
+/* Único uso restante do localStorage: preferências de tela do próprio
+   operador (modo contingência e as premissas de unit economics).
+   Nenhum dado de negócio é guardado no navegador. */
+const UI = {
+  get() {
+    try { return JSON.parse(localStorage.getItem('evotech_ui')) || {}; } catch { return {}; }
+  },
+  set(v) { try { localStorage.setItem('evotech_ui', JSON.stringify(v)); } catch { } },
 };
 
-function loadState() {
-  return LS.get('evotech_admin') || {
-    eventos: [
-      { nome:'OFFCampus na Copa', tipo:'Experiência Premium', data:'2026-12-31', local:'Curitiba, PR', capacidade:380, status:'em_breve',
-        desc:'Música ao vivo, áreas VIP e networking com convidados especiais.', regras:'Documento obrigatório. +18.',
-        metaPublico:340, metaFaturamento:60000,
-        lotes:[
-          {nome:'Lote Promocional', preco:49.90, disponivel:50, total:100},
-          {nome:'1º Lote', preco:79.90, disponivel:200, total:300},
-          {nome:'VIP', preco:149.90, disponivel:30, total:50},
-          {nome:'Open Bar', preco:199.90, disponivel:20, total:30},
-        ]},
-      { nome:'Resenha do Portes', tipo:'Festival Eletrônico', data:'2026-11-15', local:'Curitiba, PR', capacidade:470, status:'ativo',
-        desc:'Line-up exclusivo, produção premium.', regras:'Documento obrigatório.',
-        metaPublico:420, metaFaturamento:45000,
-        lotes:[
-          {nome:'1º Lote', preco:69.90, disponivel:150, total:250},
-          {nome:'2º Lote', preco:99.90, disponivel:100, total:200},
-          {nome:'Camarote', preco:179.90, disponivel:15, total:20},
-        ]},
-      { nome:'Halloween OffCampus', tipo:'Ambiente VIP', data:'2026-10-31', local:'Curitiba, PR', capacidade:610, status:'ativo',
-        desc:'A maior festa de Halloween universitária do sul do Brasil.', regras:'Estudantes com carteirinha têm 20% de desconto.',
-        metaPublico:550, metaFaturamento:52000,
-        lotes:[
-          {nome:'Lote Estudante', preco:39.90, disponivel:80, total:150},
-          {nome:'1º Lote', preco:59.90, disponivel:200, total:400},
-          {nome:'VIP + Open Food', preco:129.90, disponivel:40, total:60},
-        ]},
-    ],
-    bar: [
-      {nome:'Cerveja Long Neck', emoji:'🍺', cat:'Cerveja', custo:4.50, estoque:240, minimo:40},
-      {nome:'Vodka 1L', emoji:'🥃', cat:'Destilado', custo:28.00, estoque:42, minimo:10},
-      {nome:'Gin Tônica Kit', emoji:'🍹', cat:'Destilado', custo:22.00, estoque:55, minimo:10},
-      {nome:'Energético 473ml', emoji:'⚡', cat:'Energético', custo:8.00, estoque:18, minimo:20},
-      {nome:'Refrigerante 2L', emoji:'🥤', cat:'Refrigerante', custo:6.00, estoque:90, minimo:15},
-      {nome:'Água 500ml', emoji:'💧', cat:'Água', custo:1.50, estoque:200, minimo:50},
-    ],
-    despesas: [
-      {cat:'🛡️ Segurança', desc:'Equipe de segurança para 3 eventos', valor:42000},
-      {cat:'📣 Marketing', desc:'Redes sociais + panfletos', valor:28000},
-      {cat:'🍺 Bebidas', desc:'Estoque para Open Bar', valor:38000},
-      {cat:'🏗️ Estrutura', desc:'Palco, som, iluminação', valor:26000},
-      {cat:'🎤 DJs/Atrações', desc:'Line-up confirmado', valor:49000},
-    ],
-    entries: [
-      {nome:'João Cardoso', codigo:'RDP-VIP-7891', evento:'Resenha do Portes', hora: fmt(new Date(Date.now()-3600000*2))},
-      {nome:'Ana Lima', codigo:'OFF-OPB-4521', evento:'OFFCampus na Copa', hora: fmt(new Date(Date.now()-3600000))},
-      {nome:'Pedro Souza', codigo:'HAL-EST-9012', evento:'Halloween OffCampus', hora: fmt(new Date(Date.now()-1800000))},
-    ],
-    participantes: [
-      {nome:'João Cardoso', email:'demo@evotech.com', cpf:'111.111.111-11', tel:'(41) 98888-8888', ingressos:2, status:'ativo'},
-      {nome:'Ana Lima', email:'ana@exemplo.com', cpf:'222.222.222-22', tel:'(41) 97777-7777', ingressos:1, status:'ativo'},
-      {nome:'Pedro Souza', email:'pedro@exemplo.com', cpf:'333.333.333-33', tel:'(41) 96666-6666', ingressos:3, status:'ativo'},
-      {nome:'Maria Santos', email:'maria@exemplo.com', cpf:'444.444.444-44', tel:'(41) 95555-5555', ingressos:1, status:'bloqueado'},
-    ],
-    contatos: [
-      {nome:'DJ KassiBeat', cargo:'DJ Residente', email:'dj@kassib.com', tel:'(41) 99111-2222', cat:'Artista / DJ', valor:3500, obs:'Disponível nas sextas.'},
-      {nome:'Lucas Portaria', cargo:'Coordenador de Segurança', email:'lucas@sec.com', tel:'(41) 99333-4444', cat:'Segurança', valor:1200, obs:'Traz equipe de 10 pessoas.'},
-      {nome:'BebidaTop Distribuidora', cargo:'Fornecedor de Bebidas', email:'vendas@bebidatop.com', tel:'(41) 3333-4444', cat:'Fornecedor', valor:0, obs:'Entrega 48h antes.'},
-    ],
-    equipe: [
-      {nome:'Admin EvoTech', email:'admin@evotech.com', perfil:'Admin', status:'ativo'},
-      {nome:'Carla Financeiro', email:'carla@evotech.com', perfil:'Financeiro', status:'ativo'},
-      {nome:'Diego Portaria', email:'diego@evotech.com', perfil:'Operador Portaria', status:'ativo'},
-      {nome:'Bia Bar', email:'bia@evotech.com', perfil:'Operador Bar', status:'ativo'},
-    ],
-    auditLog: [
-      {hora: fmt(new Date(Date.now()-3600000*5)), usuario:'Admin EvoTech', acao:'Sistema inicializado — dados de demonstração carregados'},
-    ],
-    sistema: {
-      modoContingencia: false,
-      ultimoBackup: Date.now() - 3600000*3,
-      uptimeStart: Date.now() - 3600000*72,
-    },
-    unitEcon: { cac: 850, churn: 4, take: 6 },
-  };
-}
-
-function saveState() { LS.set('evotech_admin', STATE); }
-
-/* ===== AUDITORIA ===== */
-function logAudit(acao) {
-  if (!STATE.auditLog) STATE.auditLog = [];
-  const session = getSession();
-  const usuario = session?.nome || 'Admin EvoTech';
-  STATE.auditLog.push({ hora: new Date().toLocaleString('pt-BR'), usuario, acao });
-  if (STATE.auditLog.length > 300) STATE.auditLog = STATE.auditLog.slice(-300);
-  saveState();
-}
-
 function fmt(d) {
-  const h = String(d.getHours()).padStart(2,'0');
-  const m = String(d.getMinutes()).padStart(2,'0');
+  const h = String(d.getHours()).padStart(2, '0');
+  const m = String(d.getMinutes()).padStart(2, '0');
   return `${h}:${m}`;
 }
 
-let STATE = loadState();
-let selectedEventoIdx = null;
-
-/* ===== MIGRAÇÃO / COMPATIBILIDADE (para quem já tinha dados salvos) ===== */
-function migrateState() {
-  if (!STATE.equipe) STATE.equipe = [
-    {nome:'Admin EvoTech', email:'admin@evotech.com', perfil:'Admin', status:'ativo'},
-  ];
-  if (!STATE.auditLog) STATE.auditLog = [];
-  if (!STATE.sistema) STATE.sistema = { modoContingencia:false, ultimoBackup:Date.now(), uptimeStart:Date.now() };
-  if (!STATE.unitEcon) STATE.unitEcon = { cac:850, churn:4, take:6 };
-  (STATE.eventos||[]).forEach(ev => {
-    if (ev.metaPublico == null) ev.metaPublico = Math.round((ev.capacidade||0) * 0.85);
-    if (ev.metaFaturamento == null) {
-      const receitaAtual = (ev.lotes||[]).reduce((a,l)=>a+(l.total-l.disponivel)*l.preco,0);
-      ev.metaFaturamento = Math.round((receitaAtual || (ev.capacidade||0)*80) * 1.15);
-    }
-  });
-  saveState();
+function estadoVazio() {
+  const ui = UI.get();
+  return {
+    eventos: [], bar: [], despesas: [], entries: [],
+    participantes: [], contatos: [], equipe: [], auditLog: [],
+    sistema: {
+      modoContingencia: !!ui.modoContingencia,
+      ultimoBackup: ui.ultimoBackup || Date.now(),
+      uptimeStart: ui.uptimeStart || Date.now(),
+    },
+    unitEcon: ui.unitEcon || { cac: 850, churn: 4, take: 6 },
+  };
 }
-migrateState();
+
+let STATE = estadoVazio();
+let selectedEventoIdx = null;
+let selectedEventoId = null;   // id estável: sobrevive à reordenação vinda da API
+let carregando = false;
+
+/* ---------- Tradutores API -> formato usado pelas telas ---------- */
+const PERFIL_LABEL = {
+  owner: 'Admin', admin: 'Admin', finance: 'Financeiro',
+  gate: 'Operador Portaria', bar: 'Operador Bar',
+};
+const PERFIL_ROLE = {
+  'Admin': 'admin', 'Financeiro': 'finance',
+  'Operador Portaria': 'gate', 'Operador Bar': 'bar', 'Visualizador': 'gate',
+};
+
+function mapEvento(e) {
+  return {
+    id: e.id,
+    nome: e.name,
+    tipo: e.type || '',
+    data: e.eventDate ? String(e.eventDate).slice(0, 10) : '',
+    local: e.venue || '',
+    capacidade: e.capacity,
+    status: { draft: 'em_breve', upcoming: 'em_breve', active: 'ativo', sold_out: 'esgotado', closed: 'encerrado' }[e.status] || 'ativo',
+    statusApi: e.status,
+    desc: e.description || '',
+    regras: e.rules || '',
+    metaPublico: e.goalAttendance,
+    metaFaturamento: e.goalRevenue,
+    lotes: (e.batches || []).map(b => ({
+      id: b.id, nome: b.name, preco: Number(b.price),
+      disponivel: b.available, total: b.quantityTotal,
+    })),
+  };
+}
+
+const STATUS_API = { ativo: 'active', em_breve: 'upcoming', esgotado: 'sold_out', encerrado: 'closed' };
+
+async function carregarDados() {
+  if (carregando) return;
+  carregando = true;
+  try {
+    const [eventos, produtos, despesas, checkins, participantes, contatos, equipe, auditoria] =
+      await Promise.all([
+        EvoAPI.get('/events'),
+        EvoAPI.get('/products'),
+        EvoAPI.get('/expenses'),
+        EvoAPI.get('/checkins'),
+        EvoAPI.get('/participants', { limit: 200 }),
+        EvoAPI.get('/contacts'),
+        EvoAPI.get('/team').catch(() => []),        // só owner/admin enxerga
+        EvoAPI.get('/audit-logs', { limit: 200 }).catch(() => []),
+      ]);
+
+    const ui = UI.get();
+    STATE = {
+      eventos: eventos.map(mapEvento),
+      bar: produtos.map(p => ({
+        id: p.id, nome: p.name, emoji: p.emoji || '🍶', cat: p.category,
+        custo: p.unitCost, estoque: p.stockQuantity, minimo: p.minStock,
+      })),
+      despesas: despesas.map(d => ({
+        id: d.id,
+        cat: `${d.category_icon || ''} ${d.category_name}`.trim(),
+        catId: d.category_id,
+        desc: d.description || '',
+        valor: Number(d.amount),
+        eventId: d.event_id,
+      })),
+      entries: (checkins.rows || []).map(c => ({
+        id: c.id, nome: c.guest_name, codigo: c.code || '',
+        evento: c.event_name, hora: fmt(new Date(c.checked_in_at)),
+      })),
+      participantes: participantes.map(p => ({
+        userId: p.id, nome: p.name, email: p.email,
+        cpf: p.cpf || '—', tel: p.phone || '—',
+        ingressos: p.tickets,
+        status: p.status === 'blocked' ? 'bloqueado' : 'ativo',
+        semCadastro: p.status === 'guest',
+      })),
+      contatos: contatos.map(c => ({
+        id: c.id, nome: c.name, cargo: c.roleTitle || '', email: c.email || '',
+        tel: c.phone || '', cat: c.category, valor: c.fee, obs: c.notes || '',
+      })),
+      equipe: equipe.map(m => ({
+        id: m.id, nome: m.name, email: m.email,
+        perfil: PERFIL_LABEL[m.role] || m.role,
+        role: m.role,
+        status: m.status === 'active' ? 'ativo' : 'inativo',
+      })),
+      auditLog: auditoria.slice().reverse().map(l => ({
+        hora: new Date(l.hora).toLocaleString('pt-BR'),
+        usuario: l.usuario, acao: l.acao,
+      })),
+      sistema: {
+        modoContingencia: !!ui.modoContingencia,
+        ultimoBackup: ui.ultimoBackup || Date.now(),
+        uptimeStart: ui.uptimeStart || Date.now(),
+      },
+      unitEcon: ui.unitEcon || { cac: 850, churn: 4, take: 6 },
+    };
+  } catch (err) {
+    if (err.status === 401 || err.status === 403) {
+      EvoAPI.store.clearAuth();
+      window.location.replace('index.html');
+      return;
+    }
+    toast(`Falha ao carregar os dados: ${err.message}`, 'error');
+  } finally {
+    carregando = false;
+  }
+}
+
+// Recarrega do servidor e redesenha. É o que cada ação chama depois de salvar.
+async function atualizar() {
+  await carregarDados();
+  renderAll();
+}
+
+// Envolve uma ação de escrita: trata o erro e recarrega os dados.
+async function acao(fn, mensagemSucesso) {
+  try {
+    const resultado = await fn();
+    await atualizar();
+    if (mensagemSucesso) toast(mensagemSucesso, 'success');
+    return resultado;
+  } catch (err) {
+    toast(err.message, 'error');
+    return null;
+  }
+}
+
+/* saveState/logAudit continuam existindo para não quebrar chamadas antigas.
+   A persistência agora é da API e a auditoria é gravada pelo servidor,
+   com o autor real de cada ação. */
+function saveState() { /* a API é a fonte da verdade */ }
+function logAudit() { /* auditoria registrada no servidor */ }
 
 /* ===== SESSÃO / LOGOUT ===== */
-function getSession() {
-  try { return JSON.parse(localStorage.getItem('evo_session')); } catch (e) { return null; }
-}
+function getSession() { return EvoAPI.session(); }
 
 function initAdminInfo() {
   const session = getSession();
@@ -137,8 +187,8 @@ function initAdminInfo() {
   document.getElementById('admin-name').textContent = session.nome;
 }
 
-function adminLogout() {
-  localStorage.removeItem('evo_session');
+async function adminLogout() {
+  await EvoAPI.logout();
   window.location.href = 'index.html';
 }
 
@@ -175,13 +225,23 @@ function goPanel(id) {
   if(cfg.action) { btn.textContent = cfg.action; btn.classList.remove('is-hidden'); btn.onclick = window[cfg.fn] || null; }
   else btn.classList.add('is-hidden');
 
-  renderAll();
+  atualizar();
 }
 
 function openPrimaryAction() { /* handled per-panel */ }
 
 /* ===== RENDER ALL ===== */
 function renderAll() {
+  // A API pode devolver os eventos em outra ordem; reencontra o selecionado.
+  if (selectedEventoId !== null) {
+    const novoIdx = STATE.eventos.findIndex(e => e.id === selectedEventoId);
+    selectedEventoIdx = novoIdx >= 0 ? novoIdx : null;
+    if (selectedEventoIdx === null) {
+      selectedEventoId = null;
+      const sec = document.getElementById('lotes-section');
+      if (sec) sec.style.display = 'none';
+    }
+  }
   renderDashboard();
   renderEventos();
   renderBar();
@@ -195,6 +255,7 @@ function renderAll() {
   renderEquipe();
   renderAuditoria();
   renderSistema();
+  if (selectedEventoIdx !== null) renderLotes();
 }
 
 /* ===== DASHBOARD ===== */
@@ -328,39 +389,50 @@ function editEvento(idx) {
   openModal('modal-evento');
 }
 
-function salvarEvento() {
+async function salvarEvento() {
   const idx = parseInt(document.getElementById('evento-edit-idx').value);
-  const ev = {
-    nome: document.getElementById('ev-nome').value.trim(),
-    tipo: document.getElementById('ev-tipo').value,
-    data: document.getElementById('ev-data').value,
-    local: document.getElementById('ev-local').value.trim(),
-    capacidade: parseInt(document.getElementById('ev-capacidade').value)||0,
-    status: document.getElementById('ev-status').value,
-    desc: document.getElementById('ev-desc').value.trim(),
-    regras: document.getElementById('ev-regras').value.trim(),
-    lotes: idx >= 0 ? STATE.eventos[idx].lotes : [],
+  const payload = {
+    name: document.getElementById('ev-nome').value.trim(),
+    type: document.getElementById('ev-tipo').value,
+    eventDate: document.getElementById('ev-data').value || null,
+    venue: document.getElementById('ev-local').value.trim(),
+    capacity: parseInt(document.getElementById('ev-capacidade').value) || 0,
+    status: STATUS_API[document.getElementById('ev-status').value] || 'active',
+    description: document.getElementById('ev-desc').value.trim(),
+    rules: document.getElementById('ev-regras').value.trim(),
   };
-  if(!ev.nome) { toast('Nome do evento obrigatório','error'); return; }
-  if(idx >= 0) STATE.eventos[idx] = ev; else { ev.metaPublico = Math.round(ev.capacidade*0.85); ev.metaFaturamento = Math.round(ev.capacidade*80); STATE.eventos.push(ev); }
-  saveState(); closeModal('modal-evento'); renderAll();
-  logAudit(idx>=0 ? `Editou o evento "${ev.nome}"` : `Criou o evento "${ev.nome}"`);
-  toast(idx>=0 ? 'Evento atualizado!' : 'Evento criado!','success');
+  if (!payload.name) { toast('Nome do evento obrigatório', 'error'); return; }
+
+  const existente = idx >= 0 ? STATE.eventos[idx] : null;
+  if (!existente) {
+    // Metas iniciais sugeridas, editáveis depois no painel Metas & ROI.
+    payload.goalAttendance = Math.round(payload.capacity * 0.85);
+    payload.goalRevenue = Math.round(payload.capacity * 80);
+  }
+
+  const ok = await acao(
+    () => existente
+      ? EvoAPI.put(`/events/${existente.id}`, payload)
+      : EvoAPI.post('/events', payload),
+    existente ? 'Evento atualizado!' : 'Evento criado!'
+  );
+  if (ok) closeModal('modal-evento');
 }
 
-function delEvento(idx) {
-  const nome = STATE.eventos[idx].nome;
-  if(!confirm(`Remover "${nome}"?`)) return;
-  STATE.eventos.splice(idx,1);
-  if(selectedEventoIdx===idx) { selectedEventoIdx=null; document.getElementById('lotes-section').style.display='none'; }
-  saveState(); renderAll();
-  logAudit(`Removeu o evento "${nome}"`);
-  toast('Evento removido','success');
+async function delEvento(idx) {
+  const ev = STATE.eventos[idx];
+  if (!confirm(`Remover "${ev.nome}"?`)) return;
+  const ok = await acao(() => EvoAPI.del(`/events/${ev.id}`), 'Evento removido');
+  if (ok && selectedEventoIdx === idx) {
+    selectedEventoIdx = null;
+    document.getElementById('lotes-section').style.display = 'none';
+  }
 }
 
 /* ===== LOTES ===== */
 function verLotes(idx) {
   selectedEventoIdx = idx;
+  selectedEventoId = STATE.eventos[idx]?.id ?? null;
   const ev = STATE.eventos[idx];
   document.getElementById('lotes-title').textContent = `Lotes — ${ev.nome}`;
   document.getElementById('lotes-section').style.display = 'block';
@@ -401,17 +473,16 @@ function renderLotes() {
   }).join('');
 }
 
-function alterarDisp(loteIdx, delta) {
+// Os botões ± agora conversam com o banco. "Disponível" é derivado
+// (total - vendidos), então mexer nele altera a quantidade vendida.
+async function alterarDisp(loteIdx, delta) {
   const lote = STATE.eventos[selectedEventoIdx].lotes[loteIdx];
-  lote.disponivel = Math.max(0, Math.min(lote.total, lote.disponivel + delta));
-  saveState(); renderLotes(); renderDashboard();
+  await acao(() => EvoAPI.patch(`/batches/${lote.id}/stock`, { soldDelta: -delta }));
 }
 
-function alterarTotal(loteIdx, delta) {
+async function alterarTotal(loteIdx, delta) {
   const lote = STATE.eventos[selectedEventoIdx].lotes[loteIdx];
-  lote.total = Math.max(lote.total - lote.disponivel, lote.total + delta);
-  if(lote.disponivel > lote.total) lote.disponivel = lote.total;
-  saveState(); renderLotes(); renderDashboard();
+  await acao(() => EvoAPI.patch(`/batches/${lote.id}/stock`, { totalDelta: delta }));
 }
 
 function openModalLote() {
@@ -432,25 +503,42 @@ function editLote(idx) {
   openModal('modal-lote');
 }
 
-function salvarLote() {
-  if(selectedEventoIdx===null) return;
+async function salvarLote() {
+  if (selectedEventoIdx === null) return;
   const idx = parseInt(document.getElementById('lote-edit-idx').value);
-  const lote = {
-    nome: document.getElementById('lote-nome').value.trim(),
-    preco: parseFloat(document.getElementById('lote-preco').value)||0,
-    disponivel: parseInt(document.getElementById('lote-disp').value)||0,
-    total: parseInt(document.getElementById('lote-total').value)||0,
-  };
-  if(!lote.nome) { toast('Nome do lote obrigatório','error'); return; }
-  const lotes = STATE.eventos[selectedEventoIdx].lotes;
-  if(idx>=0) lotes[idx]=lote; else lotes.push(lote);
-  saveState(); closeModal('modal-lote'); renderLotes(); renderDashboard();
-  toast(idx>=0?'Lote atualizado!':'Lote criado!','success');
+  const evento = STATE.eventos[selectedEventoIdx];
+  const nome = document.getElementById('lote-nome').value.trim();
+  const preco = parseFloat(document.getElementById('lote-preco').value) || 0;
+  const disponivel = parseInt(document.getElementById('lote-disp').value) || 0;
+  const total = parseInt(document.getElementById('lote-total').value) || 0;
+  if (!nome) { toast('Nome do lote obrigatório', 'error'); return; }
+  if (disponivel > total) { toast('Disponível não pode ser maior que o total', 'error'); return; }
+
+  const existente = idx >= 0 ? evento.lotes[idx] : null;
+  const payload = { name: nome, price: preco, quantityTotal: total };
+
+  const ok = await acao(async () => {
+    if (existente) {
+      await EvoAPI.put(`/batches/${existente.id}`, payload);
+      // Ajusta os vendidos para bater com o "disponível" informado.
+      const vendidosDesejados = total - disponivel;
+      const delta = vendidosDesejados - (existente.total - existente.disponivel);
+      if (delta !== 0) await EvoAPI.patch(`/batches/${existente.id}/stock`, { soldDelta: delta });
+      return true;
+    }
+    const lote = await EvoAPI.post(`/events/${evento.id}/batches`, {
+      ...payload, quantitySold: Math.max(0, total - disponivel),
+    });
+    return lote;
+  }, idx >= 0 ? 'Lote atualizado!' : 'Lote criado!');
+
+  if (ok) { closeModal('modal-lote'); }
 }
 
-function delLote(idx) {
-  STATE.eventos[selectedEventoIdx].lotes.splice(idx,1);
-  saveState(); renderLotes(); toast('Lote removido','success');
+async function delLote(idx) {
+  const lote = STATE.eventos[selectedEventoIdx].lotes[idx];
+  if (!confirm(`Remover o lote "${lote.nome}"?`)) return;
+  await acao(() => EvoAPI.del(`/batches/${lote.id}`), 'Lote removido');
 }
 
 /* ===== BAR ===== */
@@ -503,9 +591,15 @@ function renderBar(search='') {
   }).join('');
 }
 
-function alterarBar(idx, delta) {
-  STATE.bar[idx].estoque = Math.max(0, STATE.bar[idx].estoque + delta);
-  saveState(); renderBar(); renderDashboard();
+// Cada ± vira uma movimentação de estoque registrada no banco,
+// com autor e motivo — antes era só um número sobrescrito.
+async function alterarBar(idx, delta) {
+  const item = STATE.bar[idx];
+  await acao(() => EvoAPI.post(`/products/${item.id}/movements`, {
+    type: delta > 0 ? 'in' : 'out',
+    quantity: Math.abs(delta),
+    reason: delta > 0 ? 'Reposição pelo painel' : 'Baixa pelo painel',
+  }));
 }
 
 function openModalBarItem() {
@@ -528,27 +622,33 @@ function editBarItem(idx) {
   openModal('modal-bar');
 }
 
-function salvarBarItem() {
+async function salvarBarItem() {
   const idx = parseInt(document.getElementById('bar-edit-idx').value);
-  const item = {
-    nome: document.getElementById('bar-nome').value.trim(),
+  const payload = {
+    name: document.getElementById('bar-nome').value.trim(),
     emoji: document.getElementById('bar-emoji').value.trim() || '🍶',
-    cat: document.getElementById('bar-cat').value,
-    custo: parseFloat(document.getElementById('bar-custo').value)||0,
-    estoque: parseInt(document.getElementById('bar-estoque').value)||0,
-    minimo: parseInt(document.getElementById('bar-minimo').value)||0,
+    category: document.getElementById('bar-cat').value,
+    unitCost: parseFloat(document.getElementById('bar-custo').value) || 0,
+    stockQuantity: parseInt(document.getElementById('bar-estoque').value) || 0,
+    minStock: parseInt(document.getElementById('bar-minimo').value) || 0,
   };
-  if(!item.nome) { toast('Nome obrigatório','error'); return; }
-  if(idx>=0) STATE.bar[idx]=item; else STATE.bar.push(item);
-  saveState(); closeModal('modal-bar'); renderBar(); renderDashboard();
-  logAudit(`${idx>=0?'Editou':'Adicionou'} item do bar "${item.nome}"`);
-  toast(idx>=0?'Item atualizado!':'Item adicionado!','success');
+  if (!payload.name) { toast('Nome obrigatório', 'error'); return; }
+
+  const existente = idx >= 0 ? STATE.bar[idx] : null;
+  const ok = await acao(
+    () => existente
+      ? EvoAPI.put(`/products/${existente.id}`, payload)
+      : EvoAPI.post('/products', payload),
+    existente ? 'Item atualizado!' : 'Item adicionado!'
+  );
+  if (ok) closeModal('modal-bar');
 }
 
-function delBarItem(idx) {
-  if(!confirm(`Remover "${STATE.bar[idx].nome}"?`)) return;
-  STATE.bar.splice(idx,1);
-  saveState(); renderBar(); toast('Item removido','success');
+async function delBarItem(idx) {
+  const item = STATE.bar[idx];
+  if (!confirm(`Remover "${item.nome}"?`)) return;
+  // O item é arquivado, não apagado: as movimentações são histórico de custo.
+  await acao(() => EvoAPI.del(`/products/${item.id}`), 'Item removido');
 }
 
 /* ===== PORTARIA ===== */
@@ -585,37 +685,41 @@ function renderPortaria() {
     </div>`).join('') || '<div style="color:var(--text3);font-size:12px;padding:8px">Sem entradas</div>';
 }
 
-function registrarEntrada() {
+// Check-in real: o código é validado contra os ingressos pagos e a
+// reentrada é bloqueada pelo banco. Antes, qualquer texto era aceito.
+async function registrarEntrada() {
   const codigo = document.getElementById('scan-input').value.trim().toUpperCase();
-  if(!codigo) { toast('Digite um código','error'); return; }
-  const ev = STATE.eventos.find(e => e.lotes.some(l => l.nome.toUpperCase().includes(codigo.slice(0,3))));
-  const entry = {
-    nome: 'Portador do ingresso',
-    codigo,
-    evento: ev ? ev.nome : 'Evento desconhecido',
-    hora: fmt(new Date()),
-  };
-  STATE.entries.push(entry);
-  document.getElementById('scan-input').value = '';
-  saveState(); renderPortaria(); renderDashboard(); renderComparativo();
-  logAudit(`Check-in via QR/código "${codigo}" — ${entry.evento}`);
+  if (!codigo) { toast('Digite um código', 'error'); return; }
 
   const box = document.getElementById('scan-box');
-  box.style.borderColor='var(--green)';
-  setTimeout(()=>box.style.borderColor='',1500);
-  toast('✓ Entrada registrada!','success');
+  try {
+    const entrada = await EvoAPI.post('/checkins', { code: codigo });
+    document.getElementById('scan-input').value = '';
+    await atualizar();
+    box.style.borderColor = 'var(--green)';
+    setTimeout(() => box.style.borderColor = '', 1500);
+    toast(`✓ ${entrada.guestName} — ${entrada.eventName}`, 'success');
+  } catch (err) {
+    box.style.borderColor = 'var(--red)';
+    setTimeout(() => box.style.borderColor = '', 2500);
+    toast(err.message, 'error');
+  }
 }
 
-function registrarManual() {
+async function registrarManual() {
   const nome = document.getElementById('manual-nome').value.trim();
-  const evento = document.getElementById('manual-evento').value;
-  if(!nome) { toast('Informe o nome','error'); return; }
-  if(!evento) { toast('Selecione o evento','error'); return; }
-  STATE.entries.push({nome, codigo:'', evento, hora: fmt(new Date())});
-  document.getElementById('manual-nome').value = '';
-  saveState(); renderPortaria(); renderDashboard(); renderComparativo();
-  logAudit(`Check-in manual de "${nome}" — ${evento}`);
-  toast(`${nome} registrado(a)!`,'success');
+  const nomeEvento = document.getElementById('manual-evento').value;
+  if (!nome) { toast('Informe o nome', 'error'); return; }
+  if (!nomeEvento) { toast('Selecione o evento', 'error'); return; }
+
+  const evento = STATE.eventos.find(e => e.nome === nomeEvento);
+  if (!evento) { toast('Evento não encontrado', 'error'); return; }
+
+  const ok = await acao(
+    () => EvoAPI.post('/checkins', { eventId: evento.id, guestName: nome }),
+    `${nome} registrado(a)!`
+  );
+  if (ok) document.getElementById('manual-nome').value = '';
 }
 
 document.getElementById('scan-input')?.addEventListener('keydown', e => {
@@ -676,23 +780,34 @@ function editDespesa(idx) {
   openModal('modal-despesa');
 }
 
-function salvarDespesa() {
+async function salvarDespesa() {
   const idx = parseInt(document.getElementById('desp-edit-idx').value);
-  const d = {
-    cat: document.getElementById('desp-cat').value,
-    valor: parseFloat(document.getElementById('desp-valor').value)||0,
-    desc: document.getElementById('desp-desc').value.trim(),
+  const catTexto = document.getElementById('desp-cat').value;
+  // O select traz "🛡️ Segurança": separa ícone e nome para a tabela de categorias.
+  const partes = catTexto.trim().split(' ');
+  const temIcone = partes.length > 1 && !/^[a-zA-ZÀ-ú]/.test(partes[0]);
+  const payload = {
+    categoryIcon: temIcone ? partes[0] : undefined,
+    categoryName: temIcone ? partes.slice(1).join(' ') : catTexto.trim(),
+    amount: parseFloat(document.getElementById('desp-valor').value) || 0,
+    description: document.getElementById('desp-desc').value.trim(),
   };
-  if(!d.valor) { toast('Informe o valor','error'); return; }
-  if(idx>=0) STATE.despesas[idx]=d; else STATE.despesas.push(d);
-  saveState(); closeModal('modal-despesa'); renderFinanceiro(); renderDashboard();
-  logAudit(`${idx>=0?'Editou':'Registrou'} despesa "${d.cat}" — ${fmt_brl(d.valor)}`);
-  toast(idx>=0?'Despesa atualizada!':'Despesa adicionada!','success');
+  if (!payload.amount) { toast('Informe o valor', 'error'); return; }
+
+  const existente = idx >= 0 ? STATE.despesas[idx] : null;
+  const ok = await acao(
+    () => existente
+      ? EvoAPI.put(`/expenses/${existente.id}`, payload)
+      : EvoAPI.post('/expenses', payload),
+    existente ? 'Despesa atualizada!' : 'Despesa adicionada!'
+  );
+  if (ok) closeModal('modal-despesa');
 }
 
-function delDespesa(idx) {
-  STATE.despesas.splice(idx,1);
-  saveState(); renderFinanceiro(); renderDashboard(); toast('Despesa removida','success');
+async function delDespesa(idx) {
+  const despesa = STATE.despesas[idx];
+  if (!confirm('Remover esta despesa?')) return;
+  await acao(() => EvoAPI.del(`/expenses/${despesa.id}`), 'Despesa removida');
 }
 
 /* ===== PARTICIPANTES ===== */
@@ -717,21 +832,22 @@ function renderParticipantes(search='') {
       <td><span class="badge ${stBadge}">${p.status==='ativo'?'Ativo':'Bloqueado'}</span></td>
       <td style="white-space:nowrap">
         <button class="btn btn-outline btn-sm" onclick="togglePart(${idx})">${p.status==='ativo'?'Bloquear':'Ativar'}</button>
-        <button class="btn btn-danger btn-sm" onclick="delPart(${idx})" style="margin-left:4px">🗑</button>
       </td>
     </tr>`;
   }).join('');
 }
 
-function togglePart(idx) {
-  STATE.participantes[idx].status = STATE.participantes[idx].status==='ativo'?'bloqueado':'ativo';
-  saveState(); renderParticipantes(); toast('Status atualizado','success');
-}
-
-function delPart(idx) {
-  if(!confirm('Remover participante?')) return;
-  STATE.participantes.splice(idx,1);
-  saveState(); renderParticipantes(); toast('Participante removido','success');
+async function togglePart(idx) {
+  const p = STATE.participantes[idx];
+  if (p.semCadastro) {
+    toast('Este comprador não tem cadastro na plataforma (compra sem login).', 'error');
+    return;
+  }
+  const novoStatus = p.status === 'ativo' ? 'blocked' : 'active';
+  await acao(
+    () => EvoAPI.patch(`/participants/${p.userId}/status`, { status: novoStatus }),
+    novoStatus === 'blocked' ? 'Participante bloqueado' : 'Participante reativado'
+  );
 }
 
 /* ===== CONTATOS ===== */
@@ -786,27 +902,33 @@ function editContato(idx) {
   openModal('modal-contato');
 }
 
-function salvarContato() {
+async function salvarContato() {
   const idx = parseInt(document.getElementById('cont-edit-idx').value);
-  const c = {
-    nome: document.getElementById('cont-nome').value.trim(),
-    cargo: document.getElementById('cont-cargo').value.trim(),
+  const payload = {
+    name: document.getElementById('cont-nome').value.trim(),
+    roleTitle: document.getElementById('cont-cargo').value.trim(),
     email: document.getElementById('cont-email').value.trim(),
-    tel: document.getElementById('cont-tel').value.trim(),
-    cat: document.getElementById('cont-cat').value,
-    valor: parseFloat(document.getElementById('cont-valor').value)||0,
-    obs: document.getElementById('cont-obs').value.trim(),
+    phone: document.getElementById('cont-tel').value.trim(),
+    category: document.getElementById('cont-cat').value,
+    fee: parseFloat(document.getElementById('cont-valor').value) || 0,
+    notes: document.getElementById('cont-obs').value.trim(),
   };
-  if(!c.nome) { toast('Nome obrigatório','error'); return; }
-  if(idx>=0) STATE.contatos[idx]=c; else STATE.contatos.push(c);
-  saveState(); closeModal('modal-contato'); renderContatos();
-  toast(idx>=0?'Contato atualizado!':'Contato adicionado!','success');
+  if (!payload.name) { toast('Nome obrigatório', 'error'); return; }
+
+  const existente = idx >= 0 ? STATE.contatos[idx] : null;
+  const ok = await acao(
+    () => existente
+      ? EvoAPI.put(`/contacts/${existente.id}`, payload)
+      : EvoAPI.post('/contacts', payload),
+    existente ? 'Contato atualizado!' : 'Contato adicionado!'
+  );
+  if (ok) closeModal('modal-contato');
 }
 
-function delContato(idx) {
-  if(!confirm('Remover contato?')) return;
-  STATE.contatos.splice(idx,1);
-  saveState(); renderContatos(); toast('Contato removido','success');
+async function delContato(idx) {
+  const contato = STATE.contatos[idx];
+  if (!confirm(`Remover "${contato.nome}"?`)) return;
+  await acao(() => EvoAPI.del(`/contacts/${contato.id}`), 'Contato removido');
 }
 
 /* ===== HELPERS DE CÁLCULO (usados em vários painéis) ===== */
@@ -992,11 +1114,12 @@ function renderMetas() {
   }).join('') || '<div class="empty"><p>Cadastre um evento para definir metas.</p></div>';
 }
 
-function atualizarMeta(idx, campo, valor) {
-  STATE.eventos[idx][campo] = parseFloat(valor)||0;
-  saveState(); renderMetas(); renderDashboard();
-  logAudit(`Ajustou ${campo==='metaPublico'?'meta de público':'meta de faturamento'} de "${STATE.eventos[idx].nome}"`);
-  toast('Meta atualizada!','success');
+async function atualizarMeta(idx, campo, valor) {
+  const evento = STATE.eventos[idx];
+  const payload = campo === 'metaPublico'
+    ? { goalAttendance: parseInt(valor) || 0 }
+    : { goalRevenue: parseFloat(valor) || 0 };
+  await acao(() => EvoAPI.patch(`/events/${evento.id}/goals`, payload), 'Meta atualizada!');
 }
 
 /* ===== COMPARATIVO & IA ===== */
@@ -1062,10 +1185,13 @@ function renderComparativo() {
 
 /* ===== UNIT ECONOMICS ===== */
 function atualizarUnitEcon() {
-  STATE.unitEcon.cac = parseFloat(document.getElementById('ue-cac').value)||0;
-  STATE.unitEcon.churn = parseFloat(document.getElementById('ue-churn').value)||0.1;
-  STATE.unitEcon.take = parseFloat(document.getElementById('ue-take').value)||0;
-  saveState(); renderUnitEconomics(false);
+  // CAC, churn e take rate são PREMISSAS do gestor, não dados medidos:
+  // ficam salvos como preferência de tela deste navegador.
+  STATE.unitEcon.cac = parseFloat(document.getElementById('ue-cac').value) || 0;
+  STATE.unitEcon.churn = parseFloat(document.getElementById('ue-churn').value) || 0.1;
+  STATE.unitEcon.take = parseFloat(document.getElementById('ue-take').value) || 0;
+  UI.set({ ...UI.get(), unitEcon: STATE.unitEcon });
+  renderUnitEconomics(false);
 }
 
 function renderUnitEconomics(resetInputs=true) {
@@ -1099,60 +1225,37 @@ function renderUnitEconomics(resetInputs=true) {
 }
 
 /* ===== RELATÓRIOS ===== */
-function downloadFile(filename, content, mime='text/plain') {
-  const blob = new Blob([content],{type:mime});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = filename;
-  a.click();
-}
+// Os relatórios agora são gerados pelo servidor, sobre os dados completos
+// do banco — não apenas sobre o que está carregado na tela.
+const CSV_ENDPOINT = {
+  eventos: 'eventos',
+  participantes: 'participantes',
+  despesas: 'financeiro',
+  bar: 'estoque',
+  ingressos: 'ingressos',
+  entradas: 'entradas',
+};
 
-function toCSV(rows, headers) {
-  const esc = v => `"${String(v??'').replace(/"/g,'""')}"`;
-  return [headers.join(','), ...rows.map(r => headers.map(h=>esc(r[h])).join(','))].join('\n');
-}
-
-function exportCSV(tipo) {
-  let csv='', filename='';
-  if (tipo==='eventos') {
-    const rows = STATE.eventos.map(ev => { const st=eventoStats(ev); return {
-      nome:ev.nome, data:ev.data, local:ev.local, capacidade:ev.capacidade, vendidos:st.vendidos,
-      ocupacao_pct:Math.round(st.ocupacao), receita:st.receita.toFixed(2), ticket_medio:st.ticketMedio.toFixed(2), status:ev.status };
-    });
-    csv = toCSV(rows, ['nome','data','local','capacidade','vendidos','ocupacao_pct','receita','ticket_medio','status']);
-    filename = 'evotech-eventos.csv';
-  } else if (tipo==='participantes') {
-    csv = toCSV(STATE.participantes, ['nome','email','cpf','tel','ingressos','status']);
-    filename = 'evotech-participantes.csv';
-  } else if (tipo==='despesas') {
-    csv = toCSV(STATE.despesas.map(d=>({...d, valor:d.valor.toFixed(2)})), ['cat','desc','valor']);
-    filename = 'evotech-despesas.csv';
-  } else if (tipo==='bar') {
-    csv = toCSV(STATE.bar.map(b=>({...b, custo:b.custo.toFixed(2)})), ['nome','cat','estoque','minimo','custo']);
-    filename = 'evotech-estoque-bar.csv';
+async function exportCSV(tipo) {
+  const recurso = CSV_ENDPOINT[tipo];
+  if (!recurso) { toast('Relatório desconhecido', 'error'); return; }
+  const data = new Date().toISOString().slice(0, 10);
+  try {
+    await EvoAPI.download(`/reports/export/${recurso}`, `evotech-${recurso}-${data}.csv`);
+    toast('CSV exportado!', 'success');
+  } catch (err) {
+    toast(err.message, 'error');
   }
-  downloadFile(filename, csv, 'text/csv');
-  logAudit(`Exportou relatório CSV: ${tipo}`);
-  toast('CSV exportado!','success');
 }
 
-function exportRelatorioExecutivo() {
-  const totalReceita = STATE.eventos.reduce((a,ev)=>a+eventoStats(ev).receita,0);
-  const totalDespesas = STATE.despesas.reduce((a,d)=>a+d.valor,0);
-  const totalVendidos = STATE.eventos.reduce((a,ev)=>a+eventoStats(ev).vendidos,0);
-  let txt = `EVOTECH EVENTS — RELATÓRIO EXECUTIVO\nGerado em: ${new Date().toLocaleString('pt-BR')}\n\n`;
-  txt += `RESUMO GERAL\n------------\nEventos cadastrados: ${STATE.eventos.length}\nIngressos vendidos: ${totalVendidos}\nReceita total: ${fmt_brl(totalReceita)}\nDespesas totais: ${fmt_brl(totalDespesas)}\nSaldo: ${fmt_brl(totalReceita-totalDespesas)}\n\n`;
-  txt += `EVENTOS\n-------\n`;
-  STATE.eventos.forEach(ev => {
-    const st = eventoStats(ev);
-    txt += `- ${ev.nome} | ${ev.local} | ${ev.data||'a definir'} | Ocupação: ${Math.round(st.ocupacao)}% | Receita: ${fmt_brl(st.receita)} | Ticket médio: ${fmt_brl(st.ticketMedio)} | Meta público: ${ev.metaPublico} | Meta faturamento: ${fmt_brl(ev.metaFaturamento||0)}\n`;
-  });
-  txt += `\nDESPESAS POR CATEGORIA\n-----------------------\n`;
-  STATE.despesas.forEach(d => { txt += `- ${d.cat}: ${fmt_brl(d.valor)} (${d.desc})\n`; });
-  txt += `\nESTE RELATÓRIO FOI GERADO AUTOMATICAMENTE PELA PLATAFORMA EVOTECH EVENTS.\n`;
-  downloadFile(`evotech-relatorio-executivo-${new Date().toISOString().slice(0,10)}.txt`, txt);
-  logAudit('Gerou o relatório executivo');
-  toast('Relatório executivo gerado!','success');
+async function exportRelatorioExecutivo() {
+  const data = new Date().toISOString().slice(0, 10);
+  try {
+    await EvoAPI.download('/reports/executive', `evotech-relatorio-executivo-${data}.txt`);
+    toast('Relatório executivo gerado!', 'success');
+  } catch (err) {
+    toast(err.message, 'error');
+  }
 }
 
 /* ===== EQUIPE & PERMISSÕES ===== */
@@ -1210,33 +1313,50 @@ function editEquipe(idx) {
   document.getElementById('eq-status').value = m.status;
   openModal('modal-equipe');
 }
-function salvarEquipe() {
+async function salvarEquipe() {
   const idx = parseInt(document.getElementById('eq-edit-idx').value);
-  const m = {
-    nome: document.getElementById('eq-nome').value.trim(),
-    email: document.getElementById('eq-email').value.trim(),
-    perfil: document.getElementById('eq-perfil').value,
-    status: document.getElementById('eq-status').value,
-  };
-  if (!m.nome) { toast('Nome obrigatório','error'); return; }
-  if (idx>=0) STATE.equipe[idx]=m; else STATE.equipe.push(m);
-  saveState(); closeModal('modal-equipe'); renderEquipe();
-  logAudit(`${idx>=0?'Editou':'Adicionou'} membro da equipe "${m.nome}" (${m.perfil})`);
-  toast(idx>=0?'Membro atualizado!':'Membro adicionado!','success');
+  const nome = document.getElementById('eq-nome').value.trim();
+  const email = document.getElementById('eq-email').value.trim();
+  const perfil = document.getElementById('eq-perfil').value;
+  const status = document.getElementById('eq-status').value;
+  if (!nome) { toast('Nome obrigatório', 'error'); return; }
+  if (!email) { toast('E-mail obrigatório', 'error'); return; }
+
+  const role = PERFIL_ROLE[perfil] || 'gate';
+  const statusApi = status === 'ativo' ? 'active' : 'inactive';
+  const existente = idx >= 0 ? STATE.equipe[idx] : null;
+
+  const resultado = await acao(
+    () => existente
+      ? EvoAPI.patch(`/team/${existente.id}`, { role, status: statusApi })
+      : EvoAPI.post('/team', { name: nome, email, role, status: statusApi }),
+    existente ? 'Membro atualizado!' : 'Membro adicionado!'
+  );
+
+  if (resultado) {
+    closeModal('modal-equipe');
+    // Novo usuário: a senha provisória aparece uma única vez.
+    if (!existente && resultado.temporaryPassword) {
+      alert(
+        `Acesso criado para ${nome}.\n\n` +
+        `E-mail: ${email}\nSenha provisória: ${resultado.temporaryPassword}\n\n` +
+        `Repasse com segurança. Peça para trocar a senha no primeiro acesso.`
+      );
+    }
+  }
 }
-function toggleEquipe(idx) {
-  STATE.equipe[idx].status = STATE.equipe[idx].status==='ativo'?'inativo':'ativo';
-  saveState(); renderEquipe();
-  logAudit(`Alterou status de "${STATE.equipe[idx].nome}" para ${STATE.equipe[idx].status}`);
-  toast('Status atualizado','success');
+
+async function toggleEquipe(idx) {
+  const membro = STATE.equipe[idx];
+  const novo = membro.status === 'ativo' ? 'inactive' : 'active';
+  await acao(() => EvoAPI.patch(`/team/${membro.id}`, { status: novo }), 'Status atualizado');
 }
-function delEquipe(idx) {
-  const nome = STATE.equipe[idx].nome;
-  if(!confirm(`Remover "${nome}" da equipe?`)) return;
-  STATE.equipe.splice(idx,1);
-  saveState(); renderEquipe();
-  logAudit(`Removeu "${nome}" da equipe`);
-  toast('Membro removido','success');
+
+async function delEquipe(idx) {
+  const membro = STATE.equipe[idx];
+  if (!confirm(`Remover "${membro.nome}" da equipe?`)) return;
+  // Remove só o acesso à organização; a conta do usuário permanece.
+  await acao(() => EvoAPI.del(`/team/${membro.id}`), 'Membro removido');
 }
 
 /* ===== AUDITORIA ===== */
@@ -1283,17 +1403,22 @@ function renderSistema() {
 }
 
 function toggleContingencia() {
+  // Sinalizador operacional da equipe (indica que a casa está operando em
+  // modo degradado). Fica salvo como preferência local deste navegador.
   STATE.sistema.modoContingencia = document.getElementById('toggle-contingencia').checked;
-  saveState(); renderSistema(); renderAlertasCentral();
-  logAudit(`${STATE.sistema.modoContingencia?'Ativou':'Desativou'} o modo contingência/offline`);
-  toast(STATE.sistema.modoContingencia?'Modo contingência ativado':'Modo contingência desativado', STATE.sistema.modoContingencia?'error':'success');
+  UI.set({ ...UI.get(), modoContingencia: STATE.sistema.modoContingencia });
+  renderSistema(); renderAlertasCentral();
+  toast(STATE.sistema.modoContingencia ? 'Modo contingência ativado' : 'Modo contingência desativado',
+    STATE.sistema.modoContingencia ? 'error' : 'success');
 }
 
-function fazerBackupAgora() {
+async function fazerBackupAgora() {
+  // Backup do operador = exportação dos dados do servidor.
+  // O backup do banco em si é responsabilidade da hospedagem do MySQL.
   STATE.sistema.ultimoBackup = Date.now();
-  saveState(); renderSistema();
-  logAudit('Executou backup manual dos dados');
-  exportData();
+  UI.set({ ...UI.get(), ultimoBackup: STATE.sistema.ultimoBackup });
+  renderSistema();
+  await exportData();
 }
 
 /* ===== MODAL ENGINE ===== */
@@ -1354,21 +1479,30 @@ function fmt_brl(v) {
   return 'R$ ' + v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
 }
 
-function exportData() {
-  const data = JSON.stringify(STATE, null, 2);
-  const blob = new Blob([data],{type:'application/json'});
+async function exportData() {
+  // Exporta o retrato atual dos dados carregados do servidor.
+  await atualizar();
+  const conteudo = JSON.stringify({
+    exportadoEm: new Date().toISOString(),
+    eventos: STATE.eventos, bar: STATE.bar, despesas: STATE.despesas,
+    entradas: STATE.entries, participantes: STATE.participantes,
+    contatos: STATE.contatos, equipe: STATE.equipe,
+  }, null, 2);
+  const blob = new Blob([conteudo], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = `evotech-admin-${new Date().toISOString().slice(0,10)}.json`;
+  a.download = `evotech-admin-${new Date().toISOString().slice(0, 10)}.json`;
   a.click();
-  toast('Dados exportados!','success');
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  toast('Dados exportados!', 'success');
 }
 
 /* Atualiza o dashboard automaticamente a cada minuto (countdown, uptime, etc.) */
 setInterval(() => {
-  if (document.getElementById('panel-dashboard')?.classList.contains('active')) renderDashboard();
-  if (document.getElementById('panel-sistema')?.classList.contains('active')) renderSistema();
+  // Recarrega do servidor: em operação, vários dispositivos alteram os
+  // mesmos dados (portaria, bar, financeiro) ao mesmo tempo.
+  if (document.querySelector('.panel.active')) atualizar();
 }, 60000);
 
 /* ===== INIT ===== */
-renderAll();
+atualizar();

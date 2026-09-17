@@ -3985,3 +3985,15 @@ header.scrolled .logo-icon {
   background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.07) 40%, rgba(255,255,255,0.07) 60%, transparent 100%);
 }
 
+
+/* Aviso de pagamento no modal de compra (substitui os campos de cartão) */
+.compra-pagamento-aviso {
+  font-size: .78rem;
+  line-height: 1.5;
+  color: var(--text3, #9aa0ac);
+  background: rgba(255, 255, 255, .04);
+  border: 1px solid rgba(255, 255, 255, .08);
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin: 4px 0 14px;
+}
