@@ -15,7 +15,7 @@
     // aponte para a URL pública da sua API (ex.: https://api.seudominio.com/api)
     API_BASE_URL: isLocal
       ? 'http://localhost:3333/api'
-      : 'https://SUA-API-HOSPEDADA.exemplo.com/api',
+      : 'https://offcampussystem-production.up.railway.app/api',
 
     // Chaves usadas no armazenamento local do navegador.
     // Guardam apenas tokens de sessão — nenhum dado de negócio.
