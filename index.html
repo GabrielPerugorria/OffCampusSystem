@@ -8,6 +8,13 @@
   <meta name="description"
     content="EvoTech Events — plataforma completa para gestão de eventos: ingressos, portaria, financeiro, Open Bar, dashboard e muito mais.">
 
+  <script>
+    /* Intro: só é ativada com JS ligado. ?intro=off desativa. */
+    (function () {
+      var off = /[?&]intro=off(?:&|$)/.test(location.search);
+      if (!off) document.documentElement.classList.add('intro-on');
+    })();
+  </script>
   <link rel="stylesheet" href="css/main.css">
   <link rel="stylesheet" href="css/brand-story.css">
   <link rel="stylesheet" href="css/intro-splash.css">
@@ -25,35 +32,23 @@
 
 <body>
 
-  <!-- ===================== INTRO SPLASH — EvoTech Digital Activation ===================== -->
-  <div id="introSplash" role="presentation" aria-hidden="true" data-scene="discovery">
-    <canvas id="introCanvas"></canvas>
-    <div class="intro-vignette"></div>
-    <div class="intro-flash"></div>
+  <!-- ===================== INTRO SPLASH — EvoTech Events (única intro) ===================== -->
+  <div id="introSplash" role="region" aria-label="Abertura EvoTech Events">
+    <canvas id="introCanvas" aria-hidden="true"></canvas>
 
-    <div class="intro-mark">
-      <div class="intro-wordmark" aria-label="EvoTech Events">
-        <span class="wm-word wm-primary" data-text="EvoTech">
-          <span class="wm-letter">E</span><span class="wm-letter">v</span><span class="wm-letter">o</span><span class="wm-letter">T</span><span class="wm-letter">e</span><span class="wm-letter">c</span><span class="wm-letter">h</span>
-        </span>
-        <span class="wm-word wm-secondary" data-text="Events">
-          <span class="wm-letter">E</span><span class="wm-letter">v</span><span class="wm-letter">e</span><span class="wm-letter">n</span><span class="wm-letter">t</span><span class="wm-letter">s</span>
-        </span>
-      </div>
-      <div class="intro-tagline">
-        <span>Inteligência</span><span>operacional</span><span>de</span><span>eventos</span>
-      </div>
+    <div class="intro-content">
+      <div class="intro-orb" aria-hidden="true"></div>
+      <p class="intro-title">EVOTECH EVENTS</p>
+      <p class="intro-tagline">EVENTOS EM MOVIMENTO</p>
     </div>
 
-    <div class="intro-progress">
-      <div class="intro-progress-track">
-        <div class="intro-progress-fill"></div>
-      </div>
-      <div class="intro-progress-label" data-label="conectando">Conectando</div>
+    <div class="intro-progress" role="progressbar" aria-label="Carregando" aria-valuemin="0" aria-valuemax="100">
+      <span class="intro-progress-fill"></span>
     </div>
 
-    <button type="button" class="intro-skip">Pular</button>
+    <button type="button" class="intro-skip" aria-label="Pular abertura">Pular</button>
   </div>
+  <script src="js/intro-splash.js"></script>
 
   <!-- ===================== HEADER ===================== -->
   <header id="mainHeader">
@@ -1478,7 +1473,6 @@
   <!-- ===================== FIM MODAIS ===================== -->
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="js/intro-splash.js"></script>
   <script src="https://unpkg.com/topojson-client@3/dist/topojson-client.min.js"></script>
   <script src="js/globe_v2.js"></script>
   <script src="js/config.js"></script>

@@ -1,5 +1,37 @@
 'use strict';
 
+function escapeHTML(str) {
+  if (str == null) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+/* Converte para número finito; qualquer outra coisa vira o fallback.
+   Garante que valores vindos da API/localStorage nunca carreguem texto
+   para dentro de templates HTML, atributos ou estilos inline. */
+function num(v, fallback = 0) {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : fallback;
+}
+
+/* Lookup em mapa literal sem herdar chaves de Object.prototype
+   (ex.: status === 'constructor'). */
+function pick(map, key, fallback) {
+  return Object.prototype.hasOwnProperty.call(map, key) ? map[key] : fallback;
+}
+
+function sanitizeURL(url) {
+  if (!url) return '';
+  const s = String(url).trim();
+  if (/^https?:\/\//i.test(s)) return s;
+  if (/^[a-z0-9\-._~:/?#[\]@!$&'()*+,;=%]+$/i.test(s) && !s.includes(':')) return s;
+  return '';
+}
+
 /* ============================================================
    CAMADA DE DADOS
    Antes: todo o painel vivia em localStorage['evotech_admin'].
@@ -24,6 +56,12 @@ function fmt(d) {
   return `${h}:${m}`;
 }
 
+function sanitizeUnitEcon(ue) {
+  const base = { cac: 850, churn: 4, take: 6 };
+  if (!ue || typeof ue !== 'object') return base;
+  return { cac: num(ue.cac, base.cac), churn: num(ue.churn, base.churn), take: num(ue.take, base.take) };
+}
+
 function estadoVazio() {
   const ui = UI.get();
   return {
@@ -31,10 +69,10 @@ function estadoVazio() {
     participantes: [], contatos: [], equipe: [], auditLog: [],
     sistema: {
       modoContingencia: !!ui.modoContingencia,
-      ultimoBackup: ui.ultimoBackup || Date.now(),
-      uptimeStart: ui.uptimeStart || Date.now(),
+      ultimoBackup: num(ui.ultimoBackup, Date.now()) || Date.now(),
+      uptimeStart: num(ui.uptimeStart, Date.now()) || Date.now(),
     },
-    unitEcon: ui.unitEcon || { cac: 850, churn: 4, take: 6 },
+    unitEcon: sanitizeUnitEcon(ui.unitEcon),
   };
 }
 
@@ -53,23 +91,26 @@ const PERFIL_ROLE = {
   'Operador Portaria': 'gate', 'Operador Bar': 'bar', 'Visualizador': 'gate',
 };
 
+const STATUS_EVENTO_UI = { draft: 'em_breve', upcoming: 'em_breve', active: 'ativo', sold_out: 'esgotado', closed: 'encerrado' };
+
 function mapEvento(e) {
+  const dataISO = e.eventDate ? String(e.eventDate).slice(0, 10) : '';
   return {
     id: e.id,
-    nome: e.name,
-    tipo: e.type || '',
-    data: e.eventDate ? String(e.eventDate).slice(0, 10) : '',
-    local: e.venue || '',
-    capacidade: e.capacity,
-    status: { draft: 'em_breve', upcoming: 'em_breve', active: 'ativo', sold_out: 'esgotado', closed: 'encerrado' }[e.status] || 'ativo',
+    nome: String(e.name ?? ''),
+    tipo: String(e.type || ''),
+    data: /^\d{4}-\d{2}-\d{2}$/.test(dataISO) ? dataISO : '',
+    local: String(e.venue || ''),
+    capacidade: num(e.capacity),
+    status: pick(STATUS_EVENTO_UI, e.status, 'ativo'),
     statusApi: e.status,
-    desc: e.description || '',
-    regras: e.rules || '',
-    metaPublico: e.goalAttendance,
-    metaFaturamento: e.goalRevenue,
+    desc: String(e.description || ''),
+    regras: String(e.rules || ''),
+    metaPublico: num(e.goalAttendance),
+    metaFaturamento: num(e.goalRevenue),
     lotes: (e.batches || []).map(b => ({
-      id: b.id, nome: b.name, preco: Number(b.price),
-      disponivel: b.available, total: b.quantityTotal,
+      id: b.id, nome: String(b.name ?? ''), preco: num(b.price),
+      disponivel: num(b.available), total: num(b.quantityTotal),
     })),
   };
 }
@@ -96,48 +137,48 @@ async function carregarDados() {
     STATE = {
       eventos: eventos.map(mapEvento),
       bar: produtos.map(p => ({
-        id: p.id, nome: p.name, emoji: p.emoji || '🍶', cat: p.category,
-        custo: p.unitCost, estoque: p.stockQuantity, minimo: p.minStock,
+        id: p.id, nome: String(p.name ?? ''), emoji: String(p.emoji || '🍶'), cat: String(p.category ?? ''),
+        custo: num(p.unitCost), estoque: num(p.stockQuantity), minimo: num(p.minStock),
       })),
       despesas: despesas.map(d => ({
         id: d.id,
-        cat: `${d.category_icon || ''} ${d.category_name}`.trim(),
+        cat: `${d.category_icon || ''} ${d.category_name ?? ''}`.trim(),
         catId: d.category_id,
-        desc: d.description || '',
+        desc: String(d.description || ''),
         valor: Number(d.amount),
         eventId: d.event_id,
       })),
       entries: (checkins.rows || []).map(c => ({
-        id: c.id, nome: c.guest_name, codigo: c.code || '',
-        evento: c.event_name, hora: fmt(new Date(c.checked_in_at)),
+        id: c.id, nome: String(c.guest_name ?? ''), codigo: String(c.code || ''),
+        evento: String(c.event_name ?? ''), hora: fmt(new Date(c.checked_in_at)),
       })),
       participantes: participantes.map(p => ({
-        userId: p.id, nome: p.name, email: p.email,
-        cpf: p.cpf || '—', tel: p.phone || '—',
-        ingressos: p.tickets,
+        userId: p.id, nome: String(p.name ?? ''), email: String(p.email ?? ''),
+        cpf: String(p.cpf || '—'), tel: String(p.phone || '—'),
+        ingressos: num(p.tickets),
         status: p.status === 'blocked' ? 'bloqueado' : 'ativo',
         semCadastro: p.status === 'guest',
       })),
       contatos: contatos.map(c => ({
-        id: c.id, nome: c.name, cargo: c.roleTitle || '', email: c.email || '',
-        tel: c.phone || '', cat: c.category, valor: c.fee, obs: c.notes || '',
+        id: c.id, nome: String(c.name ?? ''), cargo: String(c.roleTitle || ''), email: String(c.email || ''),
+        tel: String(c.phone || ''), cat: String(c.category ?? ''), valor: num(c.fee), obs: String(c.notes || ''),
       })),
       equipe: equipe.map(m => ({
-        id: m.id, nome: m.name, email: m.email,
-        perfil: PERFIL_LABEL[m.role] || m.role,
+        id: m.id, nome: String(m.name ?? ''), email: String(m.email ?? ''),
+        perfil: String(pick(PERFIL_LABEL, m.role, m.role ?? '')),
         role: m.role,
         status: m.status === 'active' ? 'ativo' : 'inativo',
       })),
       auditLog: auditoria.slice().reverse().map(l => ({
         hora: new Date(l.hora).toLocaleString('pt-BR'),
-        usuario: l.usuario, acao: l.acao,
+        usuario: String(l.usuario ?? ''), acao: String(l.acao ?? ''),
       })),
       sistema: {
         modoContingencia: !!ui.modoContingencia,
-        ultimoBackup: ui.ultimoBackup || Date.now(),
-        uptimeStart: ui.uptimeStart || Date.now(),
+        ultimoBackup: num(ui.ultimoBackup, Date.now()) || Date.now(),
+        uptimeStart: num(ui.uptimeStart, Date.now()) || Date.now(),
       },
-      unitEcon: ui.unitEcon || { cac: 850, churn: 4, take: 6 },
+      unitEcon: sanitizeUnitEcon(ui.unitEcon),
     };
   } catch (err) {
     if (err.status === 401 || err.status === 403) {
@@ -291,7 +332,7 @@ function renderDashboard() {
     const pct = ev.capacidade > 0 ? Math.round((vendidos/ev.capacidade)*100) : 0;
     const col = pct > 80 ? 'red' : pct > 50 ? 'yellow' : 'green';
     return `<div class="progress-row">
-      <div class="progress-label" title="${ev.nome}">${ev.nome.substring(0,22)}${ev.nome.length>22?'…':''}</div>
+      <div class="progress-label" title="${escapeHTML(ev.nome)}">${escapeHTML(ev.nome.substring(0,22))}${ev.nome.length>22?'…':''}</div>
       <div class="progress-track"><div class="progress-fill ${col}" style="width:${pct}%"></div></div>
       <div class="progress-val">${pct}%</div>
     </div>`;
@@ -303,7 +344,7 @@ function renderDashboard() {
     const pctClamped = Math.min(pct, 100);
     const col = item.estoque < item.minimo ? 'red' : item.estoque < item.minimo*2 ? 'yellow' : 'green';
     return `<div class="progress-row">
-      <div class="progress-label">${item.emoji} ${item.nome.substring(0,16)}</div>
+      <div class="progress-label">${escapeHTML(item.emoji)} ${escapeHTML(item.nome.substring(0,16))}</div>
       <div class="progress-track"><div class="progress-fill ${col}" style="width:${pctClamped}%"></div></div>
       <div class="progress-val">${item.estoque} un</div>
     </div>`;
@@ -317,9 +358,9 @@ function renderDashboard() {
   } else {
     log.innerHTML = [...STATE.entries].reverse().slice(0,5).map(e => `
       <div class="entry-row">
-        <span class="time">${e.hora}</span>
-        <span class="name">${e.nome}</span>
-        <span class="badge badge-purple">${e.evento.substring(0,12)}</span>
+        <span class="time">${escapeHTML(e.hora)}</span>
+        <span class="name">${escapeHTML(e.nome)}</span>
+        <span class="badge badge-purple">${escapeHTML(e.evento.substring(0,12))}</span>
       </div>`).join('');
   }
 
@@ -328,7 +369,7 @@ function renderDashboard() {
     const max = Math.max(...STATE.despesas.map(x=>x.valor));
     const pct = Math.round((d.valor/max)*100);
     return `<div class="progress-row">
-      <div class="progress-label">${d.cat.substring(0,18)}</div>
+      <div class="progress-label">${escapeHTML(d.cat.substring(0,18))}</div>
       <div class="progress-track"><div class="progress-fill purple" style="width:${pct}%"></div></div>
       <div class="progress-val">${fmt_brl(d.valor)}</div>
     </div>`;
@@ -346,16 +387,16 @@ function renderEventos(search='') {
     const vendidos = ev.lotes.reduce((a,l)=>a+(l.total-l.disponivel),0);
     const receita = ev.lotes.reduce((a,l)=>a+(l.total-l.disponivel)*l.preco,0);
     const idx = STATE.eventos.indexOf(ev);
-    const stBadge = {ativo:'badge-green',em_breve:'badge-blue',esgotado:'badge-red',encerrado:'badge-yellow'}[ev.status]||'badge-yellow';
-    const stLabel = {ativo:'Ativo',em_breve:'Em breve',esgotado:'Esgotado',encerrado:'Encerrado'}[ev.status]||ev.status;
+    const stBadge = pick({ativo:'badge-green',em_breve:'badge-blue',esgotado:'badge-red',encerrado:'badge-yellow'}, ev.status, 'badge-yellow');
+    const stLabel = pick({ativo:'Ativo',em_breve:'Em breve',esgotado:'Esgotado',encerrado:'Encerrado'}, ev.status, ev.status);
     return `<tr>
-      <td><b>${ev.nome}</b><div style="font-size:10px;color:var(--text3)">${ev.tipo}</div></td>
+      <td><b>${escapeHTML(ev.nome)}</b><div style="font-size:10px;color:var(--text3)">${escapeHTML(ev.tipo)}</div></td>
       <td>${ev.data !== '' ? new Date(ev.data+'T12:00').toLocaleDateString('pt-BR') : 'A definir'}</td>
-      <td>${ev.local}</td>
+      <td>${escapeHTML(ev.local)}</td>
       <td>${ev.capacidade.toLocaleString('pt-BR')}</td>
       <td>${vendidos}</td>
       <td>${fmt_brl(receita)}</td>
-      <td><span class="badge ${stBadge}">${stLabel}</span></td>
+      <td><span class="badge ${stBadge}">${escapeHTML(stLabel)}</span></td>
       <td style="white-space:nowrap">
         <button class="btn btn-outline btn-sm" onclick="verLotes(${idx})" style="margin-right:4px">Lotes</button>
         <button class="btn btn-outline btn-sm" onclick="editEvento(${idx})" style="margin-right:4px">✏️</button>
@@ -448,7 +489,7 @@ function renderLotes() {
   tbody.innerHTML = ev.lotes.map((l,i) => {
     const vendidos = l.total - l.disponivel;
     return `<tr>
-      <td><b>${l.nome}</b></td>
+      <td><b>${escapeHTML(l.nome)}</b></td>
       <td>R$ ${l.preco.toFixed(2).replace('.',',')}</td>
       <td>
         <div style="display:flex;align-items:center;gap:8px">
@@ -549,7 +590,7 @@ function renderBar(search='') {
   // Alerts
   const low = STATE.bar.filter(b => b.estoque < b.minimo);
   document.getElementById('bar-alerts').innerHTML = low.map(b =>
-    `<div class="alert alert-warning">⚠️ Estoque baixo: <b>${b.emoji} ${b.nome}</b> — ${b.estoque} un. (mín: ${b.minimo})</div>`
+    `<div class="alert alert-warning">⚠️ Estoque baixo: <b>${escapeHTML(b.emoji)} ${escapeHTML(b.nome)}</b> — ${b.estoque} un. (mín: ${b.minimo})</div>`
   ).join('');
 
   // Stock visual
@@ -557,7 +598,7 @@ function renderBar(search='') {
     const pct = Math.min(100, Math.round((item.estoque/(item.minimo*5))*100));
     const col = item.estoque < item.minimo ? 'red' : item.estoque < item.minimo*2 ? 'yellow' : 'green';
     return `<div class="progress-row">
-      <div class="progress-label">${item.emoji} ${item.nome.substring(0,18)}</div>
+      <div class="progress-label">${escapeHTML(item.emoji)} ${escapeHTML(item.nome.substring(0,18))}</div>
       <div class="progress-track"><div class="progress-fill ${col}" style="width:${pct}%"></div></div>
       <div class="progress-val">${item.estoque}</div>
     </div>`;
@@ -570,8 +611,8 @@ function renderBar(search='') {
     const idx = STATE.bar.indexOf(item);
     const low = item.estoque < item.minimo;
     return `<tr>
-      <td><b>${item.emoji} ${item.nome}</b></td>
-      <td>${item.cat}</td>
+      <td><b>${escapeHTML(item.emoji)} ${escapeHTML(item.nome)}</b></td>
+      <td>${escapeHTML(item.cat)}</td>
       <td>
         <div style="display:flex;align-items:center;gap:6px">
           <button class="qty-btn" onclick="alterarBar(${idx},-5)">−5</button>
@@ -655,8 +696,17 @@ async function delBarItem(idx) {
 function renderPortaria() {
   // Populate evento select
   const sel = document.getElementById('manual-evento');
-  sel.innerHTML = '<option value="">Selecionar evento…</option>' +
-    STATE.eventos.map(ev=>`<option>${ev.nome}</option>`).join('');
+  sel.replaceChildren();
+  const optPadrao = document.createElement('option');
+  optPadrao.value = '';
+  optPadrao.textContent = 'Selecionar evento…';
+  sel.appendChild(optPadrao);
+  STATE.eventos.forEach(ev => {
+    const opt = document.createElement('option');
+    opt.value = ev.nome;
+    opt.textContent = ev.nome;
+    sel.appendChild(opt);
+  });
 
   // Entry log
   const log = document.getElementById('entry-log');
@@ -667,19 +717,19 @@ function renderPortaria() {
   } else {
     log.innerHTML = [...STATE.entries].reverse().map(e=>`
       <div class="entry-row">
-        <span class="time">${e.hora}</span>
-        <span class="name">${e.nome}</span>
-        <span class="badge badge-purple" style="font-size:9px;max-width:100px;overflow:hidden;text-overflow:ellipsis">${e.evento.substring(0,14)}</span>
-        ${e.codigo ? `<span style="color:var(--text3);font-size:10px">${e.codigo}</span>` : ''}
+        <span class="time">${escapeHTML(e.hora)}</span>
+        <span class="name">${escapeHTML(e.nome)}</span>
+        <span class="badge badge-purple" style="font-size:9px;max-width:100px;overflow:hidden;text-overflow:ellipsis">${escapeHTML(e.evento.substring(0,14))}</span>
+        ${e.codigo ? `<span style="color:var(--text3);font-size:10px">${escapeHTML(e.codigo)}</span>` : ''}
       </div>`).join('');
   }
 
   // Count per event
-  const counts = {};
+  const counts = Object.create(null);   // sem protótipo: nome de evento como chave é dado não confiável
   STATE.entries.forEach(e => { counts[e.evento] = (counts[e.evento]||0)+1; });
   document.getElementById('portaria-count').innerHTML = Object.entries(counts).map(([ev,cnt])=>`
     <div class="progress-row">
-      <div class="progress-label" title="${ev}">${ev.substring(0,20)}</div>
+      <div class="progress-label" title="${escapeHTML(ev)}">${escapeHTML(ev.substring(0,20))}</div>
       <div class="progress-track"><div class="progress-fill purple" style="width:${Math.min(100,cnt*5)}%"></div></div>
       <div class="progress-val">${cnt}</div>
     </div>`).join('') || '<div style="color:var(--text3);font-size:12px;padding:8px">Sem entradas</div>';
@@ -743,8 +793,8 @@ function renderFinanceiro() {
 
   const tbody = document.getElementById('fin-tbody');
   tbody.innerHTML = STATE.despesas.map((d,i)=>`<tr>
-    <td>${d.cat}</td>
-    <td>${d.desc}</td>
+    <td>${escapeHTML(d.cat)}</td>
+    <td>${escapeHTML(d.desc)}</td>
     <td>${fmt_brl(d.valor)}</td>
     <td style="white-space:nowrap">
       <button class="btn btn-outline btn-sm" onclick="editDespesa(${i})" style="margin-right:4px">✏️</button>
@@ -756,7 +806,7 @@ function renderFinanceiro() {
   const max = Math.max(...STATE.despesas.map(d=>d.valor),1);
   document.getElementById('fin-expense-chart').innerHTML = STATE.despesas.map(d=>`
     <div class="progress-row">
-      <div class="progress-label">${d.cat.substring(0,16)}</div>
+      <div class="progress-label">${escapeHTML(d.cat.substring(0,16))}</div>
       <div class="progress-track"><div class="progress-fill purple" style="width:${Math.round((d.valor/max)*100)}%"></div></div>
       <div class="progress-val" style="font-size:10px">${fmt_brl(d.valor)}</div>
     </div>`).join('');
@@ -824,10 +874,10 @@ function renderParticipantes(search='') {
     const idx = STATE.participantes.indexOf(p);
     const stBadge = p.status==='ativo'?'badge-green':'badge-red';
     return `<tr>
-      <td><b>${p.nome}</b></td>
-      <td>${p.email}</td>
-      <td>${p.cpf}</td>
-      <td>${p.tel}</td>
+      <td><b>${escapeHTML(p.nome)}</b></td>
+      <td>${escapeHTML(p.email)}</td>
+      <td>${escapeHTML(p.cpf)}</td>
+      <td>${escapeHTML(p.tel)}</td>
       <td><span class="badge badge-blue">${p.ingressos}</span></td>
       <td><span class="badge ${stBadge}">${p.status==='ativo'?'Ativo':'Bloqueado'}</span></td>
       <td style="white-space:nowrap">
@@ -864,15 +914,15 @@ function renderContatos(search='') {
 
   grid.innerHTML = filtered.map(c=>{
     const idx = STATE.contatos.indexOf(c);
-    const initials = c.nome.split(' ').map(n=>n[0]).slice(0,2).join('').toUpperCase();
+    const initials = c.nome.split(' ').filter(Boolean).map(n=>Array.from(n)[0]).slice(0,2).join('').toUpperCase();
     return `<div class="contact-card">
-      <div class="contact-avatar">${initials}</div>
-      <div class="contact-name">${c.nome}</div>
-      <div class="contact-email" style="margin-bottom:4px"><span class="badge ${catColor[c.cat]||'badge-yellow'}" style="font-size:9px">${c.cat}</span> ${c.cargo}</div>
-      <div class="contact-email">✉ ${c.email}</div>
-      <div class="contact-tel">📞 ${c.tel}</div>
+      <div class="contact-avatar">${escapeHTML(initials)}</div>
+      <div class="contact-name">${escapeHTML(c.nome)}</div>
+      <div class="contact-email" style="margin-bottom:4px"><span class="badge ${pick(catColor, c.cat, 'badge-yellow')}" style="font-size:9px">${escapeHTML(c.cat)}</span> ${escapeHTML(c.cargo)}</div>
+      <div class="contact-email">✉ ${escapeHTML(c.email)}</div>
+      <div class="contact-tel">📞 ${escapeHTML(c.tel)}</div>
       ${c.valor?`<div style="font-size:11px;color:var(--text3);margin-top:4px">💰 ${fmt_brl(c.valor)}</div>`:''}
-      ${c.obs?`<div style="font-size:11px;color:var(--text3);margin-top:4px;font-style:italic">${c.obs}</div>`:''}
+      ${c.obs?`<div style="font-size:11px;color:var(--text3);margin-top:4px;font-style:italic">${escapeHTML(c.obs)}</div>`:''}
       <div class="contact-actions">
         <button class="btn btn-outline btn-sm" onclick="editContato(${idx})">✏️ Editar</button>
         <button class="btn btn-danger btn-sm" onclick="delContato(${idx})">🗑</button>
@@ -963,8 +1013,8 @@ function renderCountdown() {
     <div class="countdown-card">
       <div class="countdown-info">
         <div class="countdown-label">⏱ Próximo Evento</div>
-        <div class="countdown-name">${ev.nome}</div>
-        <div class="countdown-meta">${ev.local} · ${new Date(ev.data+'T12:00').toLocaleDateString('pt-BR')} · ${Math.round(st.ocupacao)}% da capacidade vendida</div>
+        <div class="countdown-name">${escapeHTML(ev.nome)}</div>
+        <div class="countdown-meta">${escapeHTML(ev.local)} · ${new Date(ev.data+'T12:00').toLocaleDateString('pt-BR')} · ${Math.round(st.ocupacao)}% da capacidade vendida</div>
       </div>
       <div class="countdown-units">
         <div class="countdown-unit"><div class="num">${dias}</div><div class="lbl">dias</div></div>
@@ -1017,9 +1067,14 @@ function renderAlertasCentral() {
     el.innerHTML = `<div class="alert alert-ok"><span class="alert-icon">✅</span><span><span class="alert-title">Tudo sob controle.</span>Nenhum alerta crítico no momento.</span></div>`;
     return;
   }
-  el.innerHTML = alerts.slice(0,6).map(a => `
-    <div class="alert alert-${a.tipo}"><span class="alert-icon">${a.icon}</span><span><span class="alert-title">${a.title}</span>${a.text}</span></div>
-  `).join('');
+  // Todos os campos do alerta são texto puro; o escape acontece aqui, uma única vez.
+  const TIPOS_ALERTA = ['warning', 'danger', 'info', 'ok'];
+  el.innerHTML = alerts.slice(0,6).map(a => {
+    const tipo = TIPOS_ALERTA.includes(a.tipo) ? a.tipo : 'info';
+    return `
+    <div class="alert alert-${tipo}"><span class="alert-icon">${escapeHTML(a.icon)}</span><span><span class="alert-title">${escapeHTML(a.title)}</span>${escapeHTML(a.text)}</span></div>
+  `;
+  }).join('');
 }
 
 function renderFunilDashboard() {
@@ -1064,7 +1119,7 @@ function renderProjecaoDashboard() {
     const projecao = st.receita + (ritmoDiario * diasRestantes * 1.18);
     const pctMeta = ev.metaFaturamento ? Math.min(999, Math.round(projecao/ev.metaFaturamento*100)) : null;
     return `<div class="progress-row" style="margin-bottom:14px">
-      <div class="progress-label" style="width:150px" title="${ev.nome}">${ev.nome.substring(0,20)}</div>
+      <div class="progress-label" style="width:150px" title="${escapeHTML(ev.nome)}">${escapeHTML(ev.nome.substring(0,20))}</div>
       <div class="progress-track"><div class="progress-fill ${pctMeta>=100?'green':pctMeta>=70?'yellow':'red'}" style="width:${Math.min(100,pctMeta||0)}%"></div></div>
       <div class="progress-val" style="width:auto;font-size:11px">${fmt_brl(projecao)}${pctMeta!=null?` <span style="color:var(--text3)">(${pctMeta}% da meta)</span>`:''}</div>
     </div>`;
@@ -1095,7 +1150,7 @@ function renderMetas() {
     const pctPub = ev.metaPublico ? Math.min(100, Math.round(st.vendidos/ev.metaPublico*100)) : 0;
     const pctFat = ev.metaFaturamento ? Math.min(100, Math.round(st.receita/ev.metaFaturamento*100)) : 0;
     return `<div class="meta-card">
-      <div class="meta-card-title">${ev.nome} <span class="badge badge-purple" style="margin-left:6px">${ev.status}</span></div>
+      <div class="meta-card-title">${escapeHTML(ev.nome)} <span class="badge badge-purple" style="margin-left:6px">${escapeHTML(ev.status)}</span></div>
       <div class="progress-row">
         <div class="progress-label">Meta de público</div>
         <div class="progress-track"><div class="progress-fill ${pctPub>=100?'green':pctPub>=60?'yellow':'red'}" style="width:${pctPub}%"></div></div>
@@ -1107,8 +1162,8 @@ function renderMetas() {
         <div class="progress-val">${pctFat}%</div>
       </div>
       <div class="meta-inline-form">
-        <div class="form-group"><label>Meta de público</label><input type="number" value="${ev.metaPublico||0}" onchange="atualizarMeta(${idx},'metaPublico',this.value)"></div>
-        <div class="form-group"><label>Meta de faturamento (R$)</label><input type="number" value="${ev.metaFaturamento||0}" onchange="atualizarMeta(${idx},'metaFaturamento',this.value)"></div>
+        <div class="form-group"><label>Meta de público</label><input type="number" value="${num(ev.metaPublico)}" onchange="atualizarMeta(${idx},'metaPublico',this.value)"></div>
+        <div class="form-group"><label>Meta de faturamento (R$)</label><input type="number" value="${num(ev.metaFaturamento)}" onchange="atualizarMeta(${idx},'metaFaturamento',this.value)"></div>
       </div>
     </div>`;
   }).join('') || '<div class="empty"><p>Cadastre um evento para definir metas.</p></div>';
@@ -1141,7 +1196,7 @@ function renderComparativo() {
   const medals = ['🥇','🥈','🥉'];
   tbody.innerHTML = rows.map((r,i) => `<tr>
     <td>${i<3?`<span class="rank-badge">${medals[i]}</span>`:i+1}</td>
-    <td><b>${r.ev.nome}</b></td>
+    <td><b>${escapeHTML(r.ev.nome)}</b></td>
     <td>${r.vendidos.toLocaleString('pt-BR')}</td>
     <td>${Math.round(r.ocupacao)}%</td>
     <td>${fmt_brl(r.receita)}</td>
@@ -1159,10 +1214,10 @@ function renderComparativo() {
       const melhorTicket = [...rows].sort((a,b)=>b.ticketMedio-a.ticketMedio)[0];
       const piorOcupacao = [...rows].sort((a,b)=>a.ocupacao-b.ocupacao)[0];
       insightsEl.innerHTML = `
-        <div class="insight-box"><span class="ic">🧠</span><span><b>Melhor margem:</b> "${melhorMargem.ev.nome}" opera com margem estimada de ${melhorMargem.margem.toFixed(1)}%, o padrão mais saudável do portfólio atual.</span></div>
-        <div class="insight-box"><span class="ic">👥</span><span><b>Maior público:</b> "${maiorPublico.ev.nome}" vendeu ${maiorPublico.vendidos.toLocaleString('pt-BR')} ingressos — use esse formato como referência para replicar em novos eventos.</span></div>
-        <div class="insight-box"><span class="ic">🎟️</span><span><b>Melhor ticket médio:</b> "${melhorTicket.ev.nome}" com ${fmt_brl(melhorTicket.ticketMedio)} por ingresso, indicando forte aceitação de lotes premium.</span></div>
-        ${piorOcupacao.ocupacao<60?`<div class="insight-box"><span class="ic">⚠️</span><span><b>Atenção:</b> "${piorOcupacao.ev.nome}" está com apenas ${Math.round(piorOcupacao.ocupacao)}% de ocupação — considere reforçar marketing ou revisar preço dos lotes.</span></div>`:''}
+        <div class="insight-box"><span class="ic">🧠</span><span><b>Melhor margem:</b> "${escapeHTML(melhorMargem.ev.nome)}" opera com margem estimada de ${melhorMargem.margem.toFixed(1)}%, o padrão mais saudável do portfólio atual.</span></div>
+        <div class="insight-box"><span class="ic">👥</span><span><b>Maior público:</b> "${escapeHTML(maiorPublico.ev.nome)}" vendeu ${maiorPublico.vendidos.toLocaleString('pt-BR')} ingressos — use esse formato como referência para replicar em novos eventos.</span></div>
+        <div class="insight-box"><span class="ic">🎟️</span><span><b>Melhor ticket médio:</b> "${escapeHTML(melhorTicket.ev.nome)}" com ${fmt_brl(melhorTicket.ticketMedio)} por ingresso, indicando forte aceitação de lotes premium.</span></div>
+        ${piorOcupacao.ocupacao<60?`<div class="insight-box"><span class="ic">⚠️</span><span><b>Atenção:</b> "${escapeHTML(piorOcupacao.ev.nome)}" está com apenas ${Math.round(piorOcupacao.ocupacao)}% de ocupação — considere reforçar marketing ou revisar preço dos lotes.</span></div>`:''}
       `;
     }
   }
@@ -1197,7 +1252,7 @@ function atualizarUnitEcon() {
 function renderUnitEconomics(resetInputs=true) {
   const kpiEl = document.getElementById('ue-kpis');
   if (!kpiEl) return;
-  const ue = STATE.unitEcon || {cac:850, churn:4, take:6};
+  const ue = sanitizeUnitEcon(STATE.unitEcon);
   if (resetInputs) {
     const cacEl = document.getElementById('ue-cac'), churnEl = document.getElementById('ue-churn'), takeEl = document.getElementById('ue-take');
     if (cacEl) cacEl.value = ue.cac;
@@ -1268,9 +1323,9 @@ function renderEquipe(search='') {
   tbody.innerHTML = filtered.map(m => {
     const idx = STATE.equipe.indexOf(m);
     return `<tr>
-      <td><b>${m.nome}</b></td>
-      <td>${m.email}</td>
-      <td><span class="badge badge-purple">${m.perfil}</span></td>
+      <td><b>${escapeHTML(m.nome)}</b></td>
+      <td>${escapeHTML(m.email)}</td>
+      <td><span class="badge badge-purple">${escapeHTML(m.perfil)}</span></td>
       <td><span class="badge ${m.status==='ativo'?'badge-green':'badge-red'}">${m.status==='ativo'?'Ativo':'Inativo'}</span></td>
       <td style="white-space:nowrap">
         <button class="btn btn-outline btn-sm" onclick="editEquipe(${idx})" style="margin-right:4px">✏️</button>
@@ -1367,7 +1422,7 @@ function renderAuditoria() {
   const log = [...(STATE.auditLog||[])].reverse();
   if (sub) sub.textContent = `${log.length} registro(s)`;
   el.innerHTML = log.length ? log.map(l => `
-    <div class="audit-row"><span class="time">${l.hora}</span><span class="who">${l.usuario}</span><span class="what">${l.acao}</span></div>
+    <div class="audit-row"><span class="time">${escapeHTML(l.hora)}</span><span class="who">${escapeHTML(l.usuario)}</span><span class="what">${escapeHTML(l.acao)}</span></div>
   `).join('') : '<div class="empty"><div class="empty-icon">🧾</div><p>Nenhuma ação registrada ainda</p></div>';
 }
 

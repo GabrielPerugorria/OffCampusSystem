@@ -570,6 +570,8 @@
   const rockets = [];
   const ROCKET_MAX_ALT = GLOBE_RADIUS * 2.6;
   const ROCKET_LIFE_SEC = 7.5;
+  const ROCKET_FWD = new THREE.Vector3(0, 0, 1); // eixo do nariz no modelo
+  const rkVel = new THREE.Vector3();
 
   function createRocketModel() {
     const g = new THREE.Group();
@@ -620,8 +622,9 @@
 
     const { group, flame, glow } = createRocketModel();
     group.position.copy(startPos);
-    group.lookAt(normal.clone().multiplyScalar(GLOBE_RADIUS * 5));
-    group.rotateX(Math.PI / 2);
+    /* nariz do modelo = +Z local; alinha com a normal (espaço local do globo,
+       independente da rotação do globeGroup — lookAt() usaria coords de mundo) */
+    group.quaternion.setFromUnitVectors(ROCKET_FWD, normal);
     globeGroup.add(group);
 
     /* leve desvio lateral para a trajetória parecer mais orgânica */
@@ -642,7 +645,7 @@
 
     rockets.push({
       group, flame, glow, trail, trailGeo, trailPositions: [],
-      normal, wobbleAxis, age: 0
+      normal, wobbleAxis, age: 0, lastPos: startPos.clone()
     });
   }
 
@@ -721,6 +724,7 @@
   let prevMouse = { x: 0, y: 0 };
   const t0 = Date.now();
   let time = 0, highlightState = -1;
+  let lastFrameTs = performance.now();
 
   const tip = document.createElement('div');
   tip.className = 'globe-tooltip';
@@ -731,6 +735,9 @@
   function animate() {
     requestAnimationFrame(animate);
     time += 0.016;
+    const nowTs = performance.now();
+    const rkDt = Math.min(0.05, (nowTs - lastFrameTs) / 1000); // s reais (limitado p/ aba em segundo plano)
+    lastFrameTs = nowTs;
 
     atmMat.uniforms.uTime.value = time;
     borderMat.opacity = 0.6 + 0.35 * Math.sin(time * 2.2);
@@ -746,14 +753,14 @@
     orbit3.sat.rotation.y = a3 + Math.PI / 2;
 
     /* ── foguetes: lançamento periódico e trajetória de saída ── */
-    nextRocketAt -= 0.016;
+    nextRocketAt -= rkDt;
     if (nextRocketAt <= 0 && rockets.length < 3) {
       launchRocket();
       nextRocketAt = 4 + Math.random() * 5;
     }
     for (let i = rockets.length - 1; i >= 0; i--) {
       const rk = rockets[i];
-      rk.age += 0.016;
+      rk.age += rkDt;
       const t = Math.min(1, rk.age / ROCKET_LIFE_SEC);
       const eased = t * t * (1.3 - 0.3 * t); // aceleração progressiva
       const dist = GLOBE_RADIUS * 1.001 + eased * (ROCKET_MAX_ALT - GLOBE_RADIUS);
@@ -763,8 +770,9 @@
         .normalize();
       const pos = dir.clone().multiplyScalar(dist);
       rk.group.position.copy(pos);
-      rk.group.lookAt(dir.clone().multiplyScalar(dist + 5));
-      rk.group.rotateX(Math.PI / 2);
+      /* aponta o nariz na direção do movimento (tangente da trajetória) */
+      rk.group.quaternion.setFromUnitVectors(ROCKET_FWD, rkVel.copy(pos).sub(rk.lastPos).lengthSq() > 1e-12 ? rkVel.normalize() : dir);
+      rk.lastPos.copy(pos);
 
       const flick = 0.75 + Math.random() * 0.25;
       rk.flame.scale.set(flick, 1, flick);

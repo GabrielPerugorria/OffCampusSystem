@@ -1,729 +1,243 @@
 /* ============================================================
-   EVOTECH DIGITAL ACTIVATION — preloader cinematográfico
+   INTRO — EvoTech Events · "Eventos em movimento"  (≈ 2,5 s no total, contando o parse da página)
    ------------------------------------------------------------
-   Timeline fixo (independe de FPS, roda em tempo real):
-     Cena 1  DISCOVERY   0.0s → 3.0s  partículas convergem, planeta nasce
-     Cena 2  ACTIVATION  3.0s → 6.0s  planeta gira, rede orbital acende
-     Cena 3  FORMATION   6.0s → 9.0s  energia migra pro centro, logo é construída
-     Cena 4  TRANSITION  9.0s → 9.8s  flash + câmera atravessa, site aparece
-   O site só é revelado após a Cena 4, e nunca antes de window.load
-   (se o load demorar, a Cena 2 entra em loop de "respiração" até
-   liberar a Cena 3 — nunca trava, nunca soma um scene igual duas vezes).
+   Esfera 3D de pontos e linhas verdes desenhada em <canvas> 2D
+   (projeção em perspectiva própria; sem Three.js/WebGL, portanto
+   sem dependência de CDN nem de GPU).
 
-   Robustez contra o bug de F5:
-     - guarda global (window.__evoIntroBooted) impede uma segunda
-       inicialização se o script for avaliado mais de uma vez;
-     - um único WebGLRenderer é criado por execução e é sempre
-       destruído (dispose) antes de qualquer return antecipado;
-     - todos os listeners são registrados com referência nomeada e
-       removidos em teardown() — nunca ficam acumulando;
-     - nenhum estado é lido de sessionStorage/localStorage — cada
-       carregamento de página começa do zero, de forma determinística.
+   Linha do tempo (relógio real, não contagem de frames):
+     0,00–0,90 s  pontos convergem e formam a esfera
+     0,15–1,90 s  rotação suave contínua · barra 0 → 100 %
+     1,90–2,30 s  fade-out e liberação do site
+   Pular / Escape / fim normal / fail-safe → sempre finish() (1x).
+   Debug: ?intro=off desativa por completo.
    ============================================================ */
 (function () {
   'use strict';
 
-  if (window.__evoIntroBooted) return; // trava contra dupla execução (bug do F5 / script duplicado)
+  var html = document.documentElement;
+  var splash = document.getElementById('introSplash');
+  var canvas = document.getElementById('introCanvas');
+
+  // guarda contra dupla execução (script carregado duas vezes)
+  if (window.__evoIntroBooted) return;
   window.__evoIntroBooted = true;
 
-  var splash = document.getElementById('introSplash');
-  if (!splash) return;
+  if (!splash || !canvas || !canvas.getContext || !html.classList.contains('intro-on')) {
+    cleanupDom();
+    return;
+  }
 
-  var canvas = document.getElementById('introCanvas');
-  var mark = splash.querySelector('.intro-mark');
-  var progressFill = splash.querySelector('.intro-progress-fill');
-  var progressLabel = splash.querySelector('.intro-progress-label');
+  var ctx = canvas.getContext('2d');
+  var orbEl = splash.querySelector('.intro-orb');
+  var fillEl = splash.querySelector('.intro-progress-fill');
   var skipBtn = splash.querySelector('.intro-skip');
-  var html = document.documentElement;
 
-  var reducedMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  var reduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
-  html.classList.add('intro-lock');
+  var T_FILL = reduced ? 1.0 : 1.9;     // barra completa (s)
+  var T_END = reduced ? 1.3 : 2.3;      // intro totalmente encerrada (s)
+  var T_BUILD = 0.9;                    // montagem da esfera (s)
+  var SPIN = 1.1;                       // rad/s (rotação suave)
+  var TILT = 0.38;                      // inclinação do eixo (rad)
+  var NODES = 260;
+  var NEIGHBORS = 3;
 
-  /* ============================================================
-     1) DETECÇÃO DE CAPACIDADE → TIER
-     ============================================================ */
-  function detectGL() {
-    try {
-      var t = document.createElement('canvas');
-      var gl = t.getContext('webgl') || t.getContext('experimental-webgl');
-      if (!gl) return { supported: false };
-      var dbg = gl.getExtension('WEBGL_debug_renderer_info');
-      var renderer = dbg ? (gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL) || '') : '';
-      return { supported: true, renderer: renderer.toLowerCase() };
-    } catch (e) { return { supported: false }; }
-  }
-
-  function pickTier() {
-    var gl = detectGL();
-    if (!gl.supported) return { tier: 'low', webgl: false };
-    if (reducedMotion) return { tier: 'low', webgl: true };
-
-    var mem = navigator.deviceMemory || 4;
-    var cores = navigator.hardwareConcurrency || 4;
-    var minSide = Math.min(window.innerWidth, window.innerHeight);
-    var maxSide = Math.max(window.innerWidth, window.innerHeight);
-    var coarse = !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
-    var weakGpu = gl.renderer && /(mali-4|mali-t|adreno 3|adreno 4|powervr sgx|swiftshader)/.test(gl.renderer);
-
-    if (weakGpu || mem <= 2 || cores <= 2) return { tier: 'low', webgl: true };
-
-    var isPhone = minSide <= 480 && coarse;
-    var isTablet = minSide > 480 && maxSide <= 1180 && coarse;
-
-    if (isPhone) return (mem >= 6 && cores >= 6) ? { tier: 'med', webgl: true } : { tier: 'low', webgl: true };
-    if (isTablet) return { tier: 'med', webgl: true };
-    if (coarse) return { tier: 'med', webgl: true }; // notebook híbrido/touch
-    if (mem >= 8 && cores >= 8) return { tier: 'high', webgl: true };
-    return { tier: 'med', webgl: true };
-  }
-
-  var caps = pickTier();
-  var tier = caps.tier;
-
-  var TIER = {
-    high: { particles: 2600, orbitDots: 220, dotSize: 1.7, bloom: true, targetFps: 55, dpr: 2 },
-    med: { particles: 1300, orbitDots: 120, dotSize: 1.5, bloom: true, targetFps: 45, dpr: 1.5 },
-    low: { particles: 550, orbitDots: 60, dotSize: 1.4, bloom: false, targetFps: 30, dpr: 1.25 }
-  };
-
-  function applyTierClass(t) {
-    document.body.classList.remove('qhigh', 'qmed', 'qlow');
-    document.body.classList.add(t === 'high' ? 'qhigh' : t === 'med' ? 'qmed' : 'qlow');
-  }
-  applyTierClass(tier);
-
-  function downgrade() {
-    if (tier === 'high') { tier = 'med'; }
-    else if (tier === 'med') { tier = 'low'; }
-    else return;
-    applyTierClass(tier);
-    if (engine && engine.setConfig) engine.setConfig(TIER[tier]);
-  }
-
-  /* ============================================================
-     2) MOTOR 3D — planeta em camadas (núcleo, atmosfera, rede
-        orbital, partículas de profundidade) via Three.js;
-        fallback Canvas2D se WebGL indisponível.
-     ============================================================ */
-  var engine = null;
-
-  function makeThreeEngine() {
-    var renderer;
-    try {
-      renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: tier !== 'low', alpha: true, powerPreference: 'high-performance' });
-    } catch (e) { return null; }
-
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, TIER[tier].dpr));
-
-    var scene = new THREE.Scene();
-    var camera = new THREE.PerspectiveCamera(42, 1, 0.1, 200);
-
-    var world = new THREE.Group();
-    scene.add(world);
-
-    var radius = 3.3;
-
-    /* ============================================================
-       O PLANETA É A LOGO — não um sólido facetado com uma marca
-       colada em cima, e sim uma REDE PURA de nós+arestas (sem
-       nenhuma face preenchida), exatamente como uma esfera
-       geodésica de rede digital: só pontos luminosos e linhas
-       finas. É essa mesma geometria geodésica (nós + arestas) que
-       forma o ícone EvoTech, construída aqui em 3D, em escala
-       planetária. Quando a câmera se aproxima na Cena 3, essa
-       estrutura É o ícone da marca — a logo não aparece: ela é
-       revelada.
-       ============================================================ */
-    var detail = tier === 'high' ? 3 : tier === 'med' ? 2 : 1;
-    var geoGeometry = new THREE.IcosahedronGeometry(radius, detail);
-
-    /* ============================================================
-       MONTAGEM — os nós nascem embaralhados (nuvem caótica) e se
-       deslocam até o vértice geodésico que lhes cabe; as arestas só
-       existem entre dois nós já "vivos" e seguem suas posições em
-       tempo real, então a rede parece se costurar sozinha enquanto
-       os pontos se encontram. Cada nó tem um atraso próprio (stagger)
-       para que a montagem pareça orgânica, não um bloco só.
-       ============================================================ */
-    var rawPos = geoGeometry.attributes.position.array;
-    var vKey = function (x, y, z) { return Math.round(x * 400) + '_' + Math.round(y * 400) + '_' + Math.round(z * 400); };
-
-    // deduplica vértices (a geometria facetada repete posições por face)
-    var uniqueMap = {};
-    var vTarget = []; // Vector3 alvo (posição final geodésica)
-    var rawToUnique = new Int32Array(rawPos.length / 3);
-    for (var rv = 0; rv < rawPos.length / 3; rv++) {
-      var kx = rawPos[rv * 3], ky = rawPos[rv * 3 + 1], kz = rawPos[rv * 3 + 2];
-      var key = vKey(kx, ky, kz);
-      if (uniqueMap[key] === undefined) {
-        uniqueMap[key] = vTarget.length;
-        vTarget.push(new THREE.Vector3(kx, ky, kz));
-      }
-      rawToUnique[rv] = uniqueMap[key];
-    }
-    var nodeCount = vTarget.length;
-
-    // topologia das arestas (pares de índices únicos), derivada da EdgesGeometry oficial
-    var edgeTopoSrc = new THREE.EdgesGeometry(geoGeometry);
-    var edgeTopoPos = edgeTopoSrc.attributes.position.array;
-    var edgeIndexPairs = [];
-    var seenEdge = {};
-    for (var ee = 0; ee < edgeTopoPos.length / 6; ee++) {
-      var ax = edgeTopoPos[ee * 6], ay = edgeTopoPos[ee * 6 + 1], az = edgeTopoPos[ee * 6 + 2];
-      var bx = edgeTopoPos[ee * 6 + 3], by = edgeTopoPos[ee * 6 + 4], bz = edgeTopoPos[ee * 6 + 5];
-      var ia = uniqueMap[vKey(ax, ay, az)], ib = uniqueMap[vKey(bx, by, bz)];
-      if (ia === undefined || ib === undefined || ia === ib) continue;
-      var ek = ia < ib ? ia + '-' + ib : ib + '-' + ia;
-      if (seenEdge[ek]) continue;
-      seenEdge[ek] = true;
-      edgeIndexPairs.push(ia, ib);
-    }
-    edgeTopoSrc.dispose();
-
-    // posição de partida: nuvem verdadeiramente embaralhada no espaço 3D — sem
-    // nenhum padrão esférico (evita que o caos inicial já "pareça" uma esfera
-    // difusa). Distribuição em caixa, com profundidade ampla e assimétrica.
-    var nodeStart = new Float32Array(nodeCount * 3);
-    var nodeDelay = new Float32Array(nodeCount); // atraso individual — montagem escalonada, orgânica
-    var nodeSpin = new Float32Array(nodeCount * 3); // eixo/velocidade de "deriva" própria antes de encaixar
-    for (var nv = 0; nv < nodeCount; nv++) {
-      nodeStart[nv * 3] = (Math.random() - 0.5) * radius * 9.5;
-      nodeStart[nv * 3 + 1] = (Math.random() - 0.5) * radius * 7.5;
-      nodeStart[nv * 3 + 2] = (Math.random() - 0.5) * radius * 11 - radius * 1.4;
-      // piso de atraso (>0) garante uma janela inicial em que nada converge ainda —
-      // puro caos — antes de os primeiros nós começarem a viajar para seus lugares
-      nodeDelay[nv] = 0.1 + Math.random() * 0.62;
-      nodeSpin[nv * 3] = (Math.random() - 0.5) * 2.4;
-      nodeSpin[nv * 3 + 1] = (Math.random() - 0.5) * 2.4;
-      nodeSpin[nv * 3 + 2] = (Math.random() - 0.5) * 2.4;
-    }
-    var nodeCurrent = nodeStart.slice();
-    var nodeFacing = new Float32Array(nodeCount); // 0 = de costas (longe da câmera) .. 1 = de frente
-    var assembly = 0; // 0..1 global, avançado no update()
-    var _facingV = new THREE.Vector3();
-
-    function easeOutBack(t) {
-      var c1 = 1.4, c3 = c1 + 1;
-      return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
-    }
-
-    function updateAssembly(globalT) {
-      assembly = globalT;
-      var nColor = nodesGeo.attributes.color.array;
-      for (var i = 0; i < nodeCount; i++) {
-        var local = (globalT - nodeDelay[i]) / (1 - nodeDelay[i]);
-        if (local <= 0) {
-          // ainda "à deriva" — leve flutuação orgânica antes de ser chamado para o encaixe
-          nodeCurrent[i * 3] = nodeStart[i * 3] + Math.sin(globalT * 6 + nodeSpin[i * 3]) * 0.12;
-          nodeCurrent[i * 3 + 1] = nodeStart[i * 3 + 1] + Math.sin(globalT * 6 + nodeSpin[i * 3 + 1]) * 0.12;
-          nodeCurrent[i * 3 + 2] = nodeStart[i * 3 + 2] + Math.sin(globalT * 6 + nodeSpin[i * 3 + 2]) * 0.12;
-        } else {
-          local = Math.min(1, local);
-          var e = easeOutBack(local);
-          nodeCurrent[i * 3] = nodeStart[i * 3] + (vTarget[i].x - nodeStart[i * 3]) * e;
-          nodeCurrent[i * 3 + 1] = nodeStart[i * 3 + 1] + (vTarget[i].y - nodeStart[i * 3 + 1]) * e;
-          nodeCurrent[i * 3 + 2] = nodeStart[i * 3 + 2] + (vTarget[i].z - nodeStart[i * 3 + 2]) * e;
-        }
-
-        // profundidade 3D real: aplica a rotação atual do mundo à posição do nó e
-        // usa o eixo Z resultante (voltado pra câmera) pra decidir o quão visível
-        // esse nó está — pontos traseiros ficam discretos, frontais bem visíveis
-        _facingV.set(nodeCurrent[i * 3], nodeCurrent[i * 3 + 1], nodeCurrent[i * 3 + 2]).applyQuaternion(world.quaternion);
-        var facing = Math.max(0, Math.min(1, (_facingV.z / (radius * 1.15) + 1) * 0.5));
-        nodeFacing[i] = facing;
-        var bright = 0.22 + facing * 0.86;
-        nColor[i * 3] = 0.525 * bright;
-        nColor[i * 3 + 1] = 0.937 * bright;
-        nColor[i * 3 + 2] = 0.675 * bright;
-      }
-      nodesGeo.attributes.position.needsUpdate = true;
-      nodesGeo.attributes.color.needsUpdate = true;
-
-      var eArr = edgesGeo.attributes.position.array;
-      var eColor = edgesGeo.attributes.color.array;
-      for (var j = 0; j < edgeIndexPairs.length / 2; j++) {
-        var ia2 = edgeIndexPairs[j * 2], ib2 = edgeIndexPairs[j * 2 + 1];
-        // uma aresta só "existe" (deixa de ficar em 0,0,0) quando os dois nós já chegaram
-        var readyA = (globalT - nodeDelay[ia2]) / (1 - nodeDelay[ia2]) >= 0.8;
-        var readyB = (globalT - nodeDelay[ib2]) / (1 - nodeDelay[ib2]) >= 0.8;
-        if (readyA && readyB) {
-          eArr[j * 6] = nodeCurrent[ia2 * 3]; eArr[j * 6 + 1] = nodeCurrent[ia2 * 3 + 1]; eArr[j * 6 + 2] = nodeCurrent[ia2 * 3 + 2];
-          eArr[j * 6 + 3] = nodeCurrent[ib2 * 3]; eArr[j * 6 + 4] = nodeCurrent[ib2 * 3 + 1]; eArr[j * 6 + 5] = nodeCurrent[ib2 * 3 + 2];
-          var ba = 0.16 + nodeFacing[ia2] * 0.6, bb = 0.16 + nodeFacing[ib2] * 0.6;
-          eColor[j * 6] = 0.133 * ba; eColor[j * 6 + 1] = 0.773 * ba; eColor[j * 6 + 2] = 0.369 * ba;
-          eColor[j * 6 + 3] = 0.133 * bb; eColor[j * 6 + 4] = 0.773 * bb; eColor[j * 6 + 5] = 0.369 * bb;
-        } else {
-          // colapsada num ponto invisível até os dois extremos estarem prontos
-          eArr[j * 6] = eArr[j * 6 + 3] = nodeCurrent[ia2 * 3];
-          eArr[j * 6 + 1] = eArr[j * 6 + 4] = nodeCurrent[ia2 * 3 + 1];
-          eArr[j * 6 + 2] = eArr[j * 6 + 5] = nodeCurrent[ia2 * 3 + 2];
-        }
-      }
-      edgesGeo.attributes.position.needsUpdate = true;
-      edgesGeo.attributes.color.needsUpdate = true;
-    }
-
-    /* Malha de arestas — a "rede" da marca, idêntica em espírito ao ícone; geometria
-       dinâmica própria, redesenhada a cada quadro a partir da posição atual dos nós.
-       Cor por vértice (não sólida) para carregar a atenuação de profundidade. */
-    var edgesGeo = new THREE.BufferGeometry();
-    edgesGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(edgeIndexPairs.length * 3), 3));
-    edgesGeo.setAttribute('color', new THREE.BufferAttribute(new Float32Array(edgeIndexPairs.length * 3), 3));
-    var edgesMat = new THREE.LineBasicMaterial({
-      transparent: true, opacity: 0, vertexColors: true,
-      blending: THREE.AdditiveBlending, depthWrite: false
+  /* ---------- geometria: esfera de Fibonacci + vizinhos mais próximos ---------- */
+  var pts = [];
+  var golden = Math.PI * (3 - Math.sqrt(5));
+  for (var i = 0; i < NODES; i++) {
+    var y = 1 - (i + 0.5) * 2 / NODES;
+    var r = Math.sqrt(1 - y * y);
+    var th = golden * i;
+    var seed = pseudo(i);
+    pts.push({
+      x: Math.cos(th) * r, y: y, z: Math.sin(th) * r,
+      // origem dispersa (poeira) para a animação de montagem
+      sx: (pseudo(i * 3 + 1) - 0.5) * 5, sy: (pseudo(i * 3 + 2) - 0.5) * 5, sz: (seed - 0.5) * 5,
+      delay: pseudo(i * 7 + 5) * 0.35
     });
-    var network = new THREE.LineSegments(edgesGeo, edgesMat);
-    world.add(network);
-
-    /* Nós — um ponto de energia em cada vértice do poliedro; pequenos, luminosos,
-       com cor por vértice para dar profundidade 3D real (frente vívida, fundo discreto) */
-    var nodesGeo = new THREE.BufferGeometry();
-    nodesGeo.setAttribute('position', new THREE.BufferAttribute(nodeCurrent, 3));
-    nodesGeo.setAttribute('color', new THREE.BufferAttribute(new Float32Array(nodeCount * 3), 3));
-    var nodesMat = new THREE.PointsMaterial({
-      size: 0.1, transparent: true, opacity: 0, sizeAttenuation: true,
-      vertexColors: true, blending: THREE.AdditiveBlending, depthWrite: false
-    });
-    var nodes = new THREE.Points(nodesGeo, nodesMat);
-    world.add(nodes);
-    updateAssembly(0);
-
-    /* Segunda camada, levemente maior e mais lenta — profundidade de campo tecnológica */
-    var outerGeo = new THREE.IcosahedronGeometry(radius * 1.22, Math.max(0, detail - 1));
-    var outerEdges = new THREE.EdgesGeometry(outerGeo);
-    var outerMat = new THREE.LineBasicMaterial({ color: 0x22c55e, transparent: true, opacity: 0 });
-    var outerNetwork = new THREE.LineSegments(outerEdges, outerMat);
-    world.add(outerNetwork);
-
-    /* Halo fino — brilho de contorno, sem parecer atmosfera terrestre */
-    var haloGeo = new THREE.SphereGeometry(radius * 1.04, 24, 24);
-    var haloMat = new THREE.MeshBasicMaterial({ color: 0x4ade80, transparent: true, opacity: 0, side: THREE.BackSide });
-    var halo = new THREE.Mesh(haloGeo, haloMat);
-    world.add(halo);
-
-    /* ---- Pulsos de energia viajando pelas arestas (dados circulando) ---- */
-    var edgePositions = edgesGeo.attributes.position.array;
-    var edgeCount = edgePositions.length / 6; // cada aresta = 2 pontos * 3 componentes
-    var travelerCount = Math.min(edgeCount, TIER[tier].orbitDots);
-    var travelerEdge = new Int32Array(travelerCount);
-    var travelerPhase = new Float32Array(travelerCount);
-    var travelerSpeed = new Float32Array(travelerCount);
-    for (var t = 0; t < travelerCount; t++) {
-      travelerEdge[t] = Math.floor(Math.random() * edgeCount);
-      travelerPhase[t] = Math.random();
-      travelerSpeed[t] = 0.25 + Math.random() * 0.4;
-    }
-    var travelerGeo = new THREE.BufferGeometry();
-    var travelerPos = new Float32Array(travelerCount * 3);
-    travelerGeo.setAttribute('position', new THREE.BufferAttribute(travelerPos, 3));
-    var travelerMat = new THREE.PointsMaterial({
-      color: 0xeafff1, size: 0.07, transparent: true, opacity: 0,
-      blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: true
-    });
-    var travelers = new THREE.Points(travelerGeo, travelerMat);
-    world.add(travelers);
-
-    function updateTravelers(dt) {
-      var arr = travelerGeo.attributes.position.array;
-      for (var i = 0; i < travelerCount; i++) {
-        travelerPhase[i] += dt * travelerSpeed[i];
-        if (travelerPhase[i] > 1) {
-          travelerPhase[i] = 0;
-          travelerEdge[i] = Math.floor(Math.random() * edgeCount);
-        }
-        var e = travelerEdge[i] * 6;
-        var ph = travelerPhase[i];
-        arr[i * 3] = edgePositions[e] + (edgePositions[e + 3] - edgePositions[e]) * ph;
-        arr[i * 3 + 1] = edgePositions[e + 1] + (edgePositions[e + 4] - edgePositions[e + 1]) * ph;
-        arr[i * 3 + 2] = edgePositions[e + 2] + (edgePositions[e + 5] - edgePositions[e + 2]) * ph;
-      }
-      travelerGeo.attributes.position.needsUpdate = true;
-    }
-
-    /* ---- Camada 4: partículas em múltiplas profundidades (campo estelar convergente) ---- */
-    var fieldCount = TIER[tier].particles;
-    var fieldGeo = new THREE.BufferGeometry();
-    var fieldStart = new Float32Array(fieldCount * 3);
-    var fieldTarget = new Float32Array(fieldCount * 3);
-    for (var p = 0; p < fieldCount; p++) {
-      // posição final: distribuída em uma casca esférica ao redor do planeta (profundidade variável)
-      var yF = 1 - (p / (fieldCount - 1)) * 2;
-      var rF = Math.sqrt(1 - yF * yF);
-      var thF = Math.PI * (3 - Math.sqrt(5)) * p;
-      var shell = radius * (1.15 + Math.random() * 0.9);
-      fieldTarget[p * 3] = Math.cos(thF) * rF * shell;
-      fieldTarget[p * 3 + 1] = yF * shell;
-      fieldTarget[p * 3 + 2] = Math.sin(thF) * rF * shell;
-
-      // posição inicial: disperso, distante (a "descoberta" converge para o planeta)
-      fieldStart[p * 3] = (Math.random() - 0.5) * 60;
-      fieldStart[p * 3 + 1] = (Math.random() - 0.5) * 60;
-      fieldStart[p * 3 + 2] = (Math.random() - 0.5) * 60 - 10;
-    }
-    fieldGeo.setAttribute('position', new THREE.BufferAttribute(fieldStart.slice(), 3));
-    var fieldMat = new THREE.PointsMaterial({ color: 0x86efac, size: TIER[tier].dotSize / 20, transparent: true, opacity: 0.85, sizeAttenuation: true });
-    var field = new THREE.Points(fieldGeo, fieldMat);
-    scene.add(field);
-
-    /* ---- Arraste (mouse/touch) — só ativo depois que o planeta "nasce" ---- */
-    var drag = { active: false, lastX: 0, lastY: 0, velX: 0, velY: 0, enabled: false };
-    function down(x, y) { if (drag.enabled) { drag.active = true; drag.lastX = x; drag.lastY = y; } }
-    function move(x, y) {
-      if (!drag.active) return;
-      var dx = x - drag.lastX, dy = y - drag.lastY;
-      drag.velX = dx * 0.0007; drag.velY = dy * 0.0007;
-      world.rotation.y += dx * 0.005;
-      world.rotation.x += dy * 0.003;
-      drag.lastX = x; drag.lastY = y;
-    }
-    function up() { drag.active = false; }
-    function onDown(e) { down(e.clientX, e.clientY); }
-    function onMove(e) { move(e.clientX, e.clientY); }
-    canvas.addEventListener('pointerdown', onDown, { passive: true });
-    window.addEventListener('pointermove', onMove, { passive: true });
-    window.addEventListener('pointerup', up, { passive: true });
-
-    function resize() {
-      var w = window.innerWidth, h = window.innerHeight;
-      camera.aspect = w / h;
-      camera.updateProjectionMatrix();
-      renderer.setSize(w, h, true);
-    }
-    resize();
-
-    /* ---- Câmera cinematográfica: presets por cena/dispositivo ---- */
-    function cameraDistanceFor(scene2) {
-      var w = window.innerWidth, h = window.innerHeight;
-      var landscapeMobile = w > h && Math.min(w, h) < 500;
-      var small = Math.min(w, h) < 480;
-      var base = { discovery: 22, activation: 10, formation: 5.6, transition: 3.1 };
-      var d = base[scene2] || 11;
-      if (landscapeMobile) d *= 0.9;
-      if (small) d *= 1.08;
-      return d;
-    }
-
-    return {
-      resize: resize,
-      setConfig: function (cfg) {
-        fieldMat.size = cfg.dotSize / 20;
-      },
-      setDragEnabled: function (v) { drag.enabled = v; },
-      /* progress: 0..1 dentro da cena atual; sceneName define o comportamento */
-      update: function (sceneName, progress, dt) {
-        // rotação: viva na descoberta/ativação, quase estática na formação
-        // (a estrutura precisa ficar legível como a logo quando a câmera se aproxima)
-        var spin = sceneName === 'discovery' ? 0.0009
-          : sceneName === 'activation' ? 0.0026
-          : sceneName === 'formation' ? 0.0003
-          : 0.00015;
-        if (!drag.active) {
-          world.rotation.y += spin + drag.velX;
-          world.rotation.x += drag.velY;
-          drag.velX *= 0.94; drag.velY *= 0.94;
-        }
-        outerNetwork.rotation.y -= 0.0011;
-        outerNetwork.rotation.x += 0.0004;
-
-        updateTravelers(dt);
-
-        // câmera: aproxima suavemente ao longo de toda a sequência — é essa
-        // aproximação que transforma "o planeta" em "o ícone da marca"
-        var camZ = cameraDistanceFor(sceneName);
-        camera.position.z += (camZ - camera.position.z) * Math.min(1, dt * 1.6);
-        camera.position.y = Math.sin(progress * Math.PI) * (sceneName === 'formation' || sceneName === 'transition' ? 0.08 : 0.35);
-        camera.lookAt(0, 0, 0);
-
-        // montagem da esfera: nós embaralhados → posição geodésica. Roda ao longo da
-        // descoberta e termina na primeira metade da ativação, para que a rede já
-        // esteja inteira quando os dados começam a circular pelas arestas.
-        var assemblyGlobal = sceneName === 'discovery' ? progress * 0.7
-          : sceneName === 'activation' ? 0.7 + Math.min(1, progress / 0.45) * 0.3
-          : 1;
-        updateAssembly(assemblyGlobal);
-
-        if (sceneName === 'discovery') {
-          // partículas convergindo do caos para a casca do planeta — o núcleo ainda nasce
-          var posAttr = fieldGeo.attributes.position;
-          var arr = posAttr.array;
-          var ease = 1 - Math.pow(1 - progress, 3);
-          for (var i2 = 0; i2 < fieldCount; i2++) {
-            arr[i2 * 3] = fieldStart[i2 * 3] + (fieldTarget[i2 * 3] - fieldStart[i2 * 3]) * ease;
-            arr[i2 * 3 + 1] = fieldStart[i2 * 3 + 1] + (fieldTarget[i2 * 3 + 1] - fieldStart[i2 * 3 + 1]) * ease;
-            arr[i2 * 3 + 2] = fieldStart[i2 * 3 + 2] + (fieldTarget[i2 * 3 + 2] - fieldStart[i2 * 3 + 2]) * ease;
-          }
-          posAttr.needsUpdate = true;
-          edgesMat.opacity = Math.min(0.5, progress * 1.1);
-          nodesMat.opacity = Math.min(0.7, progress * 1.2);
-          outerMat.opacity = 0;
-          haloMat.opacity = 0;
-          travelerMat.opacity = 0;
-          fieldMat.opacity = 0.85;
-        }
-
-        if (sceneName === 'activation') {
-          // a rede acorda: arestas e nós ganham brilho pleno, dados começam a circular
-          edgesMat.opacity = Math.min(0.9, 0.5 + progress * 0.5);
-          nodesMat.opacity = Math.min(1, 0.7 + progress * 0.4);
-          outerMat.opacity = Math.min(0.35, progress * 0.5);
-          haloMat.opacity = Math.min(0.18, progress * 0.25);
-          travelerMat.opacity = Math.min(0.95, progress * 1.3);
-          fieldMat.opacity = Math.max(0.2, 0.85 - progress * 0.5);
-          drag.enabled = true;
-        }
-
-        if (sceneName === 'formation') {
-          // a energia dispersa recolhe para dentro da própria rede — não "sobrepõe"
-          // uma logo: alimenta a estrutura que já é a logo
-          var posAttr2 = fieldGeo.attributes.position;
-          var arr2 = posAttr2.array;
-          var collapse = Math.pow(progress, 1.6);
-          for (var i3 = 0; i3 < fieldCount; i3++) {
-            arr2[i3 * 3] = fieldTarget[i3 * 3] * (1 - collapse * 0.85);
-            arr2[i3 * 3 + 1] = fieldTarget[i3 * 3 + 1] * (1 - collapse * 0.85);
-            arr2[i3 * 3 + 2] = fieldTarget[i3 * 3 + 2] * (1 - collapse * 0.85);
-          }
-          posAttr2.needsUpdate = true;
-          fieldMat.opacity = Math.max(0, 0.35 - progress * 0.4);
-          edgesMat.opacity = Math.min(1, 0.9 + progress * 0.1);
-          nodesMat.opacity = 1;
-          travelerMat.opacity = Math.max(0.5, 0.95 - progress * 0.3);
-          outerMat.opacity = Math.max(0, 0.35 - progress * 0.35);
-          haloMat.opacity = Math.min(0.3, 0.18 + progress * 0.2);
-        }
-
-        if (sceneName === 'transition') {
-          fieldMat.opacity = 0;
-          edgesMat.opacity = Math.max(0, 1 - progress * 1.2);
-          nodesMat.opacity = Math.max(0, 1 - progress);
-          travelerMat.opacity = Math.max(0, 0.5 - progress * 1.2);
-          outerMat.opacity = 0;
-          haloMat.opacity = Math.max(0, 0.3 - progress * 0.5);
-        }
-      },
-      render: function () { renderer.render(scene, camera); },
-      dispose: function () {
-        canvas.removeEventListener('pointerdown', onDown);
-        window.removeEventListener('pointermove', onMove);
-        window.removeEventListener('pointerup', up);
-        [geoGeometry, edgesGeo, nodesGeo, outerGeo, outerEdges, haloGeo, travelerGeo, fieldGeo].forEach(function (g) { g.dispose(); });
-        [edgesMat, nodesMat, outerMat, haloMat, travelerMat, fieldMat].forEach(function (m) { m.dispose(); });
-        renderer.dispose();
-      }
-    };
   }
+  function pseudo(n) { var s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); }
 
-  /* ---- Fallback Canvas2D (sem WebGL) — mesma linguagem visual, mais simples ---- */
-  function makeCanvas2DEngine() {
-    var ctx = canvas.getContext('2d');
-    var w, h, dpr, rot = 0;
-    var dots = [];
-    var count = TIER.low.particles;
-    for (var i = 0; i < count; i++) {
-      var y = 1 - (i / (count - 1)) * 2;
-      var r = Math.sqrt(1 - y * y);
-      var th = Math.PI * (3 - Math.sqrt(5)) * i;
-      dots.push({ x: Math.cos(th) * r, y: y, z: Math.sin(th) * r });
-    }
-    function resize() {
-      w = window.innerWidth; h = window.innerHeight;
-      dpr = Math.min(window.devicePixelRatio || 1, 1.4);
-      canvas.width = w * dpr; canvas.height = h * dpr;
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    }
-    resize();
-
-    var dragX = 0, dragging = false, lastX = 0;
-    function onDown(e) { dragging = true; lastX = e.clientX; }
-    function onMove(e) { if (dragging) { dragX += (e.clientX - lastX) * 0.008; lastX = e.clientX; } }
-    function onUp() { dragging = false; }
-    canvas.addEventListener('pointerdown', onDown, { passive: true });
-    window.addEventListener('pointermove', onMove, { passive: true });
-    window.addEventListener('pointerup', onUp, { passive: true });
-
-    return {
-      resize: resize,
-      setConfig: function () { },
-      setDragEnabled: function () { },
-      update: function (sceneName, progress) {
-        rot += 0.005 + dragX;
-        dragX *= 0.9;
-      },
-      render: function () {
-        ctx.clearRect(0, 0, w, h);
-        var cx = w / 2, cy = h / 2;
-        var radius = Math.min(w, h) * (w < 480 ? 0.2 : 0.15);
-        var cos = Math.cos(rot), sin = Math.sin(rot);
-        for (var i = 0; i < dots.length; i++) {
-          var d = dots[i];
-          var x = d.x * cos - d.z * sin;
-          var z = d.x * sin + d.z * cos;
-          var scale = (z + 2) / 3;
-          ctx.beginPath();
-          ctx.arc(cx + x * radius, cy + d.y * radius, 1.3 * scale, 0, Math.PI * 2);
-          ctx.fillStyle = 'rgba(74,222,128,' + (0.3 + scale * 0.5) + ')';
-          ctx.fill();
-        }
-      },
-      dispose: function () {
-        canvas.removeEventListener('pointerdown', onDown);
-        window.removeEventListener('pointermove', onMove);
-        window.removeEventListener('pointerup', onUp);
+  var edges = [];
+  (function buildEdges() {
+    var seen = {};
+    var maxD2 = 0.36; // ~0,6 do raio: ignora ligações longas
+    for (var a = 0; a < NODES; a++) {
+      var ds = [];
+      for (var b = 0; b < NODES; b++) {
+        if (a === b) continue;
+        var dx = pts[a].x - pts[b].x, dy = pts[a].y - pts[b].y, dz = pts[a].z - pts[b].z;
+        ds.push({ b: b, d: dx * dx + dy * dy + dz * dz });
       }
-    };
-  }
-
-  if (caps.webgl && typeof THREE !== 'undefined') {
-    engine = makeThreeEngine();
-  }
-  if (!engine) engine = makeCanvas2DEngine();
-
-  /* ============================================================
-     3) TIMELINE DAS CENAS — tempo real, sincronizado com o load
-     ============================================================ */
-  var SCENES = [
-    { name: 'discovery', duration: 3000, label: 'Conectando' },
-    { name: 'activation', duration: 3000, label: 'Ativando rede' },
-    { name: 'formation', duration: 3000, label: 'Construindo marca' },
-    { name: 'transition', duration: 800, label: 'Pronto' }
-  ];
-  var sceneStartOffsets = (function () {
-    var acc = 0, out = [];
-    SCENES.forEach(function (s) { out.push(acc); acc += s.duration; });
-    return out;
+      ds.sort(function (p, q) { return p.d - q.d; });
+      for (var k = 0; k < NEIGHBORS; k++) {
+        if (ds[k].d > maxD2) break;
+        var lo = Math.min(a, ds[k].b), hi = Math.max(a, ds[k].b), key = lo * 1000 + hi;
+        if (!seen[key]) { seen[key] = 1; edges.push([lo, hi]); }
+      }
+    }
   })();
-  var totalCore = sceneStartOffsets[3]; // início da transição = 9000ms
 
-  var pageLoaded = false;
-  window.addEventListener('load', function onLoad() {
-    pageLoaded = true;
-    window.removeEventListener('load', onLoad);
-  });
-  // se por algum motivo o evento load nunca disparar, não prender o usuário além de 14s
-  var hardStop = setTimeout(function () { pageLoaded = true; }, 14000);
+  /* ---------- canvas / layout (sem distorção: escala uniforme + DPR) ---------- */
+  var W = 0, H = 0, cx = 0, cy = 0, orbR = 0, dpr = 1;
 
-  var startedAt = null;
-  var running = true;
-  var raf = null;
-  var finished = false;
-  var skipped = false;
-
-  function currentScene(elapsed) {
-    if (elapsed < sceneStartOffsets[1]) return { idx: 0, t: elapsed };
-    if (elapsed < sceneStartOffsets[2]) return { idx: 1, t: elapsed - sceneStartOffsets[1] };
-    if (elapsed < sceneStartOffsets[3]) return { idx: 2, t: elapsed - sceneStartOffsets[2] };
-    return { idx: 3, t: elapsed - sceneStartOffsets[3] };
-  }
-
-  function loop(now) {
-    if (!running) return;
-    if (startedAt === null) startedAt = now;
-    var lastFrame = loop._last || now;
-    var dt = Math.min(0.05, (now - lastFrame) / 1000);
-    loop._last = now;
-
-    var elapsed = now - startedAt;
-
-    if (!skipped) {
-      // Cena 3 (formation) só é liberada quando a página já carregou;
-      // enquanto isso, a Cena 2 respira em loop suave sem travar visualmente.
-      var effectiveElapsed = elapsed;
-      if (!pageLoaded && elapsed >= sceneStartOffsets[2]) {
-        var breatheWindow = SCENES[1].duration;
-        var into = (elapsed - sceneStartOffsets[1]) % breatheWindow;
-        effectiveElapsed = sceneStartOffsets[1] + into;
-        updateProgressUI(SCENES[1].label, 55 + Math.sin(elapsed / 500) * 8);
-      } else {
-        effectiveElapsed = elapsed;
-      }
-
-      var cs = currentScene(effectiveElapsed);
-      var sceneDef = SCENES[cs.idx];
-      var progress = Math.min(1, cs.t / sceneDef.duration);
-
-      if (splash.getAttribute('data-scene') !== sceneDef.name) {
-        splash.setAttribute('data-scene', sceneDef.name);
-      }
-
-      if (engine && engine.update) engine.update(sceneDef.name, progress, dt);
-
-      if (pageLoaded || cs.idx < 2) {
-        var pct = Math.min(96, ((sceneStartOffsets[cs.idx] + cs.t) / totalCore) * 100);
-        updateProgressUI(sceneDef.label, pct);
-      }
-
-      if (pageLoaded && effectiveElapsed >= sceneStartOffsets[3] + SCENES[3].duration) {
-        finish();
-        return;
-      }
-    }
-
-    if (engine && engine.render) engine.render();
-    raf = requestAnimationFrame(loop);
-  }
-
-  function updateProgressUI(label, pct) {
-    progressFill.style.width = Math.max(0, Math.min(100, pct)) + '%';
-    progressLabel.textContent = label;
-  }
-
-  raf = requestAnimationFrame(loop);
-
-  /* ---- Pausa em segundo plano (bateria) ---- */
-  function onVisibility() {
-    if (document.hidden) {
-      running = false;
-      if (raf) cancelAnimationFrame(raf);
-    } else if (!finished) {
-      running = true;
-      loop._last = performance.now();
-      raf = requestAnimationFrame(loop);
+  function layout() {
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    W = splash.clientWidth || window.innerWidth;
+    H = splash.clientHeight || window.innerHeight;
+    canvas.width = Math.round(W * dpr);
+    canvas.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    var rect = orbEl ? orbEl.getBoundingClientRect() : null;
+    if (rect && rect.width > 0) {
+      cx = rect.left + rect.width / 2;
+      cy = rect.top + rect.height / 2;
+      orbR = Math.min(rect.width, rect.height) / 2 * 0.92;
+    } else {
+      cx = W / 2; cy = H * 0.42; orbR = Math.min(W, H) * 0.22;
     }
   }
-  document.addEventListener('visibilitychange', onVisibility);
 
-  function onResize() { if (engine && engine.resize) engine.resize(); }
-  function onOrientation() { setTimeout(onResize, 120); }
-  window.addEventListener('resize', onResize, { passive: true });
-  window.addEventListener('orientationchange', onOrientation);
+  /* ---------- render ---------- */
+  var CAM = 3.4; // distância da câmera (em raios)
+  function ease(t) { t = t < 0 ? 0 : t > 1 ? 1 : t; return 1 - Math.pow(1 - t, 3); }
 
-  /* ---- Pular ---- */
-  function onSkip() {
-    if (finished) return;
-    skipped = true;
-    if (navigator.vibrate) { try { navigator.vibrate(8); } catch (e) { } }
-    splash.setAttribute('data-scene', 'transition');
-    setTimeout(finish, 260);
+  function draw(t) {
+    ctx.clearRect(0, 0, W, H);
+
+    var ang = reduced ? 0.6 : t * SPIN;
+    var ca = Math.cos(ang), sa = Math.sin(ang), ct = Math.cos(TILT), st = Math.sin(TILT);
+    // escala para que a silhueta (com perspectiva) tenha raio = orbR
+    var f = orbR * Math.sqrt(CAM * CAM - 1);
+    var build = reduced ? 1 : null;
+
+    var proj = new Array(NODES);
+    for (var i = 0; i < NODES; i++) {
+      var p = pts[i];
+      var k = build === 1 ? 1 : ease((t - p.delay) / T_BUILD);
+      var x = p.sx + (p.x - p.sx) * k;
+      var y = p.sy + (p.y - p.sy) * k;
+      var z = p.sz + (p.z - p.sz) * k;
+      // rotação em Y, depois inclinação em X
+      var x1 = x * ca + z * sa, z1 = -x * sa + z * ca;
+      var y2 = y * ct - z1 * st, z2 = y * st + z1 * ct;
+      var s = f / (CAM - z2);
+      proj[i] = { x: cx + x1 * s, y: cy - y2 * s, z: z2, k: k, s: s };
+    }
+
+    var rimA = ease((t - 0.2) / 0.7);
+
+    // halo + silhueta (reforça a leitura de volume esférico)
+    var g = ctx.createRadialGradient(cx, cy, orbR * 0.2, cx, cy, orbR * 1.25);
+    g.addColorStop(0, 'rgba(34,197,94,0.07)');
+    g.addColorStop(0.75, 'rgba(34,197,94,0.10)');
+    g.addColorStop(1, 'rgba(34,197,94,0)');
+    ctx.globalAlpha = rimA;
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.arc(cx, cy, orbR * 1.25, 0, 6.2832); ctx.fill();
+    ctx.strokeStyle = 'rgba(74,222,128,0.28)';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.arc(cx, cy, orbR, 0, 6.2832); ctx.stroke();
+
+    // linhas, agrupadas por profundidade (poucos strokes por quadro)
+    var edgeA = ease((t - 0.35) / 0.6);
+    var B = 5, buckets = [];
+    for (var b = 0; b < B; b++) buckets.push([]);
+    for (var e = 0; e < edges.length; e++) {
+      var A = proj[edges[e][0]], C = proj[edges[e][1]];
+      var depth = (A.z + C.z) * 0.5;              // -1 (fundo) … 1 (frente)
+      var bi = Math.min(B - 1, Math.max(0, Math.floor((depth + 1) / 2 * B)));
+      buckets[bi].push(A.x, A.y, C.x, C.y);
+    }
+    ctx.lineWidth = 1;
+    for (var bk = 0; bk < B; bk++) {
+      var arr = buckets[bk];
+      if (!arr.length) continue;
+      var near = (bk + 0.5) / B;                  // 0 fundo … 1 frente
+      ctx.globalAlpha = edgeA * (0.07 + near * 0.55);
+      ctx.strokeStyle = near > 0.5 ? '#4ade80' : '#22c55e';
+      ctx.beginPath();
+      for (var q = 0; q < arr.length; q += 4) { ctx.moveTo(arr[q], arr[q + 1]); ctx.lineTo(arr[q + 2], arr[q + 3]); }
+      ctx.stroke();
+    }
+
+    // pontos (mais ao fundo primeiro) — tamanho e brilho variam com a profundidade
+    var order = proj.slice().sort(function (p, q) { return p.z - q.z; });
+    for (var n = 0; n < order.length; n++) {
+      var o = order[n];
+      var near2 = (o.z + 1) / 2;
+      ctx.globalAlpha = (0.18 + near2 * 0.82) * (0.25 + 0.75 * o.k);
+      ctx.fillStyle = near2 > 0.6 ? '#bbf7d0' : '#4ade80';
+      var rad = Math.max(0.6, (0.9 + near2 * 1.5) * (orbR / 140));
+      ctx.beginPath(); ctx.arc(o.x, o.y, Math.min(rad, 3.2), 0, 6.2832); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
   }
-  skipBtn.addEventListener('click', onSkip);
 
-  /* ---- Finalização e teardown completo ---- */
+  /* ---------- ciclo de vida ---------- */
+  var startTs = performance.now(), rafId = 0, done = false, leaving = false;
+  var failsafe = 0, endTimer = 0, resizeRaf = 0;
+
+  function frame(now) {
+    if (done) return;
+    var t = (now - startTs) / 1000;
+
+    if (t > 0.12) splash.classList.add('is-in');
+    if (fillEl) fillEl.style.transform = 'scaleX(' + Math.min(1, t / T_FILL).toFixed(4) + ')';
+    draw(Math.min(t, T_END));
+
+    if (t >= T_FILL && !leaving) beginLeave(false);
+    if (t >= T_END) { finish(); return; }
+    rafId = requestAnimationFrame(frame);
+  }
+
+  function beginLeave(fast) {
+    if (leaving) return;
+    leaving = true;
+    html.classList.remove('intro-on');            // libera rolagem/interação já no início do fade
+    splash.style.display = 'block';               // o overlay continua visível só durante o fade
+    splash.classList.add('is-leaving');
+    if (fast) { splash.style.transitionDuration = '200ms'; }
+    var ms = fast ? 220 : Math.max(0, (T_END - T_FILL) * 1000);
+    clearTimeout(endTimer);
+    endTimer = setTimeout(finish, ms + 20);
+  }
+
   function finish() {
-    if (finished) return;
-    finished = true;
-    clearTimeout(hardStop);
-    updateProgressUI('Pronto', 100);
-    mark.classList.add('is-out');
-    setTimeout(teardown, 640);
-  }
-
-  function teardown() {
-    running = false;
-    if (raf) cancelAnimationFrame(raf);
-    document.removeEventListener('visibilitychange', onVisibility);
+    if (done) return;
+    done = true;
+    cancelAnimationFrame(rafId);
+    cancelAnimationFrame(resizeRaf);
+    clearTimeout(failsafe);
+    clearTimeout(endTimer);
     window.removeEventListener('resize', onResize);
-    window.removeEventListener('orientationchange', onOrientation);
-    skipBtn.removeEventListener('click', onSkip);
-
-    html.classList.remove('intro-lock');
-    splash.classList.add('is-hidden');
-
-    setTimeout(function () {
-      splash.classList.add('is-removed');
-      if (engine && engine.dispose) engine.dispose();
-      engine = null;
-    }, 720);
+    window.removeEventListener('orientationchange', onResize);
+    document.removeEventListener('keydown', onKey);
+    if (skipBtn) skipBtn.removeEventListener('click', onSkip);
+    html.classList.remove('intro-on');
+    cleanupDom();
   }
+
+  function cleanupDom() {
+    html.classList.remove('intro-on');
+    if (splash && splash.parentNode) splash.parentNode.removeChild(splash);
+  }
+
+  function onSkip(ev) { if (ev) ev.preventDefault(); beginLeave(true); }
+  function onKey(ev) { if (ev.key === 'Escape' || ev.key === 'Esc') beginLeave(true); }
+  function onResize() {
+    cancelAnimationFrame(resizeRaf);
+    resizeRaf = requestAnimationFrame(layout);
+  }
+
+  window.addEventListener('resize', onResize);
+  window.addEventListener('orientationchange', onResize);
+  document.addEventListener('keydown', onKey);
+  if (skipBtn) skipBtn.addEventListener('click', onSkip);
+
+  layout();
+  failsafe = setTimeout(finish, 3500);            // rede de segurança: nunca prende o usuário
+  rafId = requestAnimationFrame(frame);
 })();

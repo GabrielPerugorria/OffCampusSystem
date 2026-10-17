@@ -1,5 +1,33 @@
 'use strict';
 
+/* ── XSS Protection Utilities ── */
+function escapeHTML(str) {
+  if (str == null) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function sanitizeURL(url) {
+  if (!url) return '';
+  const s = String(url).trim();
+  if (/^https?:\/\//i.test(s)) return s;
+  // Allow relative paths (no protocol) for local assets.
+  // Rejeita "//host/..." (protocol-relative, carregaria de outro domínio).
+  if (/^[a-z0-9\-._~:/?#[\]@!$&'()*+,;=%]+$/i.test(s) && !s.includes(':') && !s.startsWith('//')) return s;
+  return '';
+}
+
+/* Converte para número finito; qualquer outra coisa vira o fallback.
+   Garante que valores vindos da API nunca levem texto para os templates. */
+function num(v, fallback = 0) {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : fallback;
+}
+
 /* ============================================================
    HEADER — scroll, progress, active link
    ============================================================ */
@@ -368,9 +396,9 @@ if (brazilContainer && brazilSvg && brazilOverlay) {
 
     const showTip = (e, city) => {
         tooltip.innerHTML = `
-      <div class="tt-city">${city.name}</div>
+      <div class="tt-city">${escapeHTML(city.name)}</div>
       <div class="tt-events">${city.events} eventos realizados</div>
-      <div class="tt-category">${city.category}</div>
+      <div class="tt-category">${escapeHTML(city.category)}</div>
     `;
         tooltip.classList.add('visible');
         moveTip(e);
@@ -428,7 +456,7 @@ if (brazilContainer && brazilSvg && brazilOverlay) {
             const item = document.createElement('div');
             item.className = 'brazil-stats-item';
             item.innerHTML = `
-        <span class="brazil-stats-city"><span class="brazil-stats-dot"></span>${city.name}</span>
+        <span class="brazil-stats-city"><span class="brazil-stats-dot"></span>${escapeHTML(city.name)}</span>
         <span class="brazil-stats-count">${city.events}</span>
       `;
             brazilStatsList.appendChild(item);
@@ -702,19 +730,19 @@ function mapearEvento(ev) {
     return {
         id: ev.id,
         slug: ev.slug,
-        nome: ev.name,
-        tipo: ev.type || 'Evento',
+        nome: String(ev.name ?? ''),
+        tipo: String(ev.type || 'Evento'),
         data: formatarDataEvento(ev.eventDate),
-        local: ev.venue || '',
-        img: ev.bannerUrl || IMAGENS_EVENTO[ev.name] || 'imagens/offcampushexa.png',
-        desc: ev.description || '',
-        regras: ev.rules || '',
+        local: String(ev.venue || ''),
+        img: String(ev.bannerUrl || IMAGENS_EVENTO[ev.name] || 'imagens/offcampushexa.png'),
+        desc: String(ev.description || ''),
+        regras: String(ev.rules || ''),
         lotes: (ev.batches || []).map(b => ({
             id: b.id,
-            nome: b.name,
-            preco: Number(b.price),
-            disponivel: b.available,
-            total: b.quantityTotal,
+            nome: String(b.name ?? ''),
+            preco: num(b.price),
+            disponivel: num(b.available),
+            total: num(b.quantityTotal),
         })),
     };
 }
@@ -924,11 +952,12 @@ function updateNavUI() {
         document.getElementById('btnEntrar')?.addEventListener('click', e => { e.preventDefault(); openModal('login'); });
         document.getElementById('btnCadastro')?.addEventListener('click', e => { e.preventDefault(); openModal('cadastro'); });
     } else {
-        const initials = session.nome.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
+        const nomeSessao = String(session.nome ?? '');
+        const initials = nomeSessao.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
         navActions.innerHTML = `
       <div class="nav-user-info">
-        <div class="nav-user-avatar" id="navAvatarBtn" title="${session.nome}" tabindex="0">${initials}</div>
-        <span>${session.nome.split(' ')[0]}</span>
+        <div class="nav-user-avatar" id="navAvatarBtn" title="${escapeHTML(nomeSessao)}" tabindex="0">${escapeHTML(initials)}</div>
+        <span>${escapeHTML(nomeSessao.split(' ')[0])}</span>
       </div>`;
         document.getElementById('navAvatarBtn')?.addEventListener('click', () => {
             if (session.role === 'admin') { window.location.href = 'admin.html'; }
@@ -1093,11 +1122,12 @@ document.getElementById('btnLogout')?.addEventListener('click', async () => {
 /* ---------- ÁREA DO PARTICIPANTE ---------- */
 async function buildParticipante(user) {
     // Avatar
-    const initials = user.nome.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
+    const nomeUser = String(user.nome ?? '');
+    const initials = nomeUser.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
     const av = document.getElementById('partAvatar');
     if (av) av.textContent = initials;
     const nm = document.getElementById('partNomeBig');
-    if (nm) nm.textContent = user.nome;
+    if (nm) nm.textContent = nomeUser;
     const em = document.getElementById('partEmailBig');
     if (em) em.textContent = user.email;
 
@@ -1133,7 +1163,7 @@ async function buildParticipante(user) {
             status: 'Compareceu',
         }));
     } catch (err) {
-        if (ingList) ingList.innerHTML = `<div class="empty-state"><span>⚠️</span>${err.message}</div>`;
+        if (ingList) ingList.innerHTML = `<div class="empty-state"><span>⚠️</span>${escapeHTML(err.message)}</div>`;
         if (histList) histList.innerHTML = '';
         return;
     }
@@ -1149,10 +1179,10 @@ async function buildParticipante(user) {
           <div class="ingresso-card">
             <div class="ingresso-qr">🎫</div>
             <div class="ingresso-info">
-              <div class="ingresso-evento">${ing.evento}</div>
-              <div class="ingresso-tipo">${ing.tipo}</div>
-              <div class="ingresso-data">📅 ${ing.data}</div>
-              <div class="ingresso-code">#${ing.code}</div>
+              <div class="ingresso-evento">${escapeHTML(ing.evento)}</div>
+              <div class="ingresso-tipo">${escapeHTML(ing.tipo)}</div>
+              <div class="ingresso-data">📅 ${escapeHTML(ing.data)}</div>
+              <div class="ingresso-code">#${escapeHTML(ing.code)}</div>
             </div>
           </div>`);
             });
@@ -1169,10 +1199,10 @@ async function buildParticipante(user) {
                 histList.insertAdjacentHTML('beforeend', `
           <div class="historico-item">
             <div>
-              <div class="hist-nome">${h.evento}</div>
-              <div class="hist-data">${h.data}</div>
+              <div class="hist-nome">${escapeHTML(h.evento)}</div>
+              <div class="hist-data">${escapeHTML(h.data)}</div>
             </div>
-            <div class="hist-status">✓ ${h.status}</div>
+            <div class="hist-status">✓ ${escapeHTML(h.status)}</div>
           </div>`);
             });
         }
@@ -1221,21 +1251,20 @@ function openEvento(idx) {
     const cont = document.getElementById('eventoDetailContent');
     if (!cont) return;
     cont.innerHTML = `
-    <img class="ev-banner" src="${ev.img}" alt="${ev.nome}" onerror="this.style.display='none'">
-    <div class="ev-ribbon">${ev.tipo}</div>
-    <h2 class="ev-title">${ev.nome}</h2>
+    <div class="ev-ribbon">${escapeHTML(ev.tipo)}</div>
+    <h2 class="ev-title">${escapeHTML(ev.nome)}</h2>
     <div class="ev-meta">
-      <span>📅 ${ev.data}</span>
-      <span>📍 ${ev.local}</span>
+      <span>📅 ${escapeHTML(ev.data)}</span>
+      <span>📍 ${escapeHTML(ev.local)}</span>
     </div>
-    <p class="ev-desc">${ev.desc}</p>
-    <p class="ev-desc" style="font-size:.82rem;font-style:italic">⚠️ ${ev.regras}</p>
+    <p class="ev-desc">${escapeHTML(ev.desc)}</p>
+    <p class="ev-desc" style="font-size:.82rem;font-style:italic">⚠️ ${escapeHTML(ev.regras)}</p>
     <div class="ev-lotes-title">Tipos de Ingresso</div>
     <div class="ev-lotes">
       ${ev.lotes.map((l, i) => `
         <div class="ev-lote">
           <div>
-            <div class="ev-lote-nome">${l.nome}</div>
+            <div class="ev-lote-nome">${escapeHTML(l.nome)}</div>
             <div class="ev-lote-disp">${l.disponivel} disponíveis de ${l.total}</div>
           </div>
           <div class="ev-lote-right">
@@ -1244,6 +1273,20 @@ function openEvento(idx) {
           </div>
         </div>`).join('')}
     </div>`;
+
+    // Banner: criado via DOM. A URL passa pela allowlist (http/https ou caminho
+    // relativo) e é atribuída como propriedade, nunca interpolada em HTML.
+    const banner = document.createElement('img');
+    banner.className = 'ev-banner';
+    banner.alt = ev.nome;
+    const bannerSrc = sanitizeURL(ev.img);
+    if (bannerSrc) {
+        banner.addEventListener('error', () => { banner.style.display = 'none'; });
+        banner.src = bannerSrc;
+    } else {
+        banner.style.display = 'none';
+    }
+    cont.prepend(banner);
 
     // Attach buy buttons
     cont.querySelectorAll('.ev-lote-btn').forEach(btn => {
@@ -1288,7 +1331,7 @@ function openCompra(evIdx, loteIdx) {
     lotesEl.innerHTML = ev.lotes.map((l, i) => `
     <div class="compra-lote${i === loteIdx ? ' selected' : ''}" data-lote="${i}">
       <div>
-        <div class="compra-lote-nome">${l.nome}</div>
+        <div class="compra-lote-nome">${escapeHTML(l.nome)}</div>
         <div class="compra-lote-disp">${l.disponivel} disponíveis</div>
       </div>
       <div class="compra-lote-preco">R$ ${l.preco.toFixed(2).replace('.', ',')}</div>
@@ -1381,11 +1424,11 @@ document.getElementById('btnConfirmarCompra')?.addEventListener('click', async (
     document.getElementById('compraTitulo').style.display = 'none';
     document.getElementById('compraEvento').style.display = 'none';
     document.getElementById('compraTicket').innerHTML = `
-    <div class="tk-row"><span>Evento:</span><b>${pedido.eventName}</b></div>
-    <div class="tk-row"><span>Ingresso:</span><b>${pedido.batchName}</b></div>
-    <div class="tk-row"><span>Nome:</span><b>${nome}</b></div>
+    <div class="tk-row"><span>Evento:</span><b>${escapeHTML(pedido.eventName)}</b></div>
+    <div class="tk-row"><span>Ingresso:</span><b>${escapeHTML(pedido.batchName)}</b></div>
+    <div class="tk-row"><span>Nome:</span><b>${escapeHTML(nome)}</b></div>
     <div class="tk-row"><span>Valor:</span><b>R$ ${Number(pedido.total).toFixed(2).replace('.', ',')}</b></div>
-    <div class="tk-code">#${codigo}</div>`;
+    <div class="tk-code">#${escapeHTML(codigo)}</div>`;
     document.getElementById('compraSuccess').style.display = 'block';
 });
 
