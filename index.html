@@ -11,13 +11,33 @@
   <script>
     /* Intro: só é ativada com JS ligado. ?intro=off desativa. */
     (function () {
+      var html = document.documentElement;
       var off = /[?&]intro=off(?:&|$)/.test(location.search);
-      if (!off) document.documentElement.classList.add('intro-on');
+      if (off) return;
+      html.classList.add('intro-on');
+
+      /* Rede de segurança INDEPENDENTE de js/intro-splash.js: mesmo que aquele arquivo falhe,
+         esteja desatualizado/em cache ou nem carregue, o site é liberado e o "Pular" funciona. */
+      function release() {
+        try {
+          html.classList.remove('intro-on', 'intro-lock');
+          var s = document.getElementById('introSplash');
+          if (s && s.parentNode) s.parentNode.removeChild(s);
+        } catch (e) { }
+      }
+      setTimeout(release, 6000);
+      document.addEventListener('click', function (ev) {
+        var t = ev.target;
+        if (t && t.closest && t.closest('.intro-skip')) setTimeout(release, 600);
+      });
+      document.addEventListener('keydown', function (ev) {
+        if (ev.key === 'Escape' || ev.key === 'Esc') setTimeout(release, 600);
+      });
     })();
   </script>
   <link rel="stylesheet" href="css/main.css">
   <link rel="stylesheet" href="css/brand-story.css">
-  <link rel="stylesheet" href="css/intro-splash.css">
+  <link rel="stylesheet" href="css/intro-splash.css?v=20261017">
   <link rel="preload" href="imagens/favicon.png" as="image">
   <link rel="preload" href="imagens/offcampushexa.png" as="image">
   <link rel="preload" href="imagens/resenhadoportes.png" as="image">
@@ -48,7 +68,7 @@
 
     <button type="button" class="intro-skip" aria-label="Pular abertura">Pular</button>
   </div>
-  <script src="js/intro-splash.js"></script>
+  <script src="js/intro-splash.js?v=20261017"></script>
 
   <!-- ===================== HEADER ===================== -->
   <header id="mainHeader">

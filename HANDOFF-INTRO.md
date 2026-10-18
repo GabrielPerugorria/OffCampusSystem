@@ -23,3 +23,9 @@ Existe apenas no globo do hero (`js/globe_v2.js`), não na intro. Corrigido: ori
 ## Pendências conhecidas (não mexidas)
 - `style.css` e `script.js` na raiz parecem cópias antigas de `css/main.css` e `js/main.js` (não referenciados por `index.html`); `js/globe.js` também não é usado.
 - `backend/.env` está no ZIP (ignorado pelo git): contém segredos, não publique.
+
+## Publicação (GitHub Pages) — leia antes de mexer na intro
+- `index.html` referencia `css/intro-splash.css?v=...` e `js/intro-splash.js?v=...`. **Ao alterar a intro, incremente o `?v=`** (ex.: data) para o navegador/CDN não reaproveitar o arquivo antigo.
+- O `<script>` inline do `<head>` tem uma rede de segurança independente: remove `intro-on` e o overlay em 6 s, e após clique em **Pular**/`Esc`. Se `js/intro-splash.js` falhar, estiver velho ou não carregar, o site continua liberado.
+- `js/intro-splash.js` é tolerante: elementos opcionais ausentes são ignorados e qualquer exceção na animação chama `finish()` (libera o site).
+- As cópias antigas `intro-splash.js`/`intro-splash.css` na raiz e `mnt/user-data/outputs/js/intro-splash.js` foram apagadas (não eram referenciadas). A versão antiga "Digital Activation" (exigia `.intro-progress-label`) está só no histórico do git (commits `1a6d510`/`7a6ed76`).

@@ -29,6 +29,7 @@
   }
 
   var ctx = canvas.getContext('2d');
+  if (!ctx) { cleanupDom(); return; }             // sem canvas 2D: não há o que animar, libera o site
   var orbEl = splash.querySelector('.intro-orb');
   var fillEl = splash.querySelector('.intro-progress-fill');
   var skipBtn = splash.querySelector('.intro-skip');
@@ -182,14 +183,21 @@
 
   function frame(now) {
     if (done) return;
-    var t = (now - startTs) / 1000;
+    try {
+      var t = (now - startTs) / 1000;
 
-    if (t > 0.12) splash.classList.add('is-in');
-    if (fillEl) fillEl.style.transform = 'scaleX(' + Math.min(1, t / T_FILL).toFixed(4) + ')';
-    draw(Math.min(t, T_END));
+      if (t > 0.12) splash.classList.add('is-in');
+      if (fillEl) fillEl.style.transform = 'scaleX(' + Math.min(1, t / T_FILL).toFixed(4) + ')';
+      draw(Math.min(t, T_END));
 
-    if (t >= T_FILL && !leaving) beginLeave(false);
-    if (t >= T_END) { finish(); return; }
+      if (t >= T_FILL && !leaving) beginLeave(false);
+      if (t >= T_END) { finish(); return; }
+    } catch (err) {
+      // falha na animação nunca pode prender o usuário: registra e libera o site
+      if (window.console && console.error) console.error('[intro] animação falhou; liberando o site.', err);
+      finish();
+      return;
+    }
     rafId = requestAnimationFrame(frame);
   }
 
@@ -208,25 +216,37 @@
   function finish() {
     if (done) return;
     done = true;
-    cancelAnimationFrame(rafId);
-    cancelAnimationFrame(resizeRaf);
-    clearTimeout(failsafe);
-    clearTimeout(endTimer);
-    window.removeEventListener('resize', onResize);
-    window.removeEventListener('orientationchange', onResize);
-    document.removeEventListener('keydown', onKey);
-    if (skipBtn) skipBtn.removeEventListener('click', onSkip);
-    html.classList.remove('intro-on');
-    cleanupDom();
+    try {
+      cancelAnimationFrame(rafId);
+      cancelAnimationFrame(resizeRaf);
+      clearTimeout(failsafe);
+      clearTimeout(endTimer);
+      window.removeEventListener('resize', onResize);
+      window.removeEventListener('orientationchange', onResize);
+      document.removeEventListener('keydown', onKey);
+      if (skipBtn) skipBtn.removeEventListener('click', onSkip);
+    } finally {
+      cleanupDom();                               // sempre executa, mesmo se a limpeza acima falhar
+    }
   }
 
   function cleanupDom() {
     html.classList.remove('intro-on');
-    if (splash && splash.parentNode) splash.parentNode.removeChild(splash);
+    try {
+      if (splash && splash.parentNode) splash.parentNode.removeChild(splash);
+    } catch (e) {
+      if (splash) splash.style.display = 'none';
+    }
   }
 
-  function onSkip(ev) { if (ev) ev.preventDefault(); beginLeave(true); }
-  function onKey(ev) { if (ev.key === 'Escape' || ev.key === 'Esc') beginLeave(true); }
+  // "Pular"/Esc: se algo falhar ao iniciar o fade, encerra na hora em vez de travar
+  function onSkip(ev) {
+    try { if (ev) ev.preventDefault(); beginLeave(true); } catch (e) { finish(); }
+  }
+  function onKey(ev) {
+    if (ev.key !== 'Escape' && ev.key !== 'Esc') return;
+    try { beginLeave(true); } catch (e) { finish(); }
+  }
   function onResize() {
     cancelAnimationFrame(resizeRaf);
     resizeRaf = requestAnimationFrame(layout);
