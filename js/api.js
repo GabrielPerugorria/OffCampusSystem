@@ -30,6 +30,11 @@
     },
   };
 
+  function hasTokens() {
+    const auth = store.getAuth();
+    return Boolean(auth && (auth.accessToken || auth.refreshToken));
+  }
+
   /* ---------- Erro de API ---------- */
   class ApiError extends Error {
     constructor(message, status, code, details) {
@@ -146,8 +151,20 @@
     patch: (path, body)   => request(path, { method: 'PATCH', body }),
     del:   (path)         => request(path, { method: 'DELETE' }),
 
-    isLogged: () => Boolean(store.getAuth()?.accessToken),
-    session: () => store.getSession(),
+    // "Logado" = existem tokens. É a MESMA regra do admin-guard.js; antes, a
+    // interface se baseava só no snapshot do usuário (evo_session) e o guard nos
+    // tokens (evo_auth), o que permitia um estado "avatar visível, painel barrado".
+    isLogged: () => hasTokens(),
+
+    // Snapshot do usuário, só se houver sessão de verdade. Se sobrou um snapshot
+    // órfão (sem tokens: dado legado, storage parcialmente limpo...), ele é descartado.
+    session: () => {
+      if (!hasTokens()) {
+        if (store.getSession()) store.clearAuth();
+        return null;
+      }
+      return store.getSession();
+    },
 
     async login(email, password) {
       const data = await request('/auth/login', {

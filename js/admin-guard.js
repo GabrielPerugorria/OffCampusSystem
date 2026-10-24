@@ -9,7 +9,16 @@
   try { session = JSON.parse(localStorage.getItem('evo_session')); } catch (e) { }
   try { auth = JSON.parse(localStorage.getItem('evo_auth')); } catch (e) { }
 
-  if (!auth || !auth.accessToken || !session || session.role !== 'admin') {
+  var hasTokens = !!(auth && (auth.accessToken || auth.refreshToken));
+
+  // Snapshot sem tokens é lixo (dado legado / storage parcial): descarta, senão a
+  // home continuaria mostrando o avatar e o usuário ficaria preso num ciclo
+  // avatar -> painel -> home, sem conseguir sair da conta.
+  if (!hasTokens) {
+    try { localStorage.removeItem('evo_session'); localStorage.removeItem('evo_auth'); } catch (e) { }
+  }
+
+  if (!hasTokens || !session || session.role !== 'admin') {
     window.location.replace('index.html');
   }
 })();

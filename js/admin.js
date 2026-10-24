@@ -125,7 +125,9 @@ async function carregarDados() {
       await Promise.all([
         EvoAPI.get('/events'),
         EvoAPI.get('/products'),
-        EvoAPI.get('/expenses'),
+        // Só owner/admin/financeiro enxergam despesas; portaria e bar recebem 403.
+        // Isso não pode derrubar o painel inteiro nem encerrar a sessão.
+        EvoAPI.get('/expenses').catch(err => { if (err.status === 403) return []; throw err; }),
         EvoAPI.get('/checkins'),
         EvoAPI.get('/participants', { limit: 200 }),
         EvoAPI.get('/contacts'),
@@ -181,7 +183,9 @@ async function carregarDados() {
       unitEcon: sanitizeUnitEcon(ui.unitEcon),
     };
   } catch (err) {
-    if (err.status === 401 || err.status === 403) {
+    // Só 401 (sessão inválida/expirada) encerra a sessão. 403 é falta de permissão
+    // para algum recurso: mantém o painel aberto (com o botão Sair) e avisa.
+    if (err.status === 401) {
       EvoAPI.store.clearAuth();
       window.location.replace('index.html');
       return;

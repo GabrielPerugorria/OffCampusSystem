@@ -956,18 +956,65 @@ function updateNavUI() {
         const initials = nomeSessao.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
         navActions.innerHTML = `
       <div class="nav-user-info">
-        <div class="nav-user-avatar" id="navAvatarBtn" title="${escapeHTML(nomeSessao)}" tabindex="0">${escapeHTML(initials)}</div>
+        <div class="nav-user-avatar" id="navAvatarBtn" role="button" title="${escapeHTML(nomeSessao)}" tabindex="0">${escapeHTML(initials)}</div>
         <span>${escapeHTML(nomeSessao.split(' ')[0])}</span>
-      </div>`;
-        document.getElementById('navAvatarBtn')?.addEventListener('click', () => {
-            if (session.role === 'admin') { window.location.href = 'admin.html'; }
-            else { openModal('participante'); buildParticipante(session); }
-        });
+      </div>
+      <button type="button" class="btn-secondary btn-sm" id="btnSairNav">Sair</button>`;
+        document.getElementById('navAvatarBtn')?.addEventListener('click', () => abrirAreaLogada());
         document.getElementById('navAvatarBtn')?.addEventListener('keydown', e => {
-            if (e.key === 'Enter' || e.key === ' ') e.target.click();
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); }
         });
+        document.getElementById('btnSairNav')?.addEventListener('click', encerrarSessao);
+    }
+    updateMobileActions(session);
+}
+
+// Avatar: admin vai para o painel; participante abre a própria área.
+// Revalida a sessão no clique: se os tokens sumiram, volta ao login em vez de
+// navegar para o painel (o admin-guard devolveria para a home, parecendo um "refresh").
+function abrirAreaLogada() {
+    const session = getSession();
+    if (!session) { updateNavUI(); openModal('login'); return; }
+    if (session.role === 'admin') { window.location.href = 'admin.html'; }
+    else { openModal('participante'); buildParticipante(session); }
+}
+
+// Encerra a sessão (revoga o refresh token no servidor, limpa o navegador) e
+// atualiza a interface. Usado pelo botão Sair da barra, do menu mobile e da
+// área do participante.
+async function encerrarSessao() {
+    try { await EvoAPI.logout(); } finally {
+        updateNavUI();
+        closeMobileMenu(false);
+        closeModal();
     }
 }
+
+// O menu mobile também precisa refletir a sessão (a barra .actions some em telas pequenas).
+function updateMobileActions(session) {
+    const box = mobileMenu?.querySelector('.mobile-actions');
+    if (!box) return;
+    if (!session) {
+        box.innerHTML = `
+        <a href="#" class="btn-secondary" id="btnEntrarMobile">Entrar</a>
+        <a href="#" class="btn-primary" id="btnCadastroMobile">Cadastrar</a>`;
+        document.getElementById('btnEntrarMobile')?.addEventListener('click', e => { e.preventDefault(); closeMobileMenu(false); openModal('login'); });
+        document.getElementById('btnCadastroMobile')?.addEventListener('click', e => { e.preventDefault(); closeMobileMenu(false); openModal('cadastro'); });
+    } else {
+        const rotulo = session.role === 'admin' ? 'Painel administrativo' : 'Minha conta';
+        box.innerHTML = `
+        <a href="#" class="btn-primary" id="btnContaMobile">${rotulo}</a>
+        <a href="#" class="btn-secondary" id="btnSairMobile">Sair</a>`;
+        document.getElementById('btnContaMobile')?.addEventListener('click', e => { e.preventDefault(); closeMobileMenu(false); abrirAreaLogada(); });
+        document.getElementById('btnSairMobile')?.addEventListener('click', e => { e.preventDefault(); encerrarSessao(); });
+    }
+}
+
+// Login/logout em outra aba: mantém esta aba coerente.
+window.addEventListener('storage', (e) => {
+    const K = window.EVO_CONFIG.STORAGE_KEYS;
+    if (e.key === null || e.key === K.auth || e.key === K.session) updateNavUI();
+});
 
 document.getElementById('btnEntrar')?.addEventListener('click', e => { e.preventDefault(); openModal('login'); });
 document.getElementById('btnCadastro')?.addEventListener('click', e => { e.preventDefault(); openModal('cadastro'); });
@@ -1113,11 +1160,7 @@ document.getElementById('btnRecuperarSubmit')?.addEventListener('click', () => {
 });
 
 /* ---------- LOGOUT ---------- */
-document.getElementById('btnLogout')?.addEventListener('click', async () => {
-    await EvoAPI.logout();     // revoga o refresh token no servidor
-    updateNavUI();
-    closeModal();
-});
+document.getElementById('btnLogout')?.addEventListener('click', encerrarSessao);
 
 /* ---------- ÁREA DO PARTICIPANTE ---------- */
 async function buildParticipante(user) {
@@ -1163,6 +1206,13 @@ async function buildParticipante(user) {
             status: 'Compareceu',
         }));
     } catch (err) {
+        if (err.status === 401) {
+            // Sessão expirada de vez (refresh token inválido): a API já limpou os tokens.
+            updateNavUI();
+            openModal('login');
+            aplicarErro('loginSenha', 'Sua sessão expirou. Entre novamente.');
+            return;
+        }
         if (ingList) ingList.innerHTML = `<div class="empty-state"><span>⚠️</span>${escapeHTML(err.message)}</div>`;
         if (histList) histList.innerHTML = '';
         return;
