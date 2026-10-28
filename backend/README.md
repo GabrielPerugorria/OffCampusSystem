@@ -144,12 +144,12 @@ Se você usar outra porta, adicione a origem em `CORS_ORIGINS` no `.env`.
 
 ## 9. Publicar
 
-**API** (Railway, Render, Fly.io, VPS…):
+**API** (Deplexo):
 
 1. Suba só a pasta `backend/`.
 2. Configure as variáveis do `.env` no painel do provedor (não suba o arquivo).
 3. `NODE_ENV=production` e segredos novos, diferentes dos de desenvolvimento.
-4. `CORS_ORIGINS=https://SEU-USUARIO.github.io`
+4. `CORS_ORIGINS=https://gabrielperugorria.github.io`
 5. `AUTO_CONFIRM_ORDERS=false` quando houver gateway de pagamento.
 
 **MySQL hospedado** (PlanetScale, Railway, Amazon RDS, Hostinger…): aponte
@@ -158,12 +158,13 @@ gerenciado (ou use `DATABASE_URL`) e rode `npm run db:setup` uma vez. Se o
 provedor exigir TLS, configure `DB_SSL=true` e o caminho do certificado em
 `DB_SSL_CA`.
 
-**Frontend no GitHub Pages**: troque uma linha em `js/config.js`:
+**Frontend no GitHub Pages**: `js/config.js` usa automaticamente a API da Deplexo
+fora do ambiente local e mantém `http://localhost:3333/api` durante o desenvolvimento:
 
 ```js
 API_BASE_URL: isLocal
   ? 'http://localhost:3333/api'
-  : 'https://sua-api-publicada.com/api',   // ← só isso muda
+  : 'https://offcampussystem-api.de.deplexo.com/api',
 ```
 
 Commit, push, e pronto. Nada mais precisa ser reescrito.

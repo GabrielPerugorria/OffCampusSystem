@@ -11,11 +11,10 @@
   const isLocal = ['localhost', '127.0.0.1', '', '0.0.0.0'].includes(host);
 
   window.EVO_CONFIG = {
-    // Troque APENAS esta linha ao publicar no GitHub Pages:
-    // aponte para a URL pública da sua API (ex.: https://api.seudominio.com/api)
+    // O ambiente local usa a API local; o frontend publicado usa a API da Deplexo.
     API_BASE_URL: isLocal
       ? 'http://localhost:3333/api'
-      : 'https://offcampussystem-production.up.railway.app/api',
+      : 'https://offcampussystem-api.de.deplexo.com/api',
 
     // Chaves usadas no armazenamento local do navegador.
     // Guardam apenas tokens de sessão — nenhum dado de negócio.
