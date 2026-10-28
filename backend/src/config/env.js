@@ -58,6 +58,12 @@ function resolveSslCaPath() {
 }
 
 const dbUrl = parseDbUrl(process.env.DATABASE_URL || process.env.MYSQL_URL || process.env.MYSQL_PRIVATE_URL);
+const dbPortValue = process.env.DB_PORT || process.env.MYSQLPORT || dbUrl.port || 3306;
+const dbPort = Number(dbPortValue);
+
+if (!Number.isInteger(dbPort) || dbPort < 1 || dbPort > 65535) {
+  throw new Error(`Porta do banco inválida: "${dbPortValue}". Informe um número inteiro entre 1 e 65535.`);
+}
 
 const env = {
   nodeEnv: process.env.NODE_ENV || 'development',
@@ -65,7 +71,7 @@ const env = {
 
   db: {
     host: required('DB_HOST', process.env.MYSQLHOST || dbUrl.host),
-    port: Number(process.env.DB_PORT || process.env.MYSQLPORT || dbUrl.port || 3306),
+    port: dbPort,
     user: required('DB_USER', process.env.MYSQLUSER || dbUrl.user),
     password: required('DB_PASSWORD', process.env.MYSQLPASSWORD ?? dbUrl.password),
     database: required('DB_NAME', process.env.MYSQLDATABASE || dbUrl.database),
