@@ -1,26 +1,78 @@
 'use strict';
+const fs = require('fs');
 const path = require('path');
-require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
+
+// Diretório base do backend ('.../backend')
+const backendDir = path.resolve(__dirname, '../../');
+
+// Garante carregamento absoluto do backend/.env independente do diretório de execução
+const envFile = path.resolve(backendDir, '.env');
+if (fs.existsSync(envFile)) {
+  require('dotenv').config({ path: envFile });
+} else {
+  const cwdEnv = path.resolve(process.cwd(), '.env');
+  if (fs.existsSync(cwdEnv)) {
+    require('dotenv').config({ path: cwdEnv });
+  }
+}
+
+function parseDbUrl(urlStr) {
+  if (!urlStr) return {};
+  try {
+    const parsed = new URL(urlStr);
+    return {
+      host: parsed.hostname,
+      port: parsed.port ? Number(parsed.port) : 3306,
+      user: decodeURIComponent(parsed.username),
+      password: decodeURIComponent(parsed.password),
+      database: parsed.pathname ? decodeURIComponent(parsed.pathname.replace(/^\//, '')) : undefined,
+    };
+  } catch (err) {
+    throw new Error(`URL de conexão MySQL inválida: ${err.message}`);
+  }
+}
 
 function required(key, fallback) {
   const value = process.env[key] ?? fallback;
   if (value === undefined || value === '') {
-    throw new Error(`Variável de ambiente obrigatória ausente: ${key}. Veja o .env.example.`);
+    throw new Error(`Variável de ambiente obrigatória ausente: ${key}. Verifique o arquivo .env.`);
   }
   return value;
 }
+
+function resolveSslCaPath() {
+  const customPath = process.env.DB_SSL_CA;
+  const defaultPath = path.resolve(backendDir, 'src/certs/ca.pem');
+
+  if (!customPath) {
+    return defaultPath;
+  }
+
+  if (path.isAbsolute(customPath)) {
+    return customPath;
+  }
+
+  // Remove o prefixo 'backend/' se houver para evitar duplicação no caminho
+  const cleanPath = customPath.replace(/^backend[\/\\]/, '');
+  return path.resolve(backendDir, cleanPath);
+}
+
+const dbUrl = parseDbUrl(process.env.DATABASE_URL || process.env.MYSQL_URL || process.env.MYSQL_PRIVATE_URL);
 
 const env = {
   nodeEnv: process.env.NODE_ENV || 'development',
   port: Number(process.env.PORT || 3333),
 
   db: {
-    host: required('DB_HOST', 'localhost'),
-    port: Number(process.env.DB_PORT || 3306),
-    user: required('DB_USER', 'root'),
-    password: process.env.DB_PASSWORD ?? '',
-    database: required('DB_NAME', 'evotech_events'),
+    host: required('DB_HOST', process.env.MYSQLHOST || dbUrl.host),
+    port: Number(process.env.DB_PORT || process.env.MYSQLPORT || dbUrl.port || 3306),
+    user: required('DB_USER', process.env.MYSQLUSER || dbUrl.user),
+    password: required('DB_PASSWORD', process.env.MYSQLPASSWORD ?? dbUrl.password),
+    database: required('DB_NAME', process.env.MYSQLDATABASE || dbUrl.database),
     connectionLimit: Number(process.env.DB_CONNECTION_LIMIT || 10),
+    ssl: ['true', '1'].includes(String(process.env.DB_SSL || '').toLowerCase()),
+    sslCaPath: resolveSslCaPath(),
+    sslRejectUnauthorized: process.env.DB_SSL_REJECT_UNAUTHORIZED !== 'false',
   },
 
   jwt: {
@@ -36,6 +88,11 @@ const env = {
     .split(',').map(s => s.trim()).filter(Boolean),
 
   autoConfirmOrders: String(process.env.AUTO_CONFIRM_ORDERS || 'false') === 'true',
+
+  bootstrap: {
+    adminEmail: process.env.BOOTSTRAP_ADMIN_EMAIL || '',
+    adminPassword: process.env.BOOTSTRAP_ADMIN_PASSWORD || '',
+  },
 };
 
 env.isProduction = env.nodeEnv === 'production';

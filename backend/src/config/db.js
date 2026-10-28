@@ -1,6 +1,9 @@
 'use strict';
+const fs = require('fs');
+const path = require('path');
 const mysql = require('mysql2/promise');
 const env = require('./env');
+const { getSslOption } = require('./ssl');
 
 // Pool único da aplicação. Todas as queries usam prepared statements
 // (execute + placeholders "?") — é isso que impede SQL injection.
@@ -9,6 +12,7 @@ const pool = mysql.createPool({
   port: env.db.port,
   user: env.db.user,
   password: env.db.password,
+  ssl: getSslOption(),
   database: env.db.database,
   waitForConnections: true,
   connectionLimit: env.db.connectionLimit,

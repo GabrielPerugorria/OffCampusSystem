@@ -6,3 +6,6 @@ node_modules/
 npm-debug.log*
 .DS_Store
 coverage/
+*.pem
+!src/certs/
+!src/certs/ca.pem

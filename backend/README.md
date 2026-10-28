@@ -45,6 +45,13 @@ CORS_ORIGINS=http://localhost:5500,http://127.0.0.1:5500,http://localhost:8080
 AUTO_CONFIRM_ORDERS=true
 ```
 
+As configurações `DB_*` deste arquivo são usadas pela API e pelos comandos
+`db:setup` e `db:seed`. `localhost` é apenas o valor de exemplo para um MySQL
+instalado na mesma máquina; para um banco remoto, substitua `DB_HOST` pelas
+informações fornecidas pelo provedor. Também é possível informar `DATABASE_URL`
+em vez das cinco variáveis de conexão. Sem configuração de conexão, a aplicação
+falha explicitamente em vez de tentar conectar a um banco local padrão.
+
 Gere cada segredo com:
 
 ```bash
@@ -146,8 +153,10 @@ Se você usar outra porta, adicione a origem em `CORS_ORIGINS` no `.env`.
 5. `AUTO_CONFIRM_ORDERS=false` quando houver gateway de pagamento.
 
 **MySQL hospedado** (PlanetScale, Railway, Amazon RDS, Hostinger…): aponte
-`DB_HOST`, `DB_USER`, `DB_PASSWORD` para o servidor gerenciado e rode
-`npm run db:setup` uma vez.
+`DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD` e `DB_NAME` para o servidor
+gerenciado (ou use `DATABASE_URL`) e rode `npm run db:setup` uma vez. Se o
+provedor exigir TLS, configure `DB_SSL=true` e o caminho do certificado em
+`DB_SSL_CA`.
 
 **Frontend no GitHub Pages**: troque uma linha em `js/config.js`:
 
