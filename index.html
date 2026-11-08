@@ -1259,7 +1259,7 @@
   <div class="modal-overlay" id="modalOverlay" role="dialog" aria-modal="true" aria-hidden="true">
 
     <!-- LOGIN -->
-    <div class="modal" id="modalLogin" aria-label="Entrar na plataforma">
+    <div class="modal" id="modalLogin" aria-label="Entrar na plataforma" style="display:none">
       <button class="modal-close" id="modalLoginClose" aria-label="Fechar">✕</button>
       <div class="modal-logo">
         <img src="imagens/favicon.png" alt="EvoTech" width="36" height="36">
@@ -1274,7 +1274,7 @@
       </div>
       <div class="mform-group">
         <label for="loginSenha">Senha</label>
-        <input type="password" id="loginSenha" placeholder="Sua senha" autocomplete="current-password">
+        <input type="password" id="loginSenha" placeholder="Sua senha" autocomplete="off" disabled>
         <span class="mfield-error" id="loginSenha-error"></span>
       </div>
       <div class="mform-row">
@@ -1327,7 +1327,7 @@
       </div>
       <div class="mform-group">
         <label for="cadSenha">Senha</label>
-        <input type="password" id="cadSenha" placeholder="Mínimo 6 caracteres" autocomplete="new-password">
+        <input type="password" id="cadSenha" placeholder="Mínimo 6 caracteres" autocomplete="off" disabled>
         <span class="mfield-error" id="cadSenha-error"></span>
       </div>
       <button class="btn-primary btn-full modal-submit" id="btnCadastroSubmit">Criar conta</button>

@@ -888,9 +888,25 @@
   canvas.addEventListener('mousedown', e => onStart(e.clientX, e.clientY));
   window.addEventListener('mousemove', e => onMove(e.clientX, e.clientY));
   window.addEventListener('mouseup', () => { isDragging = false; });
-  canvas.addEventListener('touchstart', e => { if (e.touches.length) { isHovered = true; onStart(e.touches[0].clientX, e.touches[0].clientY); } }, { passive: true });
-  canvas.addEventListener('touchmove', e => { if (e.touches.length) onMove(e.touches[0].clientX, e.touches[0].clientY); }, { passive: true });
-  canvas.addEventListener('touchend', () => { isDragging = false; isHovered = false; });
+  // No mobile/touch: o planeta gira sozinho suavemente sem intervenção manual de toque,
+  // permitindo que o usuário role a página nativamente sem arrastar o globo acidentalmente.
+  const isMobileScreen = () => window.innerWidth <= 1024;
+
+  canvas.addEventListener('touchstart', e => {
+    if (isMobileScreen()) return;
+    if (e.touches.length) { isHovered = true; onStart(e.touches[0].clientX, e.touches[0].clientY); }
+  }, { passive: true });
+
+  canvas.addEventListener('touchmove', e => {
+    if (isMobileScreen()) return;
+    if (e.touches.length) onMove(e.touches[0].clientX, e.touches[0].clientY);
+  }, { passive: true });
+
+  canvas.addEventListener('touchend', () => {
+    if (isMobileScreen()) return;
+    isDragging = false;
+    isHovered = false;
+  });
 
   /* ── RAYCASTING ── */
   const raycaster = new THREE.Raycaster();

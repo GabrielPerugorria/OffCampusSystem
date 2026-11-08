@@ -698,6 +698,16 @@
 /* ============================================================
    GAVETA MODAL DE FILTROS AVANÇADOS ("MAIS FILTROS")
    ============================================================ */
+/* Garantia de rolagem contínua na página de catálogo */
+html,
+body.catalog-page {
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  height: auto !important;
+  min-height: 100% !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
 .filters-drawer-overlay {
   position: fixed;
   inset: 0;
@@ -705,7 +715,8 @@
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   z-index: 1000;
-  display: flex;
+  display: none !important;
+  visibility: hidden !important;
   justify-content: flex-end;
   opacity: 0;
   pointer-events: none;
@@ -713,8 +724,10 @@
 }
 
 .filters-drawer-overlay.is-open {
-  opacity: 1;
-  pointer-events: auto;
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
 }
 
 .filters-drawer {

@@ -2730,24 +2730,39 @@ header.scrolled .logo-icon {
 /* ============================================================
    MODAL SYSTEM
    ============================================================ */
+/* Regras de trava absoluta de rolagem quando modal está ativo */
+html.modal-open,
+body.modal-open {
+  overflow: hidden !important;
+  height: 100% !important;
+  touch-action: none !important;
+}
+
 .modal-overlay {
   position: fixed;
   inset: 0;
   background: rgba(4, 17, 10, .88);
-  backdrop-filter: blur(6px);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   z-index: 9000;
-  display: flex;
+  display: none !important;
+  visibility: hidden !important;
   align-items: center;
   justify-content: center;
   padding: 20px;
   opacity: 0;
   pointer-events: none;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
   transition: opacity var(--dur-base) var(--ease-out);
 }
 
 .modal-overlay.open {
-  opacity: 1;
-  pointer-events: all;
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: all !important;
 }
 
 .modal {
@@ -2757,8 +2772,12 @@ header.scrolled .logo-icon {
   padding: 36px 32px;
   width: 100%;
   max-width: 440px;
-  max-height: 90vh;
-  overflow-y: auto;
+  max-height: 85vh;
+  max-height: 85dvh;
+  overflow-y: auto !important;
+  overscroll-behavior: contain !important;
+  -webkit-overflow-scrolling: touch !important;
+  touch-action: pan-y !important;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -2766,6 +2785,7 @@ header.scrolled .logo-icon {
   box-shadow: 0 30px 80px rgba(0, 0, 0, .6), 0 0 40px rgba(34, 197, 94, .08);
   transform: translateY(16px) scale(.98);
   transition: transform var(--dur-base) var(--ease-spring);
+  margin: auto;
 }
 
 .modal-overlay.open .modal {

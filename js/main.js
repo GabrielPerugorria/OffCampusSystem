@@ -852,8 +852,13 @@ function openModal(name) {
         overlay.removeAttribute('aria-hidden');
         overlay.classList.add('open');
         activeModal = name;
-        document.body.style.overflow = 'hidden';
+        document.documentElement.classList.add('modal-open');
         document.body.classList.add('modal-open');
+        document.body.style.overflow = 'hidden';
+        if (modals[name]) {
+            modals[name].querySelectorAll('input[disabled]').forEach(inp => inp.disabled = false);
+            modals[name].scrollTop = 0;
+        }
         document.addEventListener('keydown', trapFocus, true);
 
         // Focus first input/control once the modal has visually settled.
@@ -891,8 +896,12 @@ function closeModal() {
     }
 
     overlay.classList.remove('open');
+    document.documentElement.classList.remove('modal-open');
     document.body.classList.remove('modal-open');
     document.removeEventListener('keydown', trapFocus, true);
+    document.querySelectorAll('#modalLogin input[type="password"], #modalCadastro input[type="password"]').forEach(inp => {
+        inp.disabled = true;
+    });
 
     const finishClose = () => {
         overlay.setAttribute('aria-hidden', 'true');
@@ -929,7 +938,7 @@ function closeModal() {
 }
 
 // Close on overlay click
-overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
+overlay?.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && activeModal) closeModal(); });
 
 // Close buttons

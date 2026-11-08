@@ -251,7 +251,8 @@
 /* 2. TELA LATERAL ESQUERDA — Prévia Visual Recuada e Desfocada */
 .cinema-card.pos-left {
   transform: translate(calc(-50% - 460px), -50%) scale(0.72);
-  opacity: 0.40;
+  opacity: 0 !important;
+  visibility: hidden !important;
   z-index: 2;
   filter: blur(7px) brightness(0.46) contrast(0.92);
   pointer-events: none !important; /* NÃO CLICÁVEL CONFORME ESPECIFICAÇÃO */
@@ -267,7 +268,8 @@
 /* 3. TELA LATERAL DIREITA — Prévia Visual Recuada e Desfocada */
 .cinema-card.pos-right {
   transform: translate(calc(-50% + 460px), -50%) scale(0.72);
-  opacity: 0.40;
+  opacity: 0 !important;
+  visibility: hidden !important;
   z-index: 2;
   filter: blur(7px) brightness(0.46) contrast(0.92);
   pointer-events: none !important; /* NÃO CLICÁVEL CONFORME ESPECIFICAÇÃO */
@@ -513,12 +515,8 @@
     width: 620px;
     height: 350px;
   }
-  .cinema-card.pos-left {
-    transform: translate(calc(-50% - 380px), -50%) scale(0.70);
-  }
-  .cinema-card.pos-right {
-    transform: translate(calc(-50% + 380px), -50%) scale(0.70);
-  }
+  .cinema-card.pos-left {\n    transform: translate(calc(-50% - 380px), -50%) scale(0.70);\n    opacity: 0 !important;\n    visibility: hidden !important;\n  }
+  .cinema-card.pos-right {\n    transform: translate(calc(-50% + 380px), -50%) scale(0.70);\n    opacity: 0 !important;\n    visibility: hidden !important;\n  }
   .cinema-nav-prev {
     left: 14px;
   }
@@ -540,14 +538,8 @@
     width: 520px;
     height: 295px;
   }
-  .cinema-card.pos-left {
-    transform: translate(calc(-50% - 290px), -50%) scale(0.68);
-    opacity: 0.28;
-  }
-  .cinema-card.pos-right {
-    transform: translate(calc(-50% + 290px), -50%) scale(0.68);
-    opacity: 0.28;
-  }
+  .cinema-card.pos-left {\n    transform: translate(calc(-50% - 290px), -50%) scale(0.68);\n    opacity: 0 !important;\n    visibility: hidden !important;\n  }
+  .cinema-card.pos-right {\n    transform: translate(calc(-50% + 290px), -50%) scale(0.68);\n    opacity: 0 !important;\n    visibility: hidden !important;\n  }
   .cinema-content {
     padding: 20px 28px;
   }
@@ -577,16 +569,8 @@
     max-width: 380px;
     height: 215px;
   }
-  .cinema-card.pos-left {
-    transform: translate(calc(-50% - 180px), -50%) scale(0.65);
-    opacity: 0.18;
-    filter: blur(5px) brightness(0.35);
-  }
-  .cinema-card.pos-right {
-    transform: translate(calc(-50% + 180px), -50%) scale(0.65);
-    opacity: 0.18;
-    filter: blur(5px) brightness(0.35);
-  }
+  .cinema-card.pos-left {\n    transform: translate(calc(-50% - 180px), -50%) scale(0.65);\n    opacity: 0 !important;\n    visibility: hidden !important;\n    filter: blur(5px) brightness(0.35);\n  }
+  .cinema-card.pos-right {\n    transform: translate(calc(-50% + 180px), -50%) scale(0.65);\n    opacity: 0 !important;\n    visibility: hidden !important;\n    filter: blur(5px) brightness(0.35);\n  }
   .cinema-content {
     padding: 14px 18px;
   }

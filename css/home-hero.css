@@ -438,44 +438,78 @@ html, body {
 
 @media (max-width: 1024px) {
   #hero .hero-inner {
+    display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     text-align: center;
-    padding: calc(var(--nav-h, 76px) + var(--nav-top, 18px) + 24px) 24px 44px;
-    gap: 36px;
+    padding: calc(var(--nav-h, 76px) + var(--nav-top, 18px) + 12px) 20px 48px;
+    gap: 0;
+    position: relative;
   }
 
+  /* 1. Planeta Terra no Topo (Gira sozinho, sem captura de toque) */
+  #hero .hero-globe-wrapper {
+    order: 1;
+    width: min(100%, 460px);
+    height: min(100vw, 420px);
+    margin: 0 auto -140px; /* Sobreposição elegante com o texto abaixo */
+    position: relative;
+    z-index: 1;
+    pointer-events: none !important;
+    touch-action: pan-y !important;
+  }
+
+  #hero #globeContainer.globe-container {
+    width: min(100vw, 680px);
+    height: min(100vw, 520px);
+    pointer-events: none !important;
+    touch-action: pan-y !important;
+  }
+
+  #hero #globeCanvas {
+    pointer-events: none !important;
+    touch-action: pan-y !important;
+  }
+
+  #hero .globe-glow {
+    width: min(100%, 460px);
+    height: min(100%, 460px);
+  }
+
+  /* 2. Título e Subtítulo sobre o Planeta, com sombra/vinheta sutil para nitidez total */
   #hero .hero-content {
+    order: 2;
     align-items: center;
     text-align: center;
-    max-width: 600px;
-    margin-right: 0;
-    margin-top: 0;
+    max-width: 620px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 3;
+    /* Sombra/vinheta radial suave que não oculta o planeta mas destaca o texto */
+    background: radial-gradient(ellipse at center, rgba(3, 7, 5, 0.85) 0%, rgba(3, 7, 5, 0.55) 55%, transparent 80%);
+    padding: 16px 20px 24px;
+    border-radius: 28px;
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+  }
+
+  #hero .hero-headline {
+    text-shadow: 0 2px 18px rgba(0, 0, 0, 0.98), 0 0 35px rgba(0, 0, 0, 0.9);
   }
 
   #hero .hero-description {
     margin-left: auto;
     margin-right: auto;
+    text-shadow: 0 1px 14px rgba(0, 0, 0, 0.98);
   }
 
+  /* 3. Ações CTA na parte inferior */
   #hero .hero-actions {
     justify-content: center;
-  }
-
-  #hero .hero-globe-wrapper {
-    width: min(100%, 540px);
-    height: min(100%, 540px);
-    margin: 0 auto;
-  }
-
-  #hero #globeContainer.globe-container {
-    width: min(100vw, 760px);
-    height: min(100vw, 620px);
-  }
-  #hero .globe-glow {
-    width: min(100%, 540px);
-    height: min(100%, 540px);
+    margin-top: 24px;
+    position: relative;
+    z-index: 4;
   }
 
   #hero .hero-ambience-glow {
@@ -490,20 +524,40 @@ html, body {
 
 @media (max-width: 640px) {
   #hero .hero-inner {
-    padding: calc(var(--nav-h, 68px) + 18px) 16px 36px;
-    gap: 24px;
+    padding: calc(var(--nav-h, 68px) + 14px) 14px 40px;
+  }
+
+  #hero .hero-globe-wrapper {
+    width: min(100%, 340px);
+    height: min(85vw, 320px);
+    margin: 0 auto -100px;
+  }
+
+  #hero #globeContainer.globe-container {
+    width: min(100vw, 440px);
+    height: min(100vw, 380px);
+  }
+
+  #hero .globe-glow {
+    width: min(100%, 340px);
+    height: min(100%, 340px);
+  }
+
+  #hero .hero-content {
+    padding: 12px 14px 20px;
+    max-width: 100%;
   }
 
   #hero .hero-headline {
     font-size: clamp(1.9rem, 7vw, 2.35rem);
     line-height: 1.25;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
   }
 
   #hero .hero-description {
-    font-size: 0.96rem;
-    line-height: 1.65;
-    margin-bottom: 24px;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin-bottom: 20px;
   }
 
   #hero .hero-actions {
@@ -520,20 +574,6 @@ html, body {
     height: 48px;
     padding: 0 20px;
     font-size: 0.92rem;
-  }
-
-  #hero .hero-globe-wrapper {
-    width: min(100%, 360px);
-    height: min(100%, 360px);
-  }
-
-  #hero #globeContainer.globe-container {
-    width: min(100vw, 480px);
-    height: min(100vw, 420px);
-  }
-  #hero .globe-glow {
-    width: min(100%, 360px);
-    height: min(100%, 360px);
   }
 }
 

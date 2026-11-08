@@ -88,35 +88,9 @@
       });
     }
 
-    // Gestos de toque para Mobile (Swipe nas setas / tela)
-    let touchStartX = 0;
-    let touchStartY = 0;
-    let touchEndX = 0;
-    let touchEndY = 0;
-
-    stage.addEventListener('touchstart', function (e) {
-      if (e.touches && e.touches.length === 1) {
-        touchStartX = e.touches[0].clientX;
-        touchStartY = e.touches[0].clientY;
-      }
-    }, { passive: true });
-
-    stage.addEventListener('touchend', function (e) {
-      if (e.changedTouches && e.changedTouches.length === 1) {
-        touchEndX = e.changedTouches[0].clientX;
-        touchEndY = e.changedTouches[0].clientY;
-        const diffX = touchEndX - touchStartX;
-        const diffY = touchEndY - touchStartY;
-        // Se swipe horizontal significativo, avança ou retrocede pelas setas
-        if (Math.abs(diffX) > 40 && Math.abs(diffX) > Math.abs(diffY)) {
-          if (diffX < 0) {
-            updateCarousel(currentIndex + 1);
-          } else {
-            updateCarousel(currentIndex - 1);
-          }
-        }
-      }
-    }, { passive: true });
+    // Navegação EXCLUSIVAMENTE pelas setas:
+    // O swipe de arrastar o dedo foi desativado conforme solicitado para permitir
+    // a rolagem vertical natural do site e garantir controle unicamente pelas setas.
 
     // Suporte a teclado (setas esquerda/direita)
     document.addEventListener('keydown', function (e) {
