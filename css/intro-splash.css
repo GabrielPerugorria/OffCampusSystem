@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    INTRO SPLASH — EvoTech Events · "Eventos em movimento"
    Fundo preto, detalhes verdes, esfera 3D (canvas 2D) + texto,
    barra de progresso e botão "Pular". Duração total ≈ 2,5 s.
@@ -26,6 +26,7 @@
   opacity: 1;
   transition: opacity 400ms ease;
   -webkit-tap-highlight-color: transparent;
+  contain: layout style;    /* isola o overlay do restante da pagina */
 }
 
 html.intro-on #introSplash { display: block; }
@@ -48,6 +49,8 @@ html.intro-on, html.intro-on body { overflow: hidden; }
   width: 100%;
   height: 100%;
   display: block;
+  contain: strict;          /* isola layout/paint: o canvas nunca afeta o resto da arvore */
+  will-change: contents;    /* hint ao compositor: conteudo muda a cada frame */
 }
 
 .intro-content {

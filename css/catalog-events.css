@@ -1,0 +1,964 @@
+/* ============================================================
+   EVOTECH EVENTS — CATÁLOGO EXCLUSIVO DE EVENTOS
+   Estilos dedicados para a página independente de eventos,
+   cápsula de pesquisa translúcida (glassmorphism), filtros avançados,
+   gaveta modal de filtros, chips ativos e grade de eventos.
+   ============================================================ */
+
+/* ── Estrutura Global da Página de Catálogo ── */
+.catalog-page {
+  background: #000000;
+  color: #f8fafc;
+  min-height: 100vh;
+  min-height: 100dvh;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* ── Iluminação Ambiental Sutil de Fundo ── */
+.catalog-ambient-glow {
+  position: absolute;
+  top: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 900px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(34, 197, 94, 0.12) 0%, rgba(21, 128, 61, 0.03) 50%, transparent 75%);
+  filter: blur(90px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Container Principal do Catálogo ── */
+.catalog-main {
+  position: relative;
+  z-index: 2;
+  width: 94%;
+  max-width: 1380px;
+  margin: 0 auto;
+  padding: calc(var(--nav-h, 76px) + var(--nav-top, 18px) + 36px) 0 90px;
+}
+
+/* ── Navegação de Volta / Breadcrumb ── */
+.catalog-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.catalog-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Manrope', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.65);
+  text-decoration: none;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.28s ease;
+}
+
+.catalog-back-link:hover {
+  color: #ffffff;
+  background: rgba(34, 197, 94, 0.12);
+  border-color: rgba(34, 197, 94, 0.35);
+  transform: translateX(-3px);
+}
+
+/* ── Header da Página de Catálogo ── */
+.catalog-header {
+  text-align: center;
+  max-width: 820px;
+  margin: 0 auto 36px;
+}
+
+.catalog-header-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  border-radius: 999px;
+  background: rgba(34, 197, 94, 0.08);
+  border: 1px solid rgba(34, 197, 94, 0.28);
+  color: #4ade80;
+  font-family: 'Manrope', sans-serif;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+
+.catalog-header h1 {
+  font-family: 'Manrope', 'Sora', sans-serif;
+  font-size: clamp(2.3rem, 4.4vw, 3.8rem);
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.035em;
+  color: #ffffff;
+  margin: 0 0 14px 0;
+}
+
+.catalog-header .text-gradient {
+  background: linear-gradient(135deg, #f8fafc 8%, #22c55e 36%, #15803d 68%, #0d5426 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.catalog-header p {
+  font-family: 'Manrope', sans-serif;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: clamp(1rem, 1.2vw, 1.15rem);
+  line-height: 1.65;
+  margin: 0 auto;
+  max-width: 620px;
+}
+
+/* ============================================================
+   BARRA DE PESQUISA PRINCIPAL — CÁPSULA TRANSLÚCIDA (GLASSMORPHISM)
+   Inspirada no menu de navegação, com efeito de vidro, bordas sutis,
+   cantos arredondados e iluminação verde discreta.
+   ============================================================ */
+.catalog-search-wrap {
+  width: 100%;
+  max-width: 1240px;
+  margin: 0 auto 28px;
+}
+
+.catalog-search-capsule {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: rgba(6, 20, 12, 0.72);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(34, 197, 94, 0.25);
+  border-radius: 999px;
+  padding: 8px 10px 8px 24px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.55),
+              0 0 30px rgba(34, 197, 94, 0.10),
+              inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.catalog-search-capsule:focus-within {
+  border-color: rgba(74, 222, 128, 0.55);
+  box-shadow: 0 20px 52px rgba(0, 0, 0, 0.7),
+              0 0 36px rgba(34, 197, 94, 0.22),
+              inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+/* Campos Individuais da Cápsula */
+.search-field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+}
+
+.search-field--text {
+  flex: 2.2;
+  min-width: 220px;
+}
+
+.search-field--state {
+  flex: 1.1;
+  min-width: 140px;
+}
+
+.search-field--city {
+  flex: 1.2;
+  min-width: 150px;
+}
+
+.search-field--date {
+  flex: 1.1;
+  min-width: 150px;
+}
+
+.search-icon {
+  color: #4ade80;
+  opacity: 0.85;
+  flex-shrink: 0;
+}
+
+.search-field input,
+.search-field select {
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #ffffff;
+  font-family: 'Manrope', sans-serif;
+  font-size: 0.92rem;
+  font-weight: 500;
+  padding: 10px 0;
+}
+
+.search-field input::placeholder {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.search-field select {
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%234ade80' stroke-width='2.5'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  padding-right: 24px;
+}
+
+.search-field select option {
+  background: #091a10;
+  color: #f1f5f9;
+  padding: 8px;
+}
+
+/* Divisores elegantes entre campos */
+.search-divider {
+  width: 1px;
+  height: 32px;
+  background: rgba(255, 255, 255, 0.10);
+  margin: 0 14px;
+  flex-shrink: 0;
+}
+
+.search-clear-btn {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0 4px;
+  display: none;
+}
+
+.search-clear-btn:hover {
+  color: #ffffff;
+}
+
+/* Ações da Cápsula (Mais Filtros e Buscar) */
+.search-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: 10px;
+  flex-shrink: 0;
+}
+
+/* Botão "Mais Filtros" */
+.btn-more-filters {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 46px;
+  padding: 0 20px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #f1f5f9;
+  font-family: 'Manrope', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+  white-space: nowrap;
+}
+
+.btn-more-filters:hover {
+  background: rgba(34, 197, 94, 0.15);
+  border-color: rgba(74, 222, 128, 0.45);
+  color: #ffffff;
+  transform: translateY(-2px);
+}
+
+.filters-count-badge {
+  background: #22c55e;
+  color: #041008;
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 999px;
+}
+
+/* Botão "Buscar" (Estilo Hero CTA com nuance verde) */
+.btn-search-submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 46px;
+  padding: 0 26px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.35) 0%, rgba(4, 17, 10, 0.85) 100%);
+  color: #ffffff;
+  font-family: 'Manrope', sans-serif;
+  font-size: 0.92rem;
+  font-weight: 700;
+  border: 1px solid rgba(74, 222, 128, 0.55);
+  cursor: pointer;
+  box-shadow: 0 4px 18px rgba(34, 197, 94, 0.25),
+              inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  white-space: nowrap;
+}
+
+.btn-search-submit:hover {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.55) 0%, rgba(4, 17, 10, 0.95) 100%);
+  border-color: #4ade80;
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 24px rgba(34, 197, 94, 0.45);
+}
+
+/* ============================================================
+   BARRA DE CHIPS / FILTROS ATIVOS E BARRA DE CONTROLE
+   ============================================================ */
+.catalog-control-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 28px;
+  padding: 0 6px;
+}
+
+.catalog-active-chips {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(34, 197, 94, 0.12);
+  border: 1px solid rgba(34, 197, 94, 0.35);
+  color: #86efac;
+  font-family: 'Manrope', sans-serif;
+  font-size: 0.80rem;
+  font-weight: 600;
+  animation: chipIn 0.25s ease-out;
+}
+
+@keyframes chipIn {
+  from { opacity: 0; transform: scale(0.85); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.filter-chip-remove {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+}
+
+.filter-chip-remove:hover {
+  color: #ef4444;
+}
+
+.btn-clear-all-chips {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.55);
+  font-family: 'Manrope', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 6px 8px;
+}
+
+.btn-clear-all-chips:hover {
+  color: #ffffff;
+}
+
+/* Resultados e Ordenação */
+.catalog-meta-sort {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.catalog-results-count {
+  font-family: 'Manrope', sans-serif;
+  font-size: 0.88rem;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.catalog-sort-select {
+  background: rgba(10, 24, 16, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  padding: 8px 30px 8px 16px;
+  color: #ffffff;
+  font-family: 'Manrope', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%234ade80' stroke-width='2.5'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+}
+
+.catalog-sort-select:focus {
+  outline: none;
+  border-color: rgba(34, 197, 94, 0.5);
+}
+
+/* ============================================================
+   GRADE DE EVENTOS (CATALOG GRID)
+   Cards elegantes com foco na arte, metadados nítidos e botões padronizados.
+   ============================================================ */
+.catalog-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 32px;
+  width: 100%;
+}
+
+.catalog-card {
+  position: relative;
+  background: rgba(6, 18, 11, 0.65);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.4s cubic-bezier(0.25, 1, 0.35, 1),
+              border-color 0.3s ease,
+              box-shadow 0.4s ease;
+  will-change: transform;
+}
+
+.catalog-card:hover {
+  transform: translateY(-8px);
+  border-color: rgba(34, 197, 94, 0.4);
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.7),
+              0 0 30px rgba(34, 197, 94, 0.15);
+}
+
+/* Mídia do Card */
+.catalog-card-media {
+  position: relative;
+  width: 100%;
+  height: 220px;
+  overflow: hidden;
+  background: #020804;
+}
+
+.catalog-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  transition: transform 0.6s cubic-bezier(0.25, 1, 0.35, 1);
+}
+
+.catalog-card:hover .catalog-card-img {
+  transform: scale(1.06);
+}
+
+.catalog-card-badges {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  right: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  pointer-events: none;
+}
+
+.catalog-badge-status {
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(34, 197, 94, 0.45);
+  color: #86efac;
+  font-family: 'Manrope', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.catalog-badge-rating {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  font-family: 'Manrope', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+/* Corpo do Card */
+.catalog-card-body {
+  padding: 22px 24px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.catalog-card-meta-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Manrope', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #4ade80;
+  margin-bottom: 8px;
+}
+
+.catalog-card-title {
+  font-family: 'Manrope', 'Sora', sans-serif;
+  font-size: 1.35rem;
+  font-weight: 800;
+  line-height: 1.25;
+  color: #ffffff;
+  margin: 0 0 10px 0;
+  letter-spacing: -0.02em;
+}
+
+.catalog-card-info-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 18px;
+  font-family: 'Manrope', sans-serif;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.catalog-info-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.catalog-info-item svg {
+  color: #4ade80;
+  flex-shrink: 0;
+}
+
+/* Rodapé do Card com Preço e Botão */
+.catalog-card-footer {
+  margin-top: auto;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.catalog-card-price-block {
+  display: flex;
+  flex-direction: column;
+}
+
+.catalog-price-label {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.catalog-price-val {
+  font-family: 'Manrope', sans-serif;
+  font-size: 1.18rem;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.catalog-card-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 20px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.25) 0%, rgba(4, 17, 10, 0.75) 100%);
+  border: 1px solid rgba(34, 197, 94, 0.45);
+  color: #ffffff;
+  font-family: 'Manrope', sans-serif;
+  font-size: 0.86rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+}
+
+.catalog-card-btn:hover {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.45) 0%, rgba(4, 17, 10, 0.9) 100%);
+  border-color: #4ade80;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(34, 197, 94, 0.3);
+}
+
+/* ============================================================
+   ESTADOS DE INTERFACE: VAZIO, CARREGANDO, ERRO
+   ============================================================ */
+.catalog-state-box {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 70px 20px;
+  background: rgba(6, 18, 11, 0.5);
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+  border-radius: 24px;
+}
+
+.catalog-state-icon {
+  font-size: 3rem;
+  margin-bottom: 16px;
+  display: block;
+}
+
+.catalog-state-title {
+  font-family: 'Manrope', 'Sora', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0 0 10px 0;
+}
+
+.catalog-state-desc {
+  font-family: 'Manrope', sans-serif;
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.65);
+  max-width: 480px;
+  margin: 0 auto 24px;
+  line-height: 1.6;
+}
+
+.catalog-state-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 28px;
+  border-radius: 999px;
+  background: #22c55e;
+  color: #041008;
+  font-family: 'Manrope', sans-serif;
+  font-size: 0.92rem;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: all 0.28s ease;
+}
+
+.catalog-state-action:hover {
+  background: #4ade80;
+  transform: translateY(-2px);
+}
+
+/* Skeletons de Carregamento */
+.catalog-skeleton-card {
+  height: 380px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  animation: skeletonPulse 1.6s infinite ease-in-out;
+}
+
+@keyframes skeletonPulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+
+/* ============================================================
+   GAVETA MODAL DE FILTROS AVANÇADOS ("MAIS FILTROS")
+   ============================================================ */
+.filters-drawer-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.78);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  z-index: 1000;
+  display: flex;
+  justify-content: flex-end;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s ease;
+}
+
+.filters-drawer-overlay.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.filters-drawer {
+  width: 100%;
+  max-width: 520px;
+  height: 100%;
+  background: #06110a;
+  border-left: 1px solid rgba(34, 197, 94, 0.22);
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.4s cubic-bezier(0.25, 1, 0.35, 1);
+  box-shadow: -20px 0 60px rgba(0, 0, 0, 0.8);
+}
+
+.filters-drawer-overlay.is-open .filters-drawer {
+  transform: translateX(0);
+}
+
+.filters-drawer-header {
+  padding: 24px 28px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.filters-drawer-title {
+  font-family: 'Manrope', 'Sora', sans-serif;
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0;
+}
+
+.filters-drawer-close {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.filters-drawer-close:hover {
+  color: #ffffff;
+}
+
+.filters-drawer-body {
+  padding: 24px 28px;
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+/* Grupo de Filtros no Drawer */
+.filter-group-title {
+  font-family: 'Manrope', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #4ade80;
+  margin-bottom: 12px;
+}
+
+.filter-options-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.filter-pill-label {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.filter-pill-label input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.filter-pill-tag {
+  display: inline-block;
+  padding: 7px 15px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  color: rgba(255, 255, 255, 0.8);
+  font-family: 'Manrope', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  transition: all 0.22s ease;
+}
+
+.filter-pill-label input:checked + .filter-pill-tag {
+  background: rgba(34, 197, 94, 0.22);
+  border-color: #22c55e;
+  color: #ffffff;
+  box-shadow: 0 0 12px rgba(34, 197, 94, 0.25);
+}
+
+.filter-pill-label:hover .filter-pill-tag {
+  border-color: rgba(34, 197, 94, 0.4);
+  color: #ffffff;
+}
+
+/* Slider de Preço */
+.price-range-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.price-range-val {
+  font-family: 'Manrope', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.price-range-slider {
+  width: 100%;
+  accent-color: #22c55e;
+  cursor: pointer;
+}
+
+/* Rodapé do Drawer */
+.filters-drawer-footer {
+  padding: 20px 28px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn-drawer-clear {
+  flex: 1;
+  height: 48px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.85);
+  font-family: 'Manrope', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.btn-drawer-clear:hover {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #ef4444;
+}
+
+.btn-drawer-apply {
+  flex: 1.5;
+  height: 48px;
+  border-radius: 999px;
+  background: #22c55e;
+  border: none;
+  color: #041008;
+  font-family: 'Manrope', sans-serif;
+  font-size: 0.92rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 18px rgba(34, 197, 94, 0.35);
+}
+
+.btn-drawer-apply:hover {
+  background: #4ade80;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(34, 197, 94, 0.5);
+}
+
+/* ============================================================
+   RESPONSIVIDADE DO CATÁLOGO
+   ============================================================ */
+@media (max-width: 1100px) {
+  .catalog-search-capsule {
+    flex-wrap: wrap;
+    border-radius: 28px;
+    padding: 18px 20px;
+    gap: 14px;
+  }
+  .search-divider {
+    display: none;
+  }
+  .search-field--text {
+    flex: 100%;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding-bottom: 8px;
+  }
+  .search-field--state,
+  .search-field--city,
+  .search-field--date {
+    flex: 1;
+    min-width: 120px;
+  }
+  .search-actions {
+    flex: 100%;
+    margin-left: 0;
+    justify-content: flex-end;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+}
+
+@media (max-width: 768px) {
+  .catalog-grid {
+    grid-template-columns: 1fr;
+    gap: 22px;
+  }
+  .catalog-search-capsule {
+    padding: 16px;
+  }
+  .search-field--state,
+  .search-field--city,
+  .search-field--date {
+    flex: 100%;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    padding-bottom: 8px;
+  }
+  .search-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+  .btn-more-filters,
+  .btn-search-submit {
+    width: 100%;
+    justify-content: center;
+  }
+  .catalog-control-bar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .catalog-meta-sort {
+    width: 100%;
+    justify-content: space-between;
+  }
+}

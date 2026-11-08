@@ -111,7 +111,7 @@
 
   /* ── CENA ── */
   const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+  const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 100);
   camera.position.set(0, 0, 18);
 
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
@@ -568,8 +568,8 @@
 
   /* ── FOGUETES SAINDO DA TERRA ── */
   const rockets = [];
-  const ROCKET_MAX_ALT = GLOBE_RADIUS * 2.6;
-  const ROCKET_LIFE_SEC = 7.5;
+  const ROCKET_MAX_ALT = GLOBE_RADIUS * 1.62; // Trajetória ampla que ultrapassa as órbitas e conclui a ascensão no espaço
+  const ROCKET_LIFE_SEC = 7.2;
   const ROCKET_FWD = new THREE.Vector3(0, 0, 1); // eixo do nariz no modelo
   const rkVel = new THREE.Vector3();
 
@@ -577,42 +577,46 @@
     const g = new THREE.Group();
     const r = GLOBE_RADIUS * 0.012;
 
+    const bodyMat = new THREE.MeshBasicMaterial({ color: 0xf5f5f5, transparent: true, opacity: 1 });
     const body = new THREE.Mesh(
       new THREE.CylinderGeometry(r, r, r * 7, 8),
-      new THREE.MeshBasicMaterial({ color: 0xf5f5f5 })
+      bodyMat
     );
     body.rotation.x = Math.PI / 2;
     g.add(body);
 
+    const noseMat = new THREE.MeshBasicMaterial({ color: COLORS.brandBright, transparent: true, opacity: 1 });
     const nose = new THREE.Mesh(
       new THREE.ConeGeometry(r, r * 2.4, 8),
-      new THREE.MeshBasicMaterial({ color: COLORS.brandBright })
+      noseMat
     );
     nose.rotation.x = Math.PI / 2;
     nose.position.z = r * 4.7;
     g.add(nose);
 
     /* chama/exaustão */
+    const flameMat = new THREE.MeshBasicMaterial({
+      color: 0xffb020, transparent: true, opacity: 0.9,
+      blending: THREE.AdditiveBlending, depthWrite: false
+    });
     const flame = new THREE.Mesh(
       new THREE.ConeGeometry(r * 0.85, r * 3.2, 8),
-      new THREE.MeshBasicMaterial({
-        color: 0xffb020, transparent: true, opacity: 0.9,
-        blending: THREE.AdditiveBlending, depthWrite: false
-      })
+      flameMat
     );
     flame.rotation.x = -Math.PI / 2;
     flame.position.z = -r * 5.2;
     g.add(flame);
 
-    const glow = new THREE.Sprite(new THREE.SpriteMaterial({
+    const glowMat = new THREE.SpriteMaterial({
       map: createGlowSprite(), color: 0xffc060, transparent: true, opacity: 0.9,
       blending: THREE.AdditiveBlending, depthWrite: false
-    }));
+    });
+    const glow = new THREE.Sprite(glowMat);
     glow.scale.set(r * 14, r * 14, 1);
     glow.position.z = -r * 6;
     g.add(glow);
 
-    return { group: g, flame, glow };
+    return { group: g, bodyMat, noseMat, flame, flameMat, glow, glowMat };
   }
 
   function launchRocket() {
@@ -620,32 +624,29 @@
     const normal = latLonToVector3(originState.lat, originState.lon, 1).normalize();
     const startPos = normal.clone().multiplyScalar(GLOBE_RADIUS * 1.001);
 
-    const { group, flame, glow } = createRocketModel();
+    const { group, bodyMat, noseMat, flame, flameMat, glow, glowMat } = createRocketModel();
     group.position.copy(startPos);
-    /* nariz do modelo = +Z local; alinha com a normal (espaço local do globo,
-       independente da rotação do globeGroup — lookAt() usaria coords de mundo) */
+    /* nariz do modelo = +Z local; alinha perfeitamente com a normal da Terra */
     group.quaternion.setFromUnitVectors(ROCKET_FWD, normal);
     globeGroup.add(group);
 
-    /* leve desvio lateral para a trajetória parecer mais orgânica */
-    const wobbleAxis = new THREE.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize();
-
-    /* rastro de partículas (trilha de fumaça/luz) */
-    const TRAIL_COUNT = 26;
+    /* rastro de partículas saindo diretamente da turbina */
+    const TRAIL_COUNT = 32;
     const trailGeo = new THREE.BufferGeometry();
     const trailPos = new Float32Array(TRAIL_COUNT * 3);
-    for (let i = 0; i < TRAIL_COUNT; i++) trailPos.set([startPos.x, startPos.y, startPos.z], i * 3);
+    const nozzleStart = startPos.clone().addScaledVector(normal, -GLOBE_RADIUS * 0.012 * 5.2);
+    for (let i = 0; i < TRAIL_COUNT; i++) trailPos.set([nozzleStart.x, nozzleStart.y, nozzleStart.z], i * 3);
     trailGeo.setAttribute('position', new THREE.BufferAttribute(trailPos, 3));
     const trailMat = new THREE.PointsMaterial({
-      color: COLORS.brandSoft, size: GLOBE_RADIUS * 0.012, transparent: true,
-      opacity: 0.55, blending: THREE.AdditiveBlending, depthWrite: false
+      color: COLORS.brandSoft, size: GLOBE_RADIUS * 0.013, transparent: true,
+      opacity: 0.65, blending: THREE.AdditiveBlending, depthWrite: false
     });
     const trail = new THREE.Points(trailGeo, trailMat);
     globeGroup.add(trail);
 
     rockets.push({
-      group, flame, glow, trail, trailGeo, trailPositions: [],
-      normal, wobbleAxis, age: 0, lastPos: startPos.clone()
+      group, bodyMat, noseMat, flame, flameMat, glow, glowMat, trail, trailMat, trailGeo, trailPositions: [],
+      normal, age: 0
     });
   }
 
@@ -764,34 +765,46 @@
       const t = Math.min(1, rk.age / ROCKET_LIFE_SEC);
       const eased = t * t * (1.3 - 0.3 * t); // aceleração progressiva
       const dist = GLOBE_RADIUS * 1.001 + eased * (ROCKET_MAX_ALT - GLOBE_RADIUS);
-      const wobble = Math.sin(rk.age * 2.2) * 0.05 * t;
-      const dir = rk.normal.clone()
-        .addScaledVector(rk.wobbleAxis, wobble)
-        .normalize();
-      const pos = dir.clone().multiplyScalar(dist);
+
+      /* Trajetória reta e perpendicular à superfície da Terra (sem inclinações ou desvios tortos) */
+      const pos = rk.normal.clone().multiplyScalar(dist);
       rk.group.position.copy(pos);
-      /* aponta o nariz na direção do movimento (tangente da trajetória) */
-      rk.group.quaternion.setFromUnitVectors(ROCKET_FWD, rkVel.copy(pos).sub(rk.lastPos).lengthSq() > 1e-12 ? rkVel.normalize() : dir);
-      rk.lastPos.copy(pos);
+      /* Bico aponta perfeitamente alinhado na direção da subida vertical */
+      rk.group.quaternion.setFromUnitVectors(ROCKET_FWD, rk.normal);
 
       const flick = 0.75 + Math.random() * 0.25;
       rk.flame.scale.set(flick, 1, flick);
-      rk.glow.material.opacity = 0.6 + Math.random() * 0.3;
 
-      rk.trailPositions.unshift(pos.clone());
-      if (rk.trailPositions.length > 26) rk.trailPositions.pop();
+      /* Desvanecimento suave de fim de trajetória: o foguete conclui seu percurso e se dissolve no cosmos sem cortes */
+      const fadeOutStart = 0.65;
+      const rocketAlpha = t < fadeOutStart ? 1 : Math.max(0, 1 - (t - fadeOutStart) / (1 - fadeOutStart));
+
+      rk.bodyMat.opacity = rocketAlpha;
+      rk.noseMat.opacity = rocketAlpha;
+      rk.flameMat.opacity = 0.9 * rocketAlpha;
+      rk.glowMat.opacity = (0.6 + Math.random() * 0.3) * rocketAlpha;
+
+      /* Rastro de exaustão sai com precisão do bocal da turbina na cauda do foguete */
+      const nozzlePos = pos.clone().addScaledVector(rk.normal, -GLOBE_RADIUS * 0.012 * 5.2);
+      rk.trailPositions.unshift(nozzlePos);
+      if (rk.trailPositions.length > 32) rk.trailPositions.pop();
       const arr = rk.trailGeo.attributes.position.array;
-      for (let k = 0; k < 26; k++) {
-        const p = rk.trailPositions[k] || pos;
+      for (let k = 0; k < 32; k++) {
+        const p = rk.trailPositions[k] || nozzlePos;
         arr[k * 3] = p.x; arr[k * 3 + 1] = p.y; arr[k * 3 + 2] = p.z;
       }
       rk.trailGeo.attributes.position.needsUpdate = true;
-      rk.trail.material.opacity = 0.55 * (1 - t);
+      rk.trailMat.opacity = 0.65 * (1 - t);
 
       if (t >= 1) {
         globeGroup.remove(rk.group);
         globeGroup.remove(rk.trail);
         rk.trailGeo.dispose();
+        rk.bodyMat.dispose();
+        rk.noseMat.dispose();
+        rk.flameMat.dispose();
+        rk.glowMat.dispose();
+        rk.trailMat.dispose();
         rockets.splice(i, 1);
       }
     }
@@ -910,14 +923,18 @@
   });
 
   /* ── RESIZE ── */
-  const BASE_CONTAINER_PX = 620; // acompanha o tamanho máximo do .globe-container no CSS
-  const BASE_CAM_Z = 18;         // distância com margem suficiente para as órbitas não serem cortadas
+  const BASE_CAM_Z = 20.8;
   function resize() {
     const r = container.getBoundingClientRect();
+    if (!r.width || !r.height) return;
     renderer.setSize(r.width, r.height);
     camera.aspect = r.width / r.height;
     camera.updateProjectionMatrix();
-    camera.position.z = BASE_CAM_Z / Math.min(1, Math.min(r.width, r.height) / BASE_CONTAINER_PX);
+    // Em qualquer largura de container, camZ mantém o planeta imponente e protagonista
+    // garantindo margem total para que órbitas, satélites e trajetórias de foguetes jamais sejam cortados
+    const minDim = Math.min(r.width, r.height);
+    const scaleFactor = Math.max(0.72, Math.min(1.0, minDim / 860));
+    camera.position.z = BASE_CAM_Z / scaleFactor;
   }
   resize();
   window.addEventListener('resize', resize);

@@ -79,7 +79,7 @@ window.addEventListener('resize', () => { refreshIndicator(); updateActiveLinkOn
 window.addEventListener('scroll', () => {
     header.classList.toggle('scrolled', window.scrollY > 50);
     const total = document.documentElement.scrollHeight - window.innerHeight;
-    if (total > 0) progressBar.style.width = `${(window.scrollY / total) * 100}%`;
+    if (total > 0 && progressBar) progressBar.style.width = `${(window.scrollY / total) * 100}%`;
     updateActiveLinkOnScroll();
 }, { passive: true });
 
@@ -1295,8 +1295,56 @@ document.getElementById('btnSalvarPerfil')?.addEventListener('click', async () =
 
 /* ---------- DASHBOARD ADMIN ---------- */
 /* ---------- EVENTO DETAIL ---------- */
+const EVENTOS_FALLBACK = [
+    {
+        id: 1,
+        slug: 'offcampus-na-copa',
+        nome: 'OFFCampus na copa?',
+        tipo: 'Festa Universitária',
+        data: '15 de Novembro de 2025',
+        local: 'Espaço Sunset Lounge',
+        img: 'imagens/offcampushexa.png',
+        desc: 'Música ao vivo, áreas VIP e networking exclusivo. Vamos em busca do hexa com estilo!',
+        regras: 'Classificação 18 anos. Obrigatória apresentação de documento oficial com foto.',
+        lotes: [
+            { id: 101, nome: 'Lote Promocional', preco: 45.0, disponivel: 32, total: 100 },
+            { id: 102, nome: 'Área VIP', preco: 90.0, disponivel: 15, total: 50 }
+        ]
+    },
+    {
+        id: 2,
+        slug: 'resenha-do-portes',
+        nome: 'Resenha do Portes',
+        tipo: 'Festival de Música Eletrônica',
+        data: '22 de Novembro de 2025',
+        local: 'Arena Music Park',
+        img: 'imagens/resenhadoportes.png',
+        desc: 'Festival com line-up exclusivo, produção premium e acesso controlado.',
+        regras: 'Classificação 18 anos. Proibida a entrada com bebidas externas.',
+        lotes: [
+            { id: 201, nome: 'Pista Open Air', preco: 55.0, disponivel: 48, total: 150 },
+            { id: 202, nome: 'Camarote Backstage', preco: 120.0, disponivel: 8, total: 30 }
+        ]
+    },
+    {
+        id: 3,
+        slug: 'halloween-offcampus',
+        nome: 'Halloween OffCampus',
+        tipo: 'Festa Temática & Open Food',
+        data: '31 de Outubro de 2025',
+        local: 'Mansão Boulevard',
+        img: 'imagens/halloween.png',
+        desc: 'Experiência completa para estudantes com open food, música e ambiente VIP temático.',
+        regras: 'Fantasia recomendada. Classificação 18 anos.',
+        lotes: [
+            { id: 301, nome: 'Geral + Open Food', preco: 70.0, disponivel: 20, total: 120 },
+            { id: 302, nome: 'VIP Premium Experience', preco: 140.0, disponivel: 12, total: 40 }
+        ]
+    }
+];
+
 function openEvento(idx) {
-    const ev = EVENTOS[idx];
+    const ev = (EVENTOS && EVENTOS[idx]) || EVENTOS_FALLBACK[idx];
     if (!ev) return;
     const cont = document.getElementById('eventoDetailContent');
     if (!cont) return;
@@ -1348,6 +1396,7 @@ function openEvento(idx) {
     });
     openModal('evento');
 }
+window.openEvento = openEvento;
 
 // Banner info buttons
 document.querySelectorAll('.banner-info').forEach(btn => {

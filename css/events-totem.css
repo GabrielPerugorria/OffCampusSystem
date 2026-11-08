@@ -1,0 +1,621 @@
+/* ============================================================
+   EVOTECH EVENTS — CARROSSEL CINEMATOGRÁFICO DE TELAS PANORÂMICAS
+   Painéis horizontais inspirados em telas de cinema panorâmicas (IMAX/Cinerama),
+   curvatura côncava suave nas laterais, profundidade com desfoque elegante,
+   navegação estritamente pelas setas e botões idênticos ao Home.
+   ============================================================ */
+
+/* ── Container da Seção ── */
+#events.premium-events-section {
+  position: relative;
+  overflow: hidden;
+  padding: 100px 3% 90px;
+  background: #000000;
+  border-top: 1px solid rgba(34, 197, 94, 0.12);
+  border-bottom: 1px solid rgba(34, 197, 94, 0.08);
+  min-height: 900px;
+  box-sizing: border-box;
+}
+
+#events .premium-events-inner {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ── Header da Seção ── */
+#events .premium-events-header {
+  text-align: center;
+  margin-bottom: 40px;
+  max-width: 780px;
+}
+
+#events .premium-events-header h2 {
+  font-family: 'Manrope', 'Sora', sans-serif;
+  font-size: clamp(2.3rem, 4.2vw, 3.8rem);
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.035em;
+  color: #ffffff;
+  margin: 0 0 16px 0;
+  filter: drop-shadow(0 4px 16px rgba(0, 0, 0, 0.9));
+}
+
+#events .premium-events-header .totem-title-gradient {
+  background: linear-gradient(135deg, #f8fafc 8%, #22c55e 36%, #15803d 68%, #0d5426 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  display: inline-block;
+}
+
+#events .premium-events-header p {
+  font-family: 'Manrope', sans-serif;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: clamp(1rem, 1.2vw, 1.15rem);
+  max-width: 560px;
+  margin: 0 auto;
+  line-height: 1.65;
+  font-weight: 400;
+}
+
+/* ── Palco do Carrossel Cinematográfico ── */
+.cinema-carousel-container {
+  position: relative;
+  width: 100%;
+  max-width: 1360px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 8px 0 32px 0;
+  overflow: visible;
+}
+
+.cinema-viewport {
+  position: relative;
+  width: 100%;
+  height: 480px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+  user-select: none;
+  touch-action: pan-y pinch-zoom;
+}
+
+/* ── Card de Tela de Cinema (Proporção Panorâmica 16:9) ── */
+.cinema-card {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 740px;
+  height: 416px; /* Widescreen 16:9 cinema */
+  box-sizing: border-box;
+  transform: translate(-50%, -50%) scale(1);
+  transition: transform 0.65s cubic-bezier(0.25, 1, 0.35, 1),
+              opacity 0.65s cubic-bezier(0.25, 1, 0.35, 1),
+              filter 0.65s cubic-bezier(0.25, 1, 0.35, 1);
+  will-change: transform, opacity, filter;
+}
+
+/* ── Geometria da Tela de Cinema (Curvatura Côncava Lateral Suave) ── */
+.cinema-shape {
+  position: absolute;
+  inset: 0;
+  clip-path: url(#cinemaScreenClip);
+  -webkit-clip-path: url(#cinemaScreenClip);
+  background: #040d07;
+  overflow: hidden;
+}
+
+/* Imagem de divulgação do evento na tela panorâmica */
+.cinema-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  transform: scale(1.02);
+  transition: transform 0.8s cubic-bezier(0.25, 1, 0.35, 1);
+}
+
+.cinema-card.pos-center:hover .cinema-img {
+  transform: scale(1.05);
+}
+
+/* Sombra e contraste cinematográfico */
+.cinema-shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.20) 0%,
+    rgba(0, 0, 0, 0.00) 35%,
+    rgba(0, 0, 0, 0.45) 68%,
+    rgba(0, 0, 0, 0.90) 95%,
+    #000000 100%
+  );
+  pointer-events: none;
+}
+
+/* Borda elegante SVG com curvatura exata */
+.cinema-contour-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* ── Informações Discretas Sobre a Tela ── */
+.cinema-content {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 30px 42px;
+  pointer-events: none;
+  box-sizing: border-box;
+}
+
+.cinema-top-badge {
+  align-self: flex-start;
+  padding: 5px 14px;
+  border-radius: 999px;
+  font-family: 'Manrope', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #86efac;
+  background: rgba(4, 17, 10, 0.75);
+  border: 1px solid rgba(34, 197, 94, 0.45);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6);
+}
+
+.cinema-top-badge.is-highlight {
+  color: #fbbf24;
+  border-color: rgba(251, 191, 36, 0.55);
+}
+
+.cinema-bottom-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-width: 620px;
+}
+
+.cinema-category {
+  font-family: 'Manrope', sans-serif;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #4ade80;
+  margin: 0;
+}
+
+.cinema-title {
+  font-family: 'Manrope', 'Sora', sans-serif;
+  font-size: clamp(1.4rem, 2.2vw, 1.85rem);
+  font-weight: 800;
+  line-height: 1.2;
+  color: #ffffff;
+  margin: 0;
+  letter-spacing: -0.025em;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.95);
+}
+
+.cinema-desc {
+  font-family: 'Manrope', sans-serif;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.80);
+  margin: 2px 0 0 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ============================================================
+   ESTADOS E HIERARQUIA DAS TELAS CINEMATOGRÁFICAS
+   ============================================================ */
+
+/* 1. TELA CENTRAL — Protagonista, Único em Destaque, Nitidez Total */
+.cinema-card.pos-center {
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1;
+  z-index: 10;
+  filter: drop-shadow(0 24px 55px rgba(0, 0, 0, 0.95))
+          drop-shadow(0 0 35px rgba(34, 197, 94, 0.22));
+  pointer-events: auto;
+  cursor: default;
+}
+
+.cinema-card.pos-center .cinema-content {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.4s ease 0.15s;
+}
+
+/* 2. TELA LATERAL ESQUERDA — Prévia Visual Recuada e Desfocada */
+.cinema-card.pos-left {
+  transform: translate(calc(-50% - 460px), -50%) scale(0.72);
+  opacity: 0.40;
+  z-index: 2;
+  filter: blur(7px) brightness(0.46) contrast(0.92);
+  pointer-events: none !important; /* NÃO CLICÁVEL CONFORME ESPECIFICAÇÃO */
+  cursor: default !important;
+}
+
+.cinema-card.pos-left .cinema-content {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s ease;
+}
+
+/* 3. TELA LATERAL DIREITA — Prévia Visual Recuada e Desfocada */
+.cinema-card.pos-right {
+  transform: translate(calc(-50% + 460px), -50%) scale(0.72);
+  opacity: 0.40;
+  z-index: 2;
+  filter: blur(7px) brightness(0.46) contrast(0.92);
+  pointer-events: none !important; /* NÃO CLICÁVEL CONFORME ESPECIFICAÇÃO */
+  cursor: default !important;
+}
+
+.cinema-card.pos-right .cinema-content {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s ease;
+}
+
+/* ============================================================
+   NAVEGAÇÃO — EXCLUSIVAMENTE PELAS SETAS
+   ============================================================ */
+.cinema-nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: rgba(4, 17, 10, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(34, 197, 94, 0.35);
+  color: #f8fafc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 25;
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+              background 0.28s ease,
+              border-color 0.28s ease,
+              box-shadow 0.28s ease;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+}
+
+.cinema-nav-btn:hover {
+  background: rgba(6, 26, 15, 0.92);
+  border-color: #4ade80;
+  color: #ffffff;
+  transform: translateY(-50%) scale(1.1);
+  box-shadow: 0 0 25px rgba(34, 197, 94, 0.5), 0 10px 30px rgba(0, 0, 0, 0.8);
+}
+
+.cinema-nav-btn:active {
+  transform: translateY(-50%) scale(0.96);
+}
+
+.cinema-nav-prev {
+  left: 20px;
+}
+
+.cinema-nav-next {
+  right: 20px;
+}
+
+/* ============================================================
+   INDICADORES DISCRETOS (DOTS)
+   ============================================================ */
+.cinema-dots {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 16px;
+  z-index: 10;
+}
+
+.cinema-dot {
+  width: 22px;
+  height: 3px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.22);
+  border: none;
+  padding: 0;
+  transition: all 0.35s cubic-bezier(0.25, 1, 0.35, 1);
+  cursor: pointer;
+}
+
+.cinema-dot.is-active {
+  width: 42px;
+  background: #22c55e;
+  box-shadow: 0 0 12px rgba(34, 197, 94, 0.7);
+}
+
+/* ============================================================
+   BOTÕES — PADRONIZAÇÃO EXATA COM OS CTAS DO HOME
+   Mesma tipografia ('Manrope'), altura (50px), proporções, raio pílula (999px),
+   droplet wave ripple (:before), transições elásticas e efeito de salto + desfoque.
+   ============================================================ */
+.cinema-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 30px;
+  z-index: 10;
+  flex-wrap: wrap;
+}
+
+/* Base Comum dos Botões — Idêntica a #hero .hero-btn-primary/secondary */
+.cinema-actions .cinema-btn-primary,
+.cinema-actions .cinema-btn-secondary {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 50px;
+  border-radius: 999px;
+  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 0.94rem;
+  letter-spacing: -0.015em;
+  text-decoration: none;
+  overflow: hidden;
+  will-change: transform, filter, opacity;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+              opacity 0.28s ease,
+              filter 0.28s ease,
+              background 0.28s ease,
+              border-color 0.28s ease,
+              box-shadow 0.28s ease;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+/* Efeito de Gota Líquida (Droplet Ripple) Idêntico ao Home */
+.cinema-actions .cinema-btn-primary::before,
+.cinema-actions .cinema-btn-secondary::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.32) 0%, rgba(34, 197, 94, 0.2) 40%, transparent 70%);
+  transform: translate(-50%, -50%) scale(0);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.5s ease;
+}
+
+.cinema-actions .cinema-btn-primary:hover::before,
+.cinema-actions .cinema-btn-secondary:hover::before {
+  transform: translate(-50%, -50%) scale(1.6);
+  opacity: 1;
+  animation: cinemaDropletWave 1.8s infinite ease-out;
+}
+
+@keyframes cinemaDropletWave {
+  0% {
+    transform: translate(-50%, -50%) scale(0.2);
+    opacity: 0.85;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.2);
+    opacity: 0.35;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.8);
+    opacity: 0;
+  }
+}
+
+/* ── Botão "Saber mais" (CTA de Ação com Nuance Verde do Home) ── */
+.cinema-actions .cinema-btn-primary {
+  padding: 0 32px;
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.20) 0%, rgba(4, 17, 10, 0.65) 100%);
+  color: #ffffff;
+  font-weight: 600;
+  border: 1px solid rgba(34, 197, 94, 0.38);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3),
+              0 0 20px rgba(34, 197, 94, 0.12),
+              inset 0 1px 0 rgba(255, 255, 255, 0.20);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* ── Botão "Ver todos os eventos" (CTA Secundário Idêntico ao Home) ── */
+.cinema-actions .cinema-btn-secondary {
+  padding: 0 30px;
+  background: rgba(4, 17, 10, 0.55);
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 550;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25),
+              inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+}
+
+/* ── Interação Idêntica ao Home: Salto do Botão Ativo + Desfoque Suave do Irmão ── */
+.cinema-actions:hover .cinema-btn-primary,
+.cinema-actions:hover .cinema-btn-secondary {
+  opacity: 0.42;
+  filter: blur(3px);
+  transform: scale(0.97) translateY(0);
+}
+
+.cinema-actions .cinema-btn-primary:hover,
+.cinema-actions .cinema-btn-secondary:hover {
+  opacity: 1;
+  filter: blur(0);
+  transform: translateY(-7px) scale(1.04);
+  z-index: 2;
+}
+
+.cinema-actions .cinema-btn-primary:hover {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.32) 0%, rgba(4, 17, 10, 0.8) 100%);
+  border-color: rgba(74, 222, 128, 0.7);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.5),
+              0 0 28px rgba(34, 197, 94, 0.35),
+              inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.cinema-actions .cinema-btn-secondary:hover {
+  background: rgba(6, 22, 14, 0.75);
+  border-color: rgba(34, 197, 94, 0.35);
+  color: #ffffff;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.5),
+              0 0 20px rgba(34, 197, 94, 0.16),
+              inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+.cinema-actions .cinema-btn-primary:active,
+.cinema-actions .cinema-btn-secondary:active {
+  transform: translateY(-2px) scale(1.01);
+}
+
+/* ============================================================
+   RESPONSIVIDADE CINEMATOGRÁFICA
+   ============================================================ */
+
+/* Laptop / Desktop Médio */
+@media (max-width: 1200px) {
+  .cinema-viewport {
+    height: 430px;
+  }
+  .cinema-card {
+    width: 620px;
+    height: 350px;
+  }
+  .cinema-card.pos-left {
+    transform: translate(calc(-50% - 380px), -50%) scale(0.70);
+  }
+  .cinema-card.pos-right {
+    transform: translate(calc(-50% + 380px), -50%) scale(0.70);
+  }
+  .cinema-nav-prev {
+    left: 14px;
+  }
+  .cinema-nav-next {
+    right: 14px;
+  }
+}
+
+/* Tablet */
+@media (max-width: 900px) {
+  #events.premium-events-section {
+    padding: 70px 3% 60px;
+    min-height: auto;
+  }
+  .cinema-viewport {
+    height: 370px;
+  }
+  .cinema-card {
+    width: 520px;
+    height: 295px;
+  }
+  .cinema-card.pos-left {
+    transform: translate(calc(-50% - 290px), -50%) scale(0.68);
+    opacity: 0.28;
+  }
+  .cinema-card.pos-right {
+    transform: translate(calc(-50% + 290px), -50%) scale(0.68);
+    opacity: 0.28;
+  }
+  .cinema-content {
+    padding: 20px 28px;
+  }
+  .cinema-title {
+    font-size: 1.35rem;
+  }
+  .cinema-nav-btn {
+    width: 48px;
+    height: 48px;
+  }
+  .cinema-nav-prev {
+    left: 8px;
+  }
+  .cinema-nav-next {
+    right: 8px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 640px) {
+  .cinema-viewport {
+    height: 290px;
+    overflow: hidden;
+  }
+  .cinema-card {
+    width: calc(100% - 70px);
+    max-width: 380px;
+    height: 215px;
+  }
+  .cinema-card.pos-left {
+    transform: translate(calc(-50% - 180px), -50%) scale(0.65);
+    opacity: 0.18;
+    filter: blur(5px) brightness(0.35);
+  }
+  .cinema-card.pos-right {
+    transform: translate(calc(-50% + 180px), -50%) scale(0.65);
+    opacity: 0.18;
+    filter: blur(5px) brightness(0.35);
+  }
+  .cinema-content {
+    padding: 14px 18px;
+  }
+  .cinema-title {
+    font-size: 1.15rem;
+  }
+  .cinema-desc {
+    display: none;
+  }
+  .cinema-nav-btn {
+    width: 44px;
+    height: 44px;
+  }
+  .cinema-nav-prev {
+    left: 4px;
+  }
+  .cinema-nav-next {
+    right: 4px;
+  }
+  .cinema-actions {
+    flex-direction: column;
+    width: 100%;
+    max-width: 320px;
+    gap: 12px;
+  }
+  .cinema-actions .cinema-btn-primary,
+  .cinema-actions .cinema-btn-secondary {
+    width: 100%;
+    padding: 0 20px;
+    font-size: 0.90rem;
+  }
+}

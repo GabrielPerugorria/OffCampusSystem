@@ -36,6 +36,8 @@
     })();
   </script>
   <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/home-hero.css">
+  <link rel="stylesheet" href="css/events-totem.css">
   <link rel="stylesheet" href="css/brand-story.css">
   <link rel="stylesheet" href="css/intro-splash.css?v=20261017">
   <link rel="preload" href="imagens/favicon.png" as="image">
@@ -46,7 +48,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Sora:wght@700;800&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Manrope:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Sora:wght@700;800&display=swap"
     rel="stylesheet">
 </head>
 
@@ -74,16 +76,30 @@
   <header id="mainHeader">
     <nav class="navbar" role="navigation" aria-label="Navegação principal">
 
-      <a href="#" class="logo" aria-label="EvoTech Events — Início">
-        <div class="logo-icon">
-          <img src="imagens/favicon.png" alt="Logo EvoTech">
-        </div>
-        EvoTech<span>Events</span>
+      <a href="#hero" class="nav-brand" aria-label="EvotechEvents">
+        <svg class="nav-brand-logo" viewBox="0 0 520 80" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="EvotechEvents">
+          <title>EvotechEvents</title>
+          <!-- E: barras geométricas puras -->
+          <path d="M20 18 H64 V27 H32 V37 H54 V46 H32 V55 H64 V64 H20 Z" fill="#FFFFFF"/>
+          <!-- V: contraste caligráfico-arquitetural -->
+          <path d="M70 18 L90 64 H100 L120 18 H108 L95 50 L82 18 Z" fill="#FFFFFF"/>
+          <!-- O: círculo geométrico perfeito -->
+          <circle cx="145" cy="41" r="23" stroke="#FFFFFF" stroke-width="10"/>
+          <!-- T: prolongamento dinâmico à direita com acento esmeralda -->
+          <path d="M176 18 H228 V27 H207 V64 H196 V27 H176 Z" fill="#FFFFFF"/>
+          <rect x="216" y="18" width="12" height="9" fill="#22C55E"/>
+          <!-- ECH: arquitetura linear monumental -->
+          <path d="M236 18 H276 V27 H247 V37 H268 V46 H247 V55 H276 V64 H236 Z" fill="#FFFFFF"/>
+          <path d="M318 29 C314 22 306 17 296 17 C282 17 272 28 272 41 C272 55 282 65 296 65 C306 65 314 60 318 53 H305 C303 56 299 58 296 58 C287 58 282 51 282 41 C282 32 287 25 296 25 C299 25 303 27 305 29 H318 Z" fill="#FFFFFF"/>
+          <path d="M326 18 H336 V36 H354 V18 H364 V64 H354 V45 H336 V64 H326 Z" fill="#FFFFFF"/>
+          <!-- EVENTS: assinatura institucional em verde EvoTech -->
+          <text x="382" y="46" font-family="'Sora', -apple-system, sans-serif" font-size="16" font-weight="800" letter-spacing="0.32em" fill="#22C55E">EVENTS</text>
+        </svg>
       </a>
 
       <ul class="menu" role="menubar" aria-label="Menu principal">
         <li role="none"><a href="#hero" class="active" role="menuitem">Início</a></li>
-        <li role="none"><a href="#events" role="menuitem">Eventos</a></li>
+        <li role="none"><a href="eventos.html" role="menuitem">Eventos</a></li>
         <li role="none"><a href="#plataforma" role="menuitem">Plataforma</a></li>
         <li role="none"><a href="#modulos" role="menuitem">Módulos</a></li>
         <li role="none"><a href="#planos" role="menuitem">Planos</a></li>
@@ -109,7 +125,7 @@
 
     <div class="mobile-menu" id="mobileMenu" role="dialog" aria-label="Menu móvel" aria-hidden="true">
       <a href="#hero">Início</a>
-      <a href="#events">Eventos</a>
+      <a href="eventos.html">Eventos</a>
       <a href="#plataforma">Plataforma</a>
       <a href="#modulos">Módulos</a>
       <a href="#planos">Planos</a>
@@ -121,103 +137,50 @@
       </div>
     </div>
 
-    <div class="scroll-progress" aria-hidden="true">
-      <div class="scroll-progress-bar" id="progressBar"></div>
-    </div>
-  </header>
+    </header>
 
-  <!-- ===================== HERO ===================== -->
-  <section class="hero" id="hero" aria-label="Apresentação">
+  <!-- ===================== HERO — EVOTECH EVENTS ===================== -->
+  <section class="hero" id="hero" aria-label="EvoTech Events">
     <canvas id="particlesCanvas" aria-hidden="true"></canvas>
 
-    <div class="hero-content">
+    <!-- Iluminação Ambiental Verde Sutil de Fundo -->
+    <div class="hero-ambience-glow" aria-hidden="true"></div>
 
-      <div class="hero-badge" aria-label="Sistema operacional inteligente de eventos">
-        <span class="badge-dot" aria-hidden="true"></span>
-        Sistema operacional inteligente de eventos
-      </div>
+    <div class="hero-inner">
+      <!-- Conteúdo Assimétrico (Centro-Esquerda com presença sofisticada) -->
+      <div class="hero-content">
+        <h1 class="hero-headline">
+          <span class="hero-headline-lead">O futuro dos eventos</span>
+          <span class="hero-headline-highlight">acontece em um só lugar.</span>
+        </h1>
 
-      <h1>
-        O futuro dos eventos <span>é inteligente.</span>
-      </h1>
+        <p class="hero-description">
+          Conectamos tecnologia, gestão e experiências para transformar a maneira como eventos acontecem.
+        </p>
 
-      <p>
-        Conectamos ingressos, operação, financeiro, público e inteligência artificial em uma única plataforma.
-        A EvoTech não administra apenas eventos — ela aprende com eles.
-      </p>
+        <!-- CTAs de Alto Padrão — Prioridade Ingressos -->
+        <div class="hero-actions">
+          <!-- CTA Principal: Comprar ingressos -->
+          <a href="#events" class="hero-btn-primary" id="heroBtnIngressos">
+            Comprar ingressos
+          </a>
 
-      <div class="hero-buttons">
-        <a href="#plataforma" class="btn-primary btn-large" id="heroBtnConhecer">
-          Conhecer a plataforma
-        </a>
-        <a href="#contato" class="btn-outline btn-large">
-          Sou produtor de eventos
-        </a>
-      </div>
-
-      <div class="presence" role="list" aria-label="Informações de presença">
-        <div class="presence-item" role="listitem">
-          <span class="presence-label">Operamos em</span>
-          <span class="presence-value"><span class="highlight">Brasil</span> • <span class="highlight">Inteiro</span>
-            <small>+2 Estados & +17 Cidades</small></span>
-        </div>
-        <div class="presence-item" role="listitem">
-          <span class="presence-label">Eventos</span>
-          <span class="presence-value">Corporativos · Feiras · Shows · Festivais</span>
-        </div>
-        <div class="presence-item" role="listitem">
-          <span class="presence-label">Suporte</span>
-          <span class="presence-value">Equipe em campo <small>antes, durante e após</small></span>
+          <!-- CTA Secundário: Administre seu evento -->
+          <a href="#plataforma" class="hero-btn-secondary" id="heroBtnConhecer">
+            Administre seu evento
+          </a>
         </div>
       </div>
 
-    </div>
-
-    <div class="hero-image" aria-hidden="true">
-      <div class="globe-container" id="globeContainer">
-        <div class="globe-glow"></div>
-        <canvas id="globeCanvas" aria-hidden="true"></canvas>
-        <div class="globe-stats" id="globeStats">
-          <div class="globe-stats-title">● Estados do Brasil</div>
-          <div class="globe-stats-list" id="globeStatsList"></div>
+      <!-- Planeta Terra Protagonista (Posicionado com Destaque à Direita) -->
+      <div class="hero-globe-wrapper" aria-hidden="true">
+        <div class="globe-container" id="globeContainer">
+          <div class="globe-glow"></div>
+          <canvas id="globeCanvas" aria-hidden="true"></canvas>
         </div>
       </div>
     </div>
 
-  </section>
-
-  <!-- ===================== JOURNEY ===================== -->
-  <section class="journey" aria-label="Jornada do evento">
-    <div class="journey-track" role="list" aria-label="Etapas da jornada">
-      <div class="journey-step" role="listitem">
-        <span class="journey-dot" aria-hidden="true"></span>
-        <span class="journey-label">Planejamento</span>
-      </div>
-      <div class="journey-step" role="listitem">
-        <span class="journey-dot" aria-hidden="true"></span>
-        <span class="journey-label">Ingressos</span>
-      </div>
-      <div class="journey-step" role="listitem">
-        <span class="journey-dot" aria-hidden="true"></span>
-        <span class="journey-label">Operação</span>
-      </div>
-      <div class="journey-step" role="listitem">
-        <span class="journey-dot" aria-hidden="true"></span>
-        <span class="journey-label">Portaria</span>
-      </div>
-      <div class="journey-step" role="listitem">
-        <span class="journey-dot" aria-hidden="true"></span>
-        <span class="journey-label">Open Bar</span>
-      </div>
-      <div class="journey-step" role="listitem">
-        <span class="journey-dot" aria-hidden="true"></span>
-        <span class="journey-label">Financeiro</span>
-      </div>
-      <div class="journey-step" role="listitem">
-        <span class="journey-dot" aria-hidden="true"></span>
-        <span class="journey-label">Resultados</span>
-      </div>
-    </div>
   </section>
 
   <!-- ===================== EVENTOS EM DESTAQUE ===================== -->
@@ -263,154 +226,144 @@
 
     <div class="premium-events-inner">
       <div class="premium-events-header">
-        <div class="ev-label-badge">
-          <span class="ev-label-dot"></span>
-          Destaques Patrocinados
-        </div>
-        <h2>Eventos <span class="text-gradient">em Alta</span></h2>
-        <p>Os eventos mais badalados do momento com ingressos disponíveis agora.</p>
+        <h2>Eventos <span class="totem-title-gradient">em Destaque</span></h2>
+        <p>Os eventos mais movimentados estão aqui.</p>
       </div>
 
-      <div class="events-grid" role="list" aria-label="Lista de eventos">
+      <!-- SVG ClipPath Definição da Tela Panorâmica de Cinema (Curvatura Côncava Lateral Suave) -->
+      <svg class="cinema-clip-def" width="0" height="0" style="position:absolute; width:0; height:0; pointer-events:none;" aria-hidden="true">
+        <defs>
+          <clipPath id="cinemaScreenClip" clipPathUnits="objectBoundingBox">
+            <path d="M 0.045 0 L 0.955 0 C 0.985 0, 1 0.025, 1 0.065 C 0.965 0.28, 0.965 0.72, 1 0.935 C 1 0.975, 0.985 1, 0.955 1 L 0.045 1 C 0.015 1, 0 0.975, 0 0.935 C 0.035 0.72, 0.035 0.28, 0 0.065 C 0 0.025, 0.015 0, 0.045 0 Z" />
+          </clipPath>
+        </defs>
+      </svg>
 
-        <!-- Card 1 -->
-        <article class="event-card" role="listitem">
-          <div class="event-card-media">
-            <img src="imagens/offcampushexa.png" alt="Banner do evento OFFCampus na Copa" loading="lazy">
-            <span class="event-badge pulse">Próximo</span>
-          </div>
-          <div class="event-card-content">
-            <div class="event-tags">
-              <span class="tag">Premium</span>
-              <span class="tag">Em breve</span>
-            </div>
-            <h3 class="event-title">OFFCampus na copa?</h3>
-            <p class="event-desc">Música ao vivo, áreas VIP e networking exclusivo. Vamos em busca do hexa com estilo!</p>
-            <div class="event-actions">
-              <button class="btn-primary banner-buy" data-evento="OFFCampus na Copa">
-                🎟 Comprar Ingresso
-              </button>
-              <button class="btn-secondary banner-info" data-evento="0">
-                Saiba Mais
-              </button>
-            </div>
-          </div>
-        </article>
-
-        <!-- Card 2 -->
-        <article class="event-card" role="listitem">
-          <div class="event-card-media">
-            <img src="imagens/resenhadoportes.png" alt="Banner do evento Resenha do Portes" loading="lazy">
-            <span class="event-badge">Eletrônico</span>
-          </div>
-          <div class="event-card-content">
-            <div class="event-tags">
-              <span class="tag">Exclusivo</span>
-              <span class="tag">Em breve</span>
-            </div>
-            <h3 class="event-title">Resenha do Portes</h3>
-            <p class="event-desc">Festival com line-up exclusivo, produção premium e acesso controlado.</p>
-            <div class="event-actions">
-              <button class="btn-primary banner-buy" data-evento="Resenha do Portes">
-                🎟 Comprar Ingresso
-              </button>
-              <button class="btn-secondary banner-info" data-evento="1">
-                Saiba Mais
-              </button>
-            </div>
-          </div>
-        </article>
-
-        <!-- Card 3 -->
-        <article class="event-card" role="listitem">
-          <div class="event-card-media">
-            <img src="imagens/halloween.png" alt="Banner do evento Halloween OffCampus" loading="lazy">
-            <span class="event-badge highlight">Destaque</span>
-          </div>
-          <div class="event-card-content">
-            <div class="event-tags">
-              <span class="tag">Open Food</span>
-              <span class="tag">VIP</span>
-            </div>
-            <h3 class="event-title">Halloween OffCampus</h3>
-            <p class="event-desc">Experience completa para estudantes com open food, música e ambiente vip.</p>
-            <div class="event-actions">
-              <button class="btn-primary banner-buy" data-evento="Halloween OffCampus">
-                🎟 Comprar Ingresso
-              </button>
-              <button class="btn-secondary banner-info" data-evento="2">
-                Saiba Mais
-              </button>
-            </div>
-          </div>
-        </article>
-
-      </div>
-      
-      <div class="events-view-all">
-        <a href="#todos-eventos" class="btn-view-all">Ver Todos os Eventos &rarr;</a>
-      </div>
-    </div><!-- /.premium-events-inner -->
-  </section>
-
-  <!-- ===================== TODOS OS EVENTOS ===================== -->
-  <section class="all-events-section" id="todos-eventos" aria-label="Todos os eventos">
-    <div class="all-events-inner">
-      <div class="section-label" aria-hidden="true">Catálogo Completo</div>
-      <h2 class="section-heading">Explore Nossos Eventos</h2>
-      <p class="section-sub">
-        Confira a lista completa de eventos que preparamos para você.
-      </p>
-
-      <div class="events-grid all-events-grid" role="list">
+      <!-- Carrossel Cinematográfico de Telas Horizontais -->
+      <div class="cinema-carousel-container" aria-roledescription="carousel" aria-label="Carrossel Cinematográfico de Eventos em Destaque">
         
-        <!-- Placeholder Card 1 -->
-        <article class="event-card placeholder-card" role="listitem">
-          <div class="event-card-media">
-            <div class="placeholder-img"></div>
-            <span class="event-badge">Breve</span>
-          </div>
-          <div class="event-card-content">
-            <h3 class="event-title">Evento Futuro 1</h3>
-            <p class="event-desc">Fique ligado! Mais informações sobre este evento serão divulgadas em breve.</p>
-            <div class="event-actions">
-              <button class="btn-secondary banner-info" disabled style="opacity:0.5;cursor:not-allowed;">Em breve</button>
-            </div>
-          </div>
-        </article>
+        <!-- Viewport das Telas -->
+        <div class="cinema-viewport">
+          
+          <!-- Botão Navegação Anterior (Somente Setas) -->
+          <button type="button" class="cinema-nav-btn cinema-nav-prev" aria-label="Evento anterior">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m15 18-6-6 6-6"/>
+            </svg>
+          </button>
 
-        <!-- Placeholder Card 2 -->
-        <article class="event-card placeholder-card" role="listitem">
-          <div class="event-card-media">
-            <div class="placeholder-img"></div>
-            <span class="event-badge">Breve</span>
-          </div>
-          <div class="event-card-content">
-            <h3 class="event-title">Evento Futuro 2</h3>
-            <p class="event-desc">Fique ligado! Mais informações sobre este evento serão divulgadas em breve.</p>
-            <div class="event-actions">
-              <button class="btn-secondary banner-info" disabled style="opacity:0.5;cursor:not-allowed;">Em breve</button>
+          <!-- Tela 0: OFFCampus na copa? -->
+          <article class="cinema-card pos-center" data-index="0" role="group" aria-roledescription="slide" aria-label="1 de 3: OFFCampus na copa?">
+            <div class="cinema-shape">
+              <img src="imagens/offcampushexa.png" alt="Banner oficial do evento OFFCampus na copa?" class="cinema-img" loading="lazy">
+              <div class="cinema-shade" aria-hidden="true"></div>
+              <div class="cinema-content">
+                <span class="cinema-top-badge">Próximo</span>
+                <div class="cinema-bottom-info">
+                  <span class="cinema-category">Premium &bull; Em breve</span>
+                  <h3 class="cinema-title">OFFCampus na copa?</h3>
+                  <p class="cinema-desc">Música ao vivo, áreas VIP e networking exclusivo rumo ao hexa com estilo.</p>
+                </div>
+              </div>
             </div>
-          </div>
-        </article>
+            <!-- Borda Elegante da Tela de Cinema -->
+            <svg class="cinema-contour-svg" viewBox="0 0 800 450" preserveAspectRatio="none" aria-hidden="true">
+              <defs>
+                <linearGradient id="cinemaBorder0" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#4ade80" stop-opacity="0.85"/>
+                  <stop offset="50%" stop-color="#22c55e" stop-opacity="0.35"/>
+                  <stop offset="100%" stop-color="#4ade80" stop-opacity="0.85"/>
+                </linearGradient>
+              </defs>
+              <path d="M 36 0 L 764 0 C 788 0 800 11.25 800 29.25 C 772 126 772 324 800 420.75 C 800 438.75 788 450 764 450 L 36 450 C 12 450 0 438.75 0 420.75 C 28 324 28 126 0 29.25 C 0 11.25 12 0 36 0 Z"
+                    fill="none" stroke="url(#cinemaBorder0)" stroke-width="2" vector-effect="non-scaling-stroke" />
+            </svg>
+          </article>
 
-        <!-- Placeholder Card 3 -->
-        <article class="event-card placeholder-card" role="listitem">
-          <div class="event-card-media">
-            <div class="placeholder-img"></div>
-            <span class="event-badge">Breve</span>
-          </div>
-          <div class="event-card-content">
-            <h3 class="event-title">Evento Futuro 3</h3>
-            <p class="event-desc">Fique ligado! Mais informações sobre este evento serão divulgadas em breve.</p>
-            <div class="event-actions">
-              <button class="btn-secondary banner-info" disabled style="opacity:0.5;cursor:not-allowed;">Em breve</button>
+          <!-- Tela 1: Resenha do Portes -->
+          <article class="cinema-card pos-right" data-index="1" role="group" aria-roledescription="slide" aria-label="2 de 3: Resenha do Portes">
+            <div class="cinema-shape">
+              <img src="imagens/resenhadoportes.png" alt="Banner oficial do evento Resenha do Portes" class="cinema-img" loading="lazy">
+              <div class="cinema-shade" aria-hidden="true"></div>
+              <div class="cinema-content">
+                <span class="cinema-top-badge">Eletrônico</span>
+                <div class="cinema-bottom-info">
+                  <span class="cinema-category">Exclusivo &bull; Em breve</span>
+                  <h3 class="cinema-title">Resenha do Portes</h3>
+                  <p class="cinema-desc">Festival com line-up exclusivo, produção premium e acesso controlado.</p>
+                </div>
+              </div>
             </div>
-          </div>
-        </article>
+            <!-- Borda Elegante da Tela de Cinema -->
+            <svg class="cinema-contour-svg" viewBox="0 0 800 450" preserveAspectRatio="none" aria-hidden="true">
+              <defs>
+                <linearGradient id="cinemaBorder1" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#4ade80" stop-opacity="0.85"/>
+                  <stop offset="50%" stop-color="#22c55e" stop-opacity="0.35"/>
+                  <stop offset="100%" stop-color="#4ade80" stop-opacity="0.85"/>
+                </linearGradient>
+              </defs>
+              <path d="M 36 0 L 764 0 C 788 0 800 11.25 800 29.25 C 772 126 772 324 800 420.75 C 800 438.75 788 450 764 450 L 36 450 C 12 450 0 438.75 0 420.75 C 28 324 28 126 0 29.25 C 0 11.25 12 0 36 0 Z"
+                    fill="none" stroke="url(#cinemaBorder1)" stroke-width="2" vector-effect="non-scaling-stroke" />
+            </svg>
+          </article>
 
-      </div>
-    </div>
+          <!-- Tela 2: Halloween OffCampus -->
+          <article class="cinema-card pos-left" data-index="2" role="group" aria-roledescription="slide" aria-label="3 de 3: Halloween OffCampus">
+            <div class="cinema-shape">
+              <img src="imagens/halloween.png" alt="Banner oficial do evento Halloween OffCampus" class="cinema-img" loading="lazy">
+              <div class="cinema-shade" aria-hidden="true"></div>
+              <div class="cinema-content">
+                <span class="cinema-top-badge is-highlight">Destaque</span>
+                <div class="cinema-bottom-info">
+                  <span class="cinema-category">Open Food &bull; VIP</span>
+                  <h3 class="cinema-title">Halloween OffCampus</h3>
+                  <p class="cinema-desc">Experiência completa para estudantes com open food, música e ambiente vip.</p>
+                </div>
+              </div>
+            </div>
+            <!-- Borda Elegante da Tela de Cinema -->
+            <svg class="cinema-contour-svg" viewBox="0 0 800 450" preserveAspectRatio="none" aria-hidden="true">
+              <defs>
+                <linearGradient id="cinemaBorder2" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#4ade80" stop-opacity="0.85"/>
+                  <stop offset="50%" stop-color="#22c55e" stop-opacity="0.35"/>
+                  <stop offset="100%" stop-color="#4ade80" stop-opacity="0.85"/>
+                </linearGradient>
+              </defs>
+              <path d="M 36 0 L 764 0 C 788 0 800 11.25 800 29.25 C 772 126 772 324 800 420.75 C 800 438.75 788 450 764 450 L 36 450 C 12 450 0 438.75 0 420.75 C 28 324 28 126 0 29.25 C 0 11.25 12 0 36 0 Z"
+                    fill="none" stroke="url(#cinemaBorder2)" stroke-width="2" vector-effect="non-scaling-stroke" />
+            </svg>
+          </article>
+
+          <!-- Botão Navegação Próximo (Somente Setas) -->
+          <button type="button" class="cinema-nav-btn cinema-nav-next" aria-label="Próximo evento">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m9 18 6-6-6-6"/>
+            </svg>
+          </button>
+
+        </div><!-- /.cinema-viewport -->
+
+        <!-- Indicadores Discretos (Dots) -->
+        <div class="cinema-dots" role="tablist" aria-label="Indicadores do evento em destaque">
+          <span class="cinema-dot is-active" aria-current="true"></span>
+          <span class="cinema-dot" aria-current="false"></span>
+          <span class="cinema-dot" aria-current="false"></span>
+        </div>
+
+        <!-- Ações Abaixo do Carrossel (Padronizadas com os CTAs do Home) -->
+        <div class="cinema-actions hero-actions">
+          <button type="button" class="cinema-btn-primary hero-btn-primary" id="totemBtnInfo" data-evento="0" aria-label="Saber mais sobre o evento em destaque">
+            Saber mais
+          </button>
+          <a href="eventos.html" class="cinema-btn-secondary hero-btn-secondary" id="totemBtnAll">
+            Ver todos os eventos
+          </a>
+        </div>
+
+      </div><!-- /.cinema-carousel-container -->
+    </div><!-- /.premium-events-inner -->
   </section>
 
   <!-- ===================== COMO FUNCIONA ===================== -->
@@ -1494,11 +1447,12 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://unpkg.com/topojson-client@3/dist/topojson-client.min.js"></script>
-  <script src="js/globe_v2.js"></script>
+  <script src="js/globe_v2.js?v=20261108c"></script>
   <script src="js/config.js?v=20261024"></script>
   <script src="js/api.js?v=20261024"></script>
   <script src="js/main.js?v=20261024"></script>
   <script src="js/brand-story.js"></script>
+  <script src="js/events-totem.js"></script>
 </body>
 
 </html>

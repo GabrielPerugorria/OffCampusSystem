@@ -1,4 +1,4 @@
-/* Testes da intro (sem dependências): node tests/intro-splash.test.js
+﻿/* Testes da intro (sem dependências): node tests/intro-splash.test.js
  *
  * Roda o <script> inline do index.html e js/intro-splash.js REAIS num DOM falso com relógio virtual.
  * Cobre também a regressão do GitHub Pages: JS antigo ("Digital Activation", commits 1a6d510/7a6ed76,
@@ -168,9 +168,9 @@ suite('1. Fluxo normal');
   check('intro ativa ao iniciar (intro-on presente)', p.locked());
   p.advance(1000);
   check('em 1,0 s ainda está animando (não liberou cedo)', p.locked() && !!p.splash.parentNode);
-  check('barra de progresso avançou', /scaleX\(0\.5/.test(p.inner['intro-progress-fill'].style.transform || ''), p.inner['intro-progress-fill'].style.transform);
-  p.advance(1600);
-  check('em 2,6 s a intro terminou e o site foi liberado', p.released());
+  check('barra de progresso avançou', /scaleX\(0\.3/.test(p.inner['intro-progress-fill'].style.transform || ''), p.inner['intro-progress-fill'].style.transform);
+  p.advance(2800);
+  check('em 3,8 s a intro terminou e o site foi liberado', p.released());
   check('nenhuma exceção não tratada', p.uncaught.length === 0, String(p.uncaught[0]));
 }
 
@@ -184,9 +184,9 @@ suite('2. Botão "Pular" e Esc');
 
 suite('3. Elementos opcionais ausentes (orb, barra, mark, label)');
 {
-  const p = boot({ omit: ['intro-orb', 'intro-progress-fill', 'intro-mark', 'intro-progress-label'] }); p.advance(2800);
+  const p = boot({ omit: ['intro-orb', 'intro-progress-fill', 'intro-mark', 'intro-progress-label'] }); p.advance(5200);
   check('sem elementos opcionais: sem exceção e site liberado', p.uncaught.length === 0 && p.released(), String(p.uncaught[0]));
-  const q = boot({ omit: ['intro-skip'] }); q.advance(2800);
+  const q = boot({ omit: ['intro-skip'] }); q.advance(5200);
   check('sem botão Pular: ainda termina sozinho', q.uncaught.length === 0 && q.released());
 }
 
