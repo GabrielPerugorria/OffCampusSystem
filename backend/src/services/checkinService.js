@@ -22,31 +22,50 @@ async function validateCode(code, organizationId) {
   return ticket;
 }
 
-// Check-in real: valida o ingresso, impede reentrada e respeita a capacidade.
+// Check-in real: valida o ingresso, impede reentrada e respeita rigorosamente a capacidade sob concorrência.
 async function checkIn(data, user) {
   const organizationId = user.organizationId;
 
   // --- Entrada manual (convidado, cortesia, lista) ---
   if (!data.code) {
-    const event = await db.queryOne(
-      'SELECT id, name, capacity, organization_id FROM events WHERE id = ? LIMIT 1', [data.eventId]
-    );
-    if (!event) throw AppError.notFound('Evento não encontrado.');
-    if (event.organization_id !== organizationId) throw AppError.forbidden('Evento de outro produtor.');
+    return db.transaction(async (conn) => {
+      const [eventRows] = await conn.execute(
+        'SELECT id, name, capacity, organization_id FROM events WHERE id = ? FOR UPDATE',
+        [data.eventId]
+      );
+      const event = eventRows[0];
+      if (!event) throw AppError.notFound('Evento não encontrado.');
+      if (event.organization_id !== organizationId) throw AppError.forbidden('Evento de outro produtor.');
 
-    const result = await db.query(
-      `INSERT INTO checkins (event_id, ticket_id, guest_name, method, checked_by_user_id)
-       VALUES (?, NULL, ?, 'manual', ?)`,
-      [event.id, data.guestName, user.id]
-    );
-    return {
-      id: result.insertId, method: 'manual', guestName: data.guestName,
-      eventId: event.id, eventName: event.name, checkedInAt: new Date(),
-    };
+      if (event.capacity > 0) {
+        const [count] = await conn.execute(
+          'SELECT COUNT(*) AS n FROM checkins WHERE event_id = ?',
+          [event.id]
+        );
+        if (Number(count[0].n) >= Number(event.capacity)) {
+          throw AppError.conflict('Capacidade máxima do evento atingida.');
+        }
+      }
+
+      const [result] = await conn.execute(
+        `INSERT INTO checkins (event_id, ticket_id, guest_name, method, checked_by_user_id)
+         VALUES (?, NULL, ?, 'manual', ?)`,
+        [event.id, data.guestName, user.id]
+      );
+      return {
+        id: result.insertId,
+        method: 'manual',
+        guestName: data.guestName,
+        eventId: event.id,
+        eventName: event.name,
+        checkedInAt: new Date(),
+      };
+    });
   }
 
-  // --- Entrada por código ---
+  // --- Entrada por código (leitor QR / digitação) ---
   return db.transaction(async (conn) => {
+    // 1. Bloqueia o ticket para leitura consistente e evita uso concorrente do mesmo código
     const [rows] = await conn.execute(
       `SELECT t.id, t.code, t.holder_name, t.status, t.event_id,
               e.name AS event_name, e.capacity, e.organization_id
@@ -61,22 +80,27 @@ async function checkIn(data, user) {
     if (!ticket) throw AppError.notFound(`Código "${data.code}" não corresponde a nenhum ingresso pago.`);
     if (ticket.organization_id !== organizationId) throw AppError.forbidden('Ingresso de outro produtor.');
     if (ticket.status === 'cancelled') throw AppError.conflict('Ingresso cancelado.');
+    if (ticket.status === 'used') throw AppError.conflict('Ingresso já utilizado.');
 
-    const [existing] = await conn.execute(
-      'SELECT checked_in_at FROM checkins WHERE ticket_id = ? LIMIT 1', [ticket.id]
-    );
-    if (existing[0]) {
-      const when = new Date(existing[0].checked_in_at).toLocaleString('pt-BR');
-      throw AppError.conflict(`Ingresso já utilizado em ${when}.`);
-    }
-
+    // 2. Trava a capacidade do evento para evitar que múltiplos gates ultrapassem o limite
     if (ticket.capacity > 0) {
+      await conn.execute('SELECT id, capacity FROM events WHERE id = ? FOR UPDATE', [ticket.event_id]);
       const [count] = await conn.execute(
-        'SELECT COUNT(*) AS n FROM checkins WHERE event_id = ?', [ticket.event_id]
+        'SELECT COUNT(*) AS n FROM checkins WHERE event_id = ?',
+        [ticket.event_id]
       );
       if (Number(count[0].n) >= Number(ticket.capacity)) {
         throw AppError.conflict('Capacidade máxima do evento atingida.');
       }
+    }
+
+    const [existing] = await conn.execute(
+      'SELECT checked_in_at FROM checkins WHERE ticket_id = ? LIMIT 1',
+      [ticket.id]
+    );
+    if (existing[0]) {
+      const when = new Date(existing[0].checked_in_at).toLocaleString('pt-BR');
+      throw AppError.conflict(`Ingresso já utilizado em ${when}.`);
     }
 
     const [result] = await conn.execute(
@@ -87,9 +111,14 @@ async function checkIn(data, user) {
     await conn.execute(`UPDATE tickets SET status = 'used' WHERE id = ?`, [ticket.id]);
 
     return {
-      id: result.insertId, method: 'code', ticketId: ticket.id, code: ticket.code,
-      guestName: ticket.holder_name, eventId: ticket.event_id,
-      eventName: ticket.event_name, checkedInAt: new Date(),
+      id: result.insertId,
+      method: 'code',
+      ticketId: ticket.id,
+      code: ticket.code,
+      guestName: ticket.holder_name,
+      eventId: ticket.event_id,
+      eventName: ticket.event_name,
+      checkedInAt: new Date(),
     };
   });
 }

@@ -10,6 +10,7 @@
   <script src="js/admin-guard.js?v=20261024"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Sora:wght@700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/admin.css">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 </head>
 <body>
 
@@ -19,77 +20,103 @@
 
 <!-- SIDEBAR -->
 <aside class="sidebar">
-  <a href="index.html" class="sidebar-logo" style="text-decoration:none; color:inherit" aria-label="Voltar ao site EvoTech Events">
-    <div class="sidebar-logo-icon" style="background:none; padding:2px">
-      <img src="imagens/favicon.png" alt="Logo EvoTech" style="width:100%; height:100%; object-fit:contain">
-    </div>
-    <div class="sidebar-logo-text">Evo<span>Tech</span></div>
-  </a>
+  <div class="sidebar-header-row">
+    <a href="index.html" class="sidebar-logo" style="text-decoration:none; color:inherit" aria-label="Voltar ao site EvoTech Events" title="Voltar ao site EvoTech Events">
+      <div class="sidebar-logo-icon">
+        <img src="imagens/favicon.png" alt="Logo EvoTech" style="width:100%; height:100%; object-fit:contain">
+      </div>
+      <div class="sidebar-logo-text">Evo<span>Tech</span></div>
+    </a>
+    <button class="mobile-drawer-close" onclick="document.getElementById('nav-toggle').checked = false;" aria-label="Fechar menu">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
   <div class="sidebar-badge">ADMIN</div>
 
   <nav class="sidebar-nav">
     <div class="nav-section-label">Visão Geral</div>
-    <button class="nav-item active" onclick="goPanel('dashboard')">
-      <span class="nav-icon">📊</span><span>Dashboard</span>
+    <button class="nav-item active" onclick="goPanel('dashboard')" data-tooltip="Dashboard" aria-label="Dashboard">
+      <span class="nav-icon"><i data-lucide="layout-dashboard"></i></span>
+      <span class="nav-label">Dashboard</span>
     </button>
 
     <div class="nav-section-label">Gestão</div>
-    <button class="nav-item" onclick="goPanel('eventos')">
-      <span class="nav-icon">🎉</span><span>Eventos</span>
+    <button class="nav-item" onclick="goPanel('eventos')" data-tooltip="Eventos" aria-label="Eventos">
+      <span class="nav-icon"><i data-lucide="calendar-days"></i></span>
+      <span class="nav-label">Eventos</span>
     </button>
-    <button class="nav-item" onclick="goPanel('bar')">
-      <span class="nav-icon">🍺</span><span>Open Bar</span>
+    <button class="nav-item" onclick="goPanel('pedidos')" data-tooltip="Pedidos &amp; Ingressos" aria-label="Pedidos &amp; Ingressos">
+      <span class="nav-icon"><i data-lucide="shopping-bag"></i></span>
+      <span class="nav-label">Pedidos &amp; Ingressos</span>
     </button>
-    <button class="nav-item" onclick="goPanel('portaria')">
-      <span class="nav-icon">🚪</span><span>Portaria</span>
+    <button class="nav-item" onclick="goPanel('bar')" data-tooltip="Open Bar" aria-label="Open Bar">
+      <span class="nav-icon"><i data-lucide="package"></i></span>
+      <span class="nav-label">Open Bar</span>
     </button>
-    <button class="nav-item" onclick="goPanel('financeiro')">
-      <span class="nav-icon">💰</span><span>Financeiro</span>
+    <button class="nav-item" onclick="goPanel('portaria')" data-tooltip="Portaria" aria-label="Portaria">
+      <span class="nav-icon"><i data-lucide="scan-line"></i></span>
+      <span class="nav-label">Portaria</span>
+    </button>
+    <button class="nav-item" onclick="goPanel('financeiro')" data-tooltip="Financeiro" aria-label="Financeiro">
+      <span class="nav-icon"><i data-lucide="wallet"></i></span>
+      <span class="nav-label">Financeiro</span>
     </button>
 
     <div class="nav-section-label">Pessoas</div>
-    <button class="nav-item" onclick="goPanel('participantes')">
-      <span class="nav-icon">👥</span><span>Participantes</span>
+    <button class="nav-item" onclick="goPanel('participantes')" data-tooltip="Participantes" aria-label="Participantes">
+      <span class="nav-icon"><i data-lucide="users"></i></span>
+      <span class="nav-label">Participantes</span>
     </button>
-    <button class="nav-item" onclick="goPanel('contatos')">
-      <span class="nav-icon">📇</span><span>Contatos</span>
+    <button class="nav-item" onclick="goPanel('contatos')" data-tooltip="Contatos" aria-label="Contatos">
+      <span class="nav-icon"><i data-lucide="book-user"></i></span>
+      <span class="nav-label">Contatos</span>
     </button>
 
     <div class="nav-section-label">Inteligência &amp; Controle</div>
-    <button class="nav-item" onclick="goPanel('metas')">
-      <span class="nav-icon">🎯</span><span>Metas &amp; ROI</span>
+    <button class="nav-item" onclick="goPanel('metas')" data-tooltip="Metas &amp; ROI" aria-label="Metas &amp; ROI">
+      <span class="nav-icon"><i data-lucide="target"></i></span>
+      <span class="nav-label">Metas &amp; ROI</span>
     </button>
-    <button class="nav-item" onclick="goPanel('comparativo')">
-      <span class="nav-icon">📈</span><span>Comparativo &amp; IA</span>
+    <button class="nav-item" onclick="goPanel('comparativo')" data-tooltip="Comparativo &amp; IA" aria-label="Comparativo &amp; IA">
+      <span class="nav-icon"><i data-lucide="bar-chart-3"></i></span>
+      <span class="nav-label">Comparativo &amp; IA</span>
     </button>
-    <button class="nav-item" onclick="goPanel('unitecon')">
-      <span class="nav-icon">🧮</span><span>Unit Economics</span>
+    <button class="nav-item" onclick="goPanel('unitecon')" data-tooltip="Unit Economics" aria-label="Unit Economics">
+      <span class="nav-icon"><i data-lucide="calculator"></i></span>
+      <span class="nav-label">Unit Economics</span>
     </button>
-    <button class="nav-item" onclick="goPanel('relatorios')">
-      <span class="nav-icon">📤</span><span>Relatórios</span>
+    <button class="nav-item" onclick="goPanel('relatorios')" data-tooltip="Relatórios" aria-label="Relatórios">
+      <span class="nav-icon"><i data-lucide="file-text"></i></span>
+      <span class="nav-label">Relatórios</span>
     </button>
 
     <div class="nav-section-label">Governança</div>
-    <button class="nav-item" onclick="goPanel('equipe')">
-      <span class="nav-icon">🔐</span><span>Equipe &amp; Permissões</span>
+    <button class="nav-item" onclick="goPanel('equipe')" data-tooltip="Equipe &amp; Permissões" aria-label="Equipe &amp; Permissões">
+      <span class="nav-icon"><i data-lucide="users-round"></i></span>
+      <span class="nav-label">Equipe &amp; Permissões</span>
     </button>
-    <button class="nav-item" onclick="goPanel('auditoria')">
-      <span class="nav-icon">🧾</span><span>Auditoria</span>
+    <button class="nav-item" onclick="goPanel('auditoria')" data-tooltip="Auditoria" aria-label="Auditoria">
+      <span class="nav-icon"><i data-lucide="shield-check"></i></span>
+      <span class="nav-label">Auditoria</span>
     </button>
-    <button class="nav-item" onclick="goPanel('sistema')">
-      <span class="nav-icon">🛰️</span><span>Sistema &amp; Contingência</span>
+    <button class="nav-item" onclick="goPanel('sistema')" data-tooltip="Sistema &amp; Contingência" aria-label="Sistema &amp; Contingência">
+      <span class="nav-icon"><i data-lucide="settings"></i></span>
+      <span class="nav-label">Sistema &amp; Contingência</span>
     </button>
   </nav>
 
   <div class="sidebar-footer">
     <div class="admin-info">
       <div class="admin-avatar" id="admin-avatar">A</div>
-      <div>
+      <div class="admin-details">
         <div class="admin-name" id="admin-name">Admin EvoTech</div>
         <div class="admin-role">Administrador</div>
       </div>
     </div>
-    <button class="btn btn-outline btn-sm" onclick="adminLogout()" style="width:100%; margin-top:10px">↩ Sair</button>
+    <button class="btn btn-outline btn-sm sidebar-logout-btn" onclick="adminLogout()" style="width:100%; margin-top:10px" title="Encerrar sessão administrativa">
+      <i data-lucide="log-out" style="margin-right:6px"></i>
+      <span class="logout-text">Sair</span>
+    </button>
   </div>
 </aside>
 
@@ -98,15 +125,21 @@
 
   <!-- TOP BAR -->
   <div class="topbar" id="topbar">
-    <label for="nav-toggle" class="hamburger-btn" aria-label="Abrir menu de navegação">☰</label>
+    <label for="nav-toggle" class="hamburger-btn" aria-label="Abrir menu de navegação">
+      <i data-lucide="menu"></i>
+    </label>
     <div style="flex:1; min-width:0">
       <div class="topbar-title" id="topbar-title">Dashboard</div>
       <span class="topbar-sub" id="topbar-sub">Visão geral em tempo real</span>
     </div>
     <div class="topbar-actions">
       <span class="live-indicator"><span class="dot"></span>Ao vivo</span>
-      <button class="btn btn-outline btn-sm" onclick="exportData()">⬇ Exportar</button>
-      <button class="btn btn-primary btn-sm" id="topbar-action" onclick="openPrimaryAction()">+ Novo Evento</button>
+      <button class="btn btn-outline btn-sm" onclick="exportData()" title="Exportar dados do sistema" style="display:inline-flex;align-items:center;gap:6px">
+        <i data-lucide="download" style="width:14px;height:14px"></i>Exportar
+      </button>
+      <button class="btn btn-primary btn-sm" id="topbar-action" onclick="openPrimaryAction()" style="display:inline-flex;align-items:center;gap:4px">
+        <i data-lucide="plus" style="width:14px;height:14px"></i>Novo Evento
+      </button>
     </div>
   </div>
 
@@ -212,6 +245,46 @@
       </div>
     </div>
 
+    <!-- ====== PEDIDOS & INGRESSOS ====== -->
+    <div class="panel" id="panel-pedidos">
+      <div class="search-bar" style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
+        <input type="text" id="pedidos-search" placeholder="Buscar por comprador, e-mail, CPF ou ID…" style="flex:1; min-width:220px;" oninput="filtrarPedidosAdmin()">
+        <select id="pedidos-filter-status" onchange="filtrarPedidosAdmin()" style="width:180px;">
+          <option value="">Todos os status</option>
+          <option value="pending">Apenas Pendentes</option>
+          <option value="paid">Confirmados (Pagos)</option>
+          <option value="cancelled">Cancelados</option>
+        </select>
+        <button class="btn btn-outline btn-sm" onclick="carregarPedidosAdmin()">↻ Atualizar</button>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Gestão e Auditoria de Pedidos</div>
+            <div class="card-sub" id="pedidos-counter">Carregando pedidos…</div>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>ID</th>
+              <th>Comprador</th>
+              <th>Evento</th>
+              <th>Valor Total</th>
+              <th>Status</th>
+              <th>Data do Pedido</th>
+              <th>Confirmação / Auditoria</th>
+              <th>Ações</th>
+            </tr></thead>
+            <tbody id="pedidos-tbody">
+              <tr><td colspan="8" style="text-align:center; padding:24px; color:var(--text2)">Nenhum pedido carregado.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
     <!-- ====== OPEN BAR ====== -->
     <div class="panel" id="panel-bar">
       <div id="bar-alerts"></div>
@@ -249,7 +322,7 @@
           <div class="card" style="margin-bottom:18px">
             <div class="card-title" style="margin-bottom:14px">Registrar Entrada</div>
             <div class="scan-box" id="scan-box">
-              <div class="scan-icon">🔍</div>
+              <div class="scan-icon"><i data-lucide="scan-line"></i></div>
               <div style="font-size:13px; color:var(--text2)">Digite o código do ingresso ou escaneie o QR Code</div>
               <div class="scan-input">
                 <input type="text" id="scan-input" placeholder="Ex: OFF-VIP-1234" style="flex:1">
@@ -401,37 +474,37 @@
     <div class="panel" id="panel-relatorios">
       <div class="report-grid">
         <div class="report-card">
-          <div class="r-icon">📊</div>
+          <div class="r-icon"><i data-lucide="bar-chart-3"></i></div>
           <div class="r-title">Relatório Executivo (TXT)</div>
           <div class="r-sub">Resumo completo: KPIs, eventos, financeiro e insights de IA.</div>
           <button class="btn btn-primary btn-sm" onclick="exportRelatorioExecutivo()">Gerar Relatório</button>
         </div>
         <div class="report-card">
-          <div class="r-icon">🎉</div>
+          <div class="r-icon"><i data-lucide="calendar-days"></i></div>
           <div class="r-title">Eventos (CSV)</div>
           <div class="r-sub">Lista de eventos com vendas, receita e ocupação.</div>
           <button class="btn btn-outline btn-sm" onclick="exportCSV('eventos')">Exportar CSV</button>
         </div>
         <div class="report-card">
-          <div class="r-icon">👥</div>
+          <div class="r-icon"><i data-lucide="users"></i></div>
           <div class="r-title">Participantes (CSV)</div>
           <div class="r-sub">Base completa de compradores para CRM ou marketing.</div>
           <button class="btn btn-outline btn-sm" onclick="exportCSV('participantes')">Exportar CSV</button>
         </div>
         <div class="report-card">
-          <div class="r-icon">💰</div>
+          <div class="r-icon"><i data-lucide="wallet"></i></div>
           <div class="r-title">Financeiro (CSV)</div>
           <div class="r-sub">Todas as despesas categorizadas do período.</div>
           <button class="btn btn-outline btn-sm" onclick="exportCSV('despesas')">Exportar CSV</button>
         </div>
         <div class="report-card">
-          <div class="r-icon">🍺</div>
+          <div class="r-icon"><i data-lucide="package"></i></div>
           <div class="r-title">Estoque do Bar (CSV)</div>
           <div class="r-sub">Posição de estoque, custo unitário e status.</div>
           <button class="btn btn-outline btn-sm" onclick="exportCSV('bar')">Exportar CSV</button>
         </div>
         <div class="report-card">
-          <div class="r-icon">🗄️</div>
+          <div class="r-icon"><i data-lucide="archive"></i></div>
           <div class="r-title">Backup Completo (JSON)</div>
           <div class="r-sub">Snapshot integral do sistema para migração ou auditoria.</div>
           <button class="btn btn-outline btn-sm" onclick="exportData()">Exportar JSON</button>
@@ -517,7 +590,7 @@
 <!-- Modal Evento -->
 <div class="modal-overlay hidden" id="modal-evento">
   <div class="modal-box wide">
-    <button class="modal-close" onclick="closeModal('modal-evento')">✕</button>
+    <button class="modal-close" onclick="closeModal('modal-evento')" aria-label="Fechar"><i data-lucide="x"></i></button>
     <div class="modal-title" id="modal-evento-title">Novo Evento</div>
     <input type="hidden" id="evento-edit-idx" value="-1">
     <div class="form-grid">
@@ -556,7 +629,7 @@
 <!-- Modal Lote -->
 <div class="modal-overlay hidden" id="modal-lote">
   <div class="modal-box">
-    <button class="modal-close" onclick="closeModal('modal-lote')">✕</button>
+    <button class="modal-close" onclick="closeModal('modal-lote')" aria-label="Fechar"><i data-lucide="x"></i></button>
     <div class="modal-title" id="modal-lote-title">Adicionar Lote</div>
     <input type="hidden" id="lote-edit-idx" value="-1">
     <div class="form-grid">
@@ -575,12 +648,12 @@
 <!-- Modal Bar Item -->
 <div class="modal-overlay hidden" id="modal-bar">
   <div class="modal-box">
-    <button class="modal-close" onclick="closeModal('modal-bar')">✕</button>
+    <button class="modal-close" onclick="closeModal('modal-bar')" aria-label="Fechar"><i data-lucide="x"></i></button>
     <div class="modal-title" id="modal-bar-title">Novo Item do Bar</div>
     <input type="hidden" id="bar-edit-idx" value="-1">
     <div class="form-grid">
       <div class="form-group"><label>Nome</label><input id="bar-nome" placeholder="Ex: Cerveja Long Neck"></div>
-      <div class="form-group"><label>Emoji</label><input id="bar-emoji" placeholder="🍺" maxlength="2"></div>
+      <div class="form-group"><label>Identificador</label><input id="bar-emoji" placeholder="Ex: BEB-01" maxlength="10"></div>
       <div class="form-group"><label>Categoria</label>
         <select id="bar-cat">
           <option>Cerveja</option><option>Destilado</option><option>Energético</option>
@@ -601,16 +674,16 @@
 <!-- Modal Despesa -->
 <div class="modal-overlay hidden" id="modal-despesa">
   <div class="modal-box">
-    <button class="modal-close" onclick="closeModal('modal-despesa')">✕</button>
+    <button class="modal-close" onclick="closeModal('modal-despesa')" aria-label="Fechar"><i data-lucide="x"></i></button>
     <div class="modal-title" id="modal-despesa-title">Nova Despesa</div>
     <input type="hidden" id="desp-edit-idx" value="-1">
     <div class="form-grid">
       <div class="form-group"><label>Categoria</label>
         <select id="desp-cat">
-          <option>🛡️ Segurança</option><option>📣 Marketing</option>
-          <option>🍺 Bebidas</option><option>🏗️ Estrutura</option>
-          <option>🎤 DJs/Atrações</option><option>🧹 Limpeza</option>
-          <option>📋 Outros</option>
+          <option>Segurança</option><option>Marketing</option>
+          <option>Bebidas</option><option>Estrutura</option>
+          <option>DJs/Atrações</option><option>Limpeza</option>
+          <option>Outros</option>
         </select>
       </div>
       <div class="form-group"><label>Valor (R$)</label><input id="desp-valor" type="number" step="0.01" placeholder="5000.00"></div>
@@ -626,7 +699,7 @@
 <!-- Modal Contato -->
 <div class="modal-overlay hidden" id="modal-contato">
   <div class="modal-box">
-    <button class="modal-close" onclick="closeModal('modal-contato')">✕</button>
+    <button class="modal-close" onclick="closeModal('modal-contato')" aria-label="Fechar"><i data-lucide="x"></i></button>
     <div class="modal-title" id="modal-contato-title">Novo Contato</div>
     <input type="hidden" id="cont-edit-idx" value="-1">
     <div class="form-grid">
@@ -653,7 +726,7 @@
 <!-- Modal Equipe -->
 <div class="modal-overlay hidden" id="modal-equipe">
   <div class="modal-box">
-    <button class="modal-close" onclick="closeModal('modal-equipe')">✕</button>
+    <button class="modal-close" onclick="closeModal('modal-equipe')" aria-label="Fechar"><i data-lucide="x"></i></button>
     <div class="modal-title" id="modal-equipe-title">Novo Membro da Equipe</div>
     <input type="hidden" id="eq-edit-idx" value="-1">
     <div class="form-grid">
@@ -676,6 +749,21 @@
   </div>
 </div>
 
+<!-- Modal Detalhe do Pedido -->
+<div class="modal-overlay hidden" id="modal-pedido-detalhe">
+  <div class="modal-box wide" style="max-width:720px;">
+    <button class="modal-close" onclick="closeModal('modal-pedido-detalhe')" aria-label="Fechar"><i data-lucide="x"></i></button>
+    <div class="modal-title" id="modal-pedido-title">Detalhes do Pedido</div>
+    <div id="modal-pedido-content" style="margin-top:16px;">
+      <div style="text-align:center; padding:20px; color:var(--text2)">Carregando informações do pedido…</div>
+    </div>
+    <div class="form-actions" id="modal-pedido-actions" style="margin-top:20px;">
+      <button class="btn btn-outline" onclick="closeModal('modal-pedido-detalhe')">Fechar</button>
+    </div>
+  </div>
+</div>
+
 <script src="js/admin.js?v=20261024"></script>
+<script>lucide.createIcons();</script>
 </body>
 </html>

@@ -17,6 +17,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Manrope:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Sora:wght@700;800&display=swap"
     rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 </head>
 
 <body class="catalog-page">
@@ -90,16 +91,13 @@
     <!-- Navegação Breadcrumb -->
     <div class="catalog-breadcrumb">
       <a href="index.html#hero" class="catalog-back-link">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+        <i data-lucide="arrow-left" style="width:16px;height:16px"></i>
         <span>Voltar para o Início</span>
       </a>
     </div>
 
     <!-- Cabeçalho do Catálogo -->
     <section class="catalog-header">
-      <div class="catalog-header-badge">
-        <span>Catálogo Oficial</span>
-      </div>
       <h1>Descubra as Melhores <span class="text-gradient">Festas & Experiências</span></h1>
       <p>
         Explore festivais, festas universitárias, shows e os eventos mais exclusivos do Brasil.
@@ -411,13 +409,13 @@
 
     <!-- MODAL EVENTO (detalhe) -->
     <div class="modal modal-wide" id="modalEvento" aria-label="Detalhes do evento" style="display:none">
-      <button class="modal-close" id="modalEventoClose" aria-label="Fechar">✕</button>
+      <button class="modal-close" id="modalEventoClose" aria-label="Fechar"><i data-lucide="x"></i></button>
       <div class="evento-detail" id="eventoDetailContent"></div>
     </div>
 
     <!-- MODAL COMPRA DE INGRESSO -->
     <div class="modal" id="modalCompra" aria-label="Compra de Ingressos" style="display:none">
-      <button class="modal-close" id="modalCompraClose" aria-label="Fechar">✕</button>
+      <button class="modal-close" id="modalCompraClose" aria-label="Fechar"><i data-lucide="x"></i></button>
       <h2 class="modal-title" id="compraTitulo">Comprar Ingresso</h2>
       <p class="modal-sub" id="compraEvento">Evento</p>
       <div class="compra-lotes" id="compraLotes"></div>
@@ -437,7 +435,7 @@
         <button type="submit" class="btn-primary" style="width:100%;margin-top:16px;">Concluir Pedido</button>
       </form>
       <div id="compraSuccess" style="display:none;text-align:center;padding:30px 0;">
-        <span style="font-size:3rem;">🎟️</span>
+        <div style="margin-bottom:12px;"><i data-lucide="ticket" style="width:48px;height:48px;color:#22c55e"></i></div>
         <h3 style="color:#22c55e;margin:16px 0 8px;">Pedido Concluído!</h3>
         <p style="color:var(--text3);font-size:0.9rem;">Seus ingressos estão disponíveis no seu painel.</p>
       </div>
@@ -450,6 +448,7 @@
   <script src="js/api.js?v=20261024"></script>
   <script src="js/main.js?v=20261024"></script>
   <script src="js/catalog-events.js"></script>
+  <script>if (typeof lucide !== 'undefined') lucide.createIcons();</script>
 
 </body>
 

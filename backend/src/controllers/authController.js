@@ -44,5 +44,11 @@ exports.forgotPassword = asyncHandler(async (req, res) => {
 exports.myTickets = asyncHandler(async (req, res) =>
   ok(res, await authService.myTickets(req.user.id, req.user.email)));
 
+exports.myOrders = asyncHandler(async (req, res) =>
+  ok(res, await authService.myOrders(req.user.id, req.user.email)));
+
+exports.myOrderDetails = asyncHandler(async (req, res) =>
+  ok(res, await authService.myOrderDetails(req.params.id, req.user.id, req.user.email)));
+
 exports.myHistory = asyncHandler(async (req, res) =>
   ok(res, await authService.myHistory(req.user.id, req.user.email)));

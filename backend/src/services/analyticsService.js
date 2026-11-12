@@ -1,12 +1,9 @@
-'use strict';
+﻿'use strict';
 const db = require('../config/db');
 const eventService = require('./eventService');
 const financeService = require('./financeService');
 const inventoryService = require('./inventoryService');
 
-// Rateio de custos gerais (expenses sem event_id) proporcional à RECEITA do
-// evento. O painel antigo dividia tudo por igual entre eventos; aqui a regra
-// é explícita e os custos diretos entram inteiros no evento a que pertencem.
 function allocateGeneralCosts(events, generalTotal) {
   const totalRevenue = events.reduce((a, e) => a + e.revenue, 0);
   return events.map(e => {
@@ -17,7 +14,6 @@ function allocateGeneralCosts(events, generalTotal) {
   });
 }
 
-// Base comum para dashboard, metas e comparativo: 1 consulta por bloco.
 async function eventFinancials(organizationId) {
   const events = await eventService.listByOrganization(organizationId);
 
@@ -43,10 +39,8 @@ async function eventFinancials(organizationId) {
 
   const base = events.map(ev => {
     const rev = revenueMap[ev.id];
-    // Receita reconhecida (pedidos pagos). Se ainda não houver vendas reais,
-    // cai para o valor derivado dos lotes — usado nos dados de demonstração.
-    const revenue = rev ? Number(rev.revenue) : ev.revenue;
-    const sold = rev ? Number(rev.sold) : ev.sold;
+    const revenue = rev ? Number(rev.revenue) : 0;
+    const sold = rev ? Number(rev.sold) : 0;
     return {
       id: ev.id, name: ev.name, status: ev.status, capacity: ev.capacity,
       eventDate: ev.eventDate, goalAttendance: ev.goalAttendance, goalRevenue: ev.goalRevenue,
@@ -71,7 +65,6 @@ async function eventFinancials(organizationId) {
   });
 }
 
-// Payload único do dashboard: substitui 6 renders que liam localStorage.
 async function dashboard(organizationId) {
   const events = await eventFinancials(organizationId);
   const finance = await financeService.summary(organizationId);
@@ -104,9 +97,13 @@ async function dashboard(organizationId) {
       ticketsSold: sold,
       revenue,
       expenses,
+      expensesPaid: finance.expensesPaid,
+      expensesPending: finance.expensesPending,
       balance: revenue - expenses,
+      cashBalance: finance.cashBalance,
       averageTicket: sold > 0 ? revenue / sold : 0,
       roi: expenses > 0 ? ((revenue - expenses) / expenses) * 100 : 0,
+      margin: revenue > 0 ? ((revenue - expenses) / revenue) * 100 : 0,
       checkinsToday: Number(todayRow.n),
       totalCheckins: events.reduce((a, e) => a + e.checkins, 0),
     },
@@ -116,11 +113,11 @@ async function dashboard(organizationId) {
       occupancy: e.occupancy, revenue: e.revenue, checkins: e.checkins, status: e.status,
     })),
     stock: products.map(p => ({
-      id: p.id, name: p.name, emoji: p.emoji,
+      id: p.id, name: p.name,
       stockQuantity: p.stockQuantity, minStock: p.minStock, low: p.low,
     })),
     expensesByCategory: finance.byCategory.map(c => ({
-      category: `${c.icon || ''} ${c.category}`.trim(), total: Number(c.total),
+      category: c.category, total: Number(c.total),
     })),
     recentEntries: entriesRows.map(r => ({
       name: r.guest_name, event: r.event_name, at: r.checked_in_at,
@@ -129,23 +126,22 @@ async function dashboard(organizationId) {
   };
 }
 
-// Alertas: regras explícitas sobre dados reais, sem texto inventado.
 function buildAlerts(events, products, finance) {
   const alerts = [];
   products.filter(p => p.low).forEach(p => alerts.push({
     level: 'warning',
-    message: `Estoque baixo: ${p.emoji || ''} ${p.name} — ${p.stockQuantity} un. (mínimo ${p.minStock})`.trim(),
+    message: `Estoque critico: ${p.name} - ${p.stockQuantity} un. (minimo ${p.minStock})`.trim(),
   }));
   events.forEach(e => {
     if (e.capacity > 0 && e.occupancy >= 95) {
-      alerts.push({ level: 'info', message: `${e.name} está com ${Math.round(e.occupancy)}% da capacidade vendida.` });
+      alerts.push({ level: 'info', message: `${e.name} atingiu ${Math.round(e.occupancy)}% da capacidade maxima.` });
     }
     if (e.goalAttendance > 0 && e.goalAttendancePct < 50 && e.status === 'active') {
-      alerts.push({ level: 'warning', message: `${e.name} atingiu apenas ${Math.round(e.goalAttendancePct)}% da meta de público.` });
+      alerts.push({ level: 'warning', message: `${e.name} atingiu apenas ${Math.round(e.goalAttendancePct)}% da meta de publico.` });
     }
   });
   if (finance.balance < 0) {
-    alerts.push({ level: 'danger', message: 'Saldo operacional negativo: despesas superam a receita reconhecida.' });
+    alerts.push({ level: 'danger', message: 'Saldo operacional deficitario: despesas excedem a receita confirmada.' });
   }
   return alerts;
 }
@@ -166,7 +162,7 @@ async function goals(organizationId) {
       attendancePct: totals.goalAttendance > 0 ? (totals.attendance / totals.goalAttendance) * 100 : 0,
       revenuePct: totals.goalRevenue > 0 ? (totals.revenue / totals.goalRevenue) * 100 : 0,
       roi: totals.cost > 0 ? ((totals.revenue - totals.cost) / totals.cost) * 100 : 0,
-      breakEven: totals.cost > 0 ? Math.min(100, (totals.revenue / totals.cost) * 100) : 0,
+      breakEven: totals.cost > 0 ? Math.min(100, (totals.revenue / totals.cost) * 100) : (totals.revenue > 0 ? 100 : 0),
     },
     events,
   };
@@ -181,16 +177,22 @@ async function comparison(organizationId) {
     const byTicket = [...events].sort((a, b) => b.averageTicket - a.averageTicket)[0];
     const worst = [...events].sort((a, b) => a.occupancy - b.occupancy)[0];
 
-    if (byMargin.revenue > 0) insights.push({ icon: '🧠', title: 'Melhor margem', text: `"${byMargin.name}" opera com margem de ${byMargin.margin.toFixed(1)}%.` });
-    if (byAudience.sold > 0)  insights.push({ icon: '👥', title: 'Maior público', text: `"${byAudience.name}" vendeu ${byAudience.sold} ingresso(s).` });
-    if (byTicket.averageTicket > 0) insights.push({ icon: '🎟️', title: 'Melhor ticket médio', text: `"${byTicket.name}" com ticket médio de R$ ${byTicket.averageTicket.toFixed(2)}.` });
-    if (worst.occupancy < 60 && worst.capacity > 0) insights.push({ icon: '⚠️', title: 'Atenção', text: `"${worst.name}" está com ${Math.round(worst.occupancy)}% de ocupação.` });
+    if (byMargin && byMargin.revenue > 0) {
+      insights.push({ title: 'Melhor Margem', text: `"${byMargin.name}" opera com margem de ${byMargin.margin.toFixed(1)}%.` });
+    }
+    if (byAudience && byAudience.sold > 0) {
+      insights.push({ title: 'Maior Publico', text: `"${byAudience.name}" vendeu ${byAudience.sold} ingresso(s).` });
+    }
+    if (byTicket && byTicket.averageTicket > 0) {
+      insights.push({ title: 'Melhor Ticket Medio', text: `"${byTicket.name}" alcancou ticket medio de R$ ${byTicket.averageTicket.toFixed(2)}.` });
+    }
+    if (worst && worst.occupancy < 60 && worst.capacity > 0) {
+      insights.push({ title: 'Atencao de Ocupacao', text: `"${worst.name}" esta com ${Math.round(worst.occupancy)}% de ocupacao.` });
+    }
   }
   return { ranking: events, insights };
 }
 
-// Unit economics. CAC, churn e take rate são PREMISSAS do usuário, não dados
-// medidos — vêm por query string e são devolvidas junto para ficar explícito.
 async function unitEconomics(organizationId, { cac, churn, take }) {
   const events = await eventFinancials(organizationId);
   const gmv = events.reduce((a, e) => a + e.revenue, 0);
@@ -201,21 +203,27 @@ async function unitEconomics(organizationId, { cac, churn, take }) {
       WHERE e.organization_id = ? AND o.status = 'paid'`,
     [organizationId]
   );
-  const customers = Math.max(1, Number(buyers.n));
-  const arpu = gmv / customers;
+  const customers = Number(buyers?.n || 0);
+  const arpu = customers > 0 ? gmv / customers : 0;
   const churnFraction = Math.max(0.1, churn) / 100;
-  const contributionMargin = 0.5;         // premissa do plano de negócios
+  const contributionMargin = 0.5;
   const ltv = arpu / churnFraction;
 
   return {
-    assumptions: { cac, churnMonthlyPct: churn, takeRatePct: take, contributionMargin },
+    assumptions: {
+      cac: Number(cac) || 0,
+      churnMonthlyPct: churn,
+      takeRatePct: take,
+      contributionMargin,
+      note: 'Estimativas baseadas em premissas configuradas pelo gestor',
+    },
     gmv,
     customers,
     arpu,
     takeRateRevenue: gmv * (take / 100),
     ltv,
-    ltvCacRatio: ltv / Math.max(1, cac),
-    paybackMonths: arpu * contributionMargin > 0 ? cac / (arpu * contributionMargin) : 0,
+    ltvCacRatio: (cac && Number(cac) > 0) ? ltv / Number(cac) : null,
+    paybackMonths: (arpu * contributionMargin > 0 && cac > 0) ? cac / (arpu * contributionMargin) : 0,
   };
 }
 

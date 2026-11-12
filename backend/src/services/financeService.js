@@ -130,39 +130,82 @@ async function revenueTotals(organizationId, eventId = null) {
 }
 
 async function expenseTotals(organizationId, eventId = null) {
-  const direct = await db.queryOne(
+  // Separa despesas por escopo (direta vs geral) e por status (paid vs pending).
+  // Isolamento: todas as queries filtram organization_id=? — sem vazamento entre orgs.
+  const directPaid = await db.queryOne(
     `SELECT COALESCE(SUM(amount),0) AS total FROM expenses
-      WHERE organization_id = ? ${eventId ? 'AND event_id = ?' : ''}`,
+      WHERE organization_id = ? AND status = 'paid'
+        ${eventId ? 'AND event_id = ?' : 'AND event_id IS NOT NULL'}`,
     eventId ? [organizationId, eventId] : [organizationId]
   );
-  const general = await db.queryOne(
+  const directPending = await db.queryOne(
     `SELECT COALESCE(SUM(amount),0) AS total FROM expenses
-      WHERE organization_id = ? AND event_id IS NULL`, [organizationId]
+      WHERE organization_id = ? AND status = 'pending'
+        ${eventId ? 'AND event_id = ?' : 'AND event_id IS NOT NULL'}`,
+    eventId ? [organizationId, eventId] : [organizationId]
   );
-  return { direct: Number(direct.total), general: Number(general.total) };
+  const generalPaid = await db.queryOne(
+    `SELECT COALESCE(SUM(amount),0) AS total FROM expenses
+      WHERE organization_id = ? AND event_id IS NULL AND status = 'paid'`,
+    [organizationId]
+  );
+  const generalPending = await db.queryOne(
+    `SELECT COALESCE(SUM(amount),0) AS total FROM expenses
+      WHERE organization_id = ? AND event_id IS NULL AND status = 'pending'`,
+    [organizationId]
+  );
+  return {
+    directPaid: Number(directPaid.total),
+    directPending: Number(directPending.total),
+    generalPaid: Number(generalPaid.total),
+    generalPending: Number(generalPending.total),
+    // Atalhos para compatibilidade retroativa
+    direct: Number(directPaid.total) + Number(directPending.total),
+    general: Number(generalPaid.total) + Number(generalPending.total),
+  };
 }
 
 async function summary(organizationId) {
   const { revenue, sold } = await revenueTotals(organizationId);
   const totals = await expenseTotals(organizationId);
-  const expenses = totals.direct;
-  const balance = revenue - expenses;
+
+  // Despesas totais (diretas de eventos + custos gerais corporativos)
+  const expensesTotal = totals.direct + totals.general;
+  const expensesPaid = totals.directPaid + totals.generalPaid;
+  const expensesPending = totals.directPending + totals.generalPending;
+
+  // Saldo operacional considerando todas as despesas comprometidas
+  const balance = revenue - expensesTotal;
+  // Saldo de caixa realizado (receita confirmada menos despesas efetivamente pagas)
+  const cashBalance = revenue - expensesPaid;
+
+  const margin = revenue > 0 ? (balance / revenue) * 100 : 0;
+  const roi = expensesTotal > 0 ? (balance / expensesTotal) * 100 : 0;
+  const averageTicket = sold > 0 ? revenue / sold : 0;
+
+  const byCategory = await db.query(
+    `SELECT c.name AS category, c.icon, COALESCE(SUM(x.amount),0) AS total
+       FROM expenses x JOIN expense_categories c ON c.id = x.category_id
+      WHERE x.organization_id = ?
+      GROUP BY c.id, c.name, c.icon
+      ORDER BY total DESC`,
+    [organizationId]
+  );
+
   return {
     revenue,
     ticketsSold: sold,
-    expenses,
-    balance,
-    margin: revenue > 0 ? (balance / revenue) * 100 : 0,
-    roi: expenses > 0 ? (balance / expenses) * 100 : 0,
-    averageTicket: sold > 0 ? revenue / sold : 0,
-    byCategory: await db.query(
-      `SELECT c.name AS category, c.icon, COALESCE(SUM(x.amount),0) AS total
-         FROM expenses x JOIN expense_categories c ON c.id = x.category_id
-        WHERE x.organization_id = ?
-        GROUP BY c.id, c.name, c.icon
-        ORDER BY total DESC`,
-      [organizationId]
-    ),
+    expenses: expensesTotal,         // total geral (diretas + gerais)
+    expensesPaid,                   // despesas liquidadas
+    expensesPending,                // despesas a pagar
+    expensesDirect: totals.direct,
+    expensesGeneral: totals.general,
+    balance,                        // resultado econômico
+    cashBalance,                    // resultado de caixa
+    margin,
+    roi,
+    averageTicket,
+    byCategory,
   };
 }
 

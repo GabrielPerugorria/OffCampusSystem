@@ -107,4 +107,8 @@ if (env.isProduction && env.jwt.secret.startsWith('dev_only')) {
   throw new Error('JWT_SECRET de desenvolvimento detectado em produção. Gere um novo segredo.');
 }
 
+if (env.isProduction && env.autoConfirmOrders) {
+  throw new Error('AUTO_CONFIRM_ORDERS=true é proibido em produção. Remova ou defina false.');
+}
+
 module.exports = env;

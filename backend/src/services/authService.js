@@ -171,7 +171,107 @@ async function myHistory(userId, email) {
   );
 }
 
+// Lista completa de pedidos do participante (pending, paid, cancelled)
+async function myOrders(userId, email) {
+  const orders = await db.query(
+    `SELECT o.id, o.event_id, o.total_amount, o.status, o.payment_method,
+            o.paid_at, o.created_at, o.cancellation_reason,
+            e.name AS event_name, e.event_date, e.venue, e.banner_url
+       FROM orders o
+       JOIN events e ON e.id = o.event_id
+      WHERE o.user_id = ? OR o.buyer_email = ?
+      ORDER BY o.created_at DESC`,
+    [userId, email]
+  );
+
+  if (orders.length === 0) return [];
+
+  const orderIds = orders.map(o => o.id);
+  const placeholders = orderIds.map(() => '?').join(',');
+
+  // Busca itens dos pedidos
+  const items = await db.query(
+    `SELECT oi.order_id, oi.batch_id, oi.quantity, oi.unit_price,
+            b.name AS batch_name
+       FROM order_items oi
+       JOIN ticket_batches b ON b.id = oi.batch_id
+      WHERE oi.order_id IN (${placeholders})`,
+    orderIds
+  );
+
+  // Busca tickets emitidos (para pedidos confirmados)
+  const tickets = await db.query(
+    `SELECT t.id, t.order_id, t.code, t.holder_name, t.price_paid, t.status, t.issued_at,
+            b.name AS batch_name,
+            c.checked_in_at
+       FROM tickets t
+       JOIN ticket_batches b ON b.id = t.batch_id
+  LEFT JOIN checkins c       ON c.ticket_id = t.id
+      WHERE t.order_id IN (${placeholders})
+      ORDER BY t.id ASC`,
+    orderIds
+  );
+
+  const itemsByOrder = items.reduce((acc, item) => {
+    (acc[item.order_id] = acc[item.order_id] || []).push(item);
+    return acc;
+  }, {});
+
+  const ticketsByOrder = tickets.reduce((acc, ticket) => {
+    (acc[ticket.order_id] = acc[ticket.order_id] || []).push(ticket);
+    return acc;
+  }, {});
+
+  return orders.map(order => ({
+    ...order,
+    items: itemsByOrder[order.id] || [],
+    tickets: ticketsByOrder[order.id] || [],
+  }));
+}
+
+async function myOrderDetails(orderId, userId, email) {
+  const order = await db.queryOne(
+    `SELECT o.id, o.event_id, o.total_amount, o.status, o.payment_method,
+            o.paid_at, o.created_at, o.cancellation_reason,
+            e.name AS event_name, e.event_date, e.venue, e.banner_url
+       FROM orders o
+       JOIN events e ON e.id = o.event_id
+      WHERE o.id = ? AND (o.user_id = ? OR o.buyer_email = ?)
+      LIMIT 1`,
+    [orderId, userId, email]
+  );
+
+  if (!order) throw AppError.notFound('Pedido não encontrado.');
+
+  const items = await db.query(
+    `SELECT oi.id, oi.batch_id, oi.quantity, oi.unit_price,
+            b.name AS batch_name
+       FROM order_items oi
+       JOIN ticket_batches b ON b.id = oi.batch_id
+      WHERE oi.order_id = ?`,
+    [orderId]
+  );
+
+  const tickets = await db.query(
+    `SELECT t.id, t.code, t.holder_name, t.price_paid, t.status, t.issued_at,
+            b.name AS batch_name,
+            c.checked_in_at
+       FROM tickets t
+       JOIN ticket_batches b ON b.id = t.batch_id
+  LEFT JOIN checkins c       ON c.ticket_id = t.id
+      WHERE t.order_id = ?
+      ORDER BY t.id ASC`,
+    [orderId]
+  );
+
+  return {
+    ...order,
+    items,
+    tickets,
+  };
+}
+
 module.exports = {
   register, login, refresh, logout, updateMe,
-  buildSession, myTickets, myHistory,
+  buildSession, myTickets, myHistory, myOrders, myOrderDetails,
 };

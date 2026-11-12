@@ -22,10 +22,10 @@ function sanitizeURL(url) {
 }
 
 /* Converte para número finito; qualquer outra coisa vira o fallback.
-   Evita que texto chegue aos templates por campos que deveriam ser numéricos. */
+   Garante que valores vindos da API nunca levem texto para os templates. */
 function num(v, fallback = 0) {
-    const n = Number(v);
-    return Number.isFinite(n) ? n : fallback;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : fallback;
 }
 
 /* ============================================================
@@ -79,7 +79,7 @@ window.addEventListener('resize', () => { refreshIndicator(); updateActiveLinkOn
 window.addEventListener('scroll', () => {
     header.classList.toggle('scrolled', window.scrollY > 50);
     const total = document.documentElement.scrollHeight - window.innerHeight;
-    if (total > 0) progressBar.style.width = `${(window.scrollY / total) * 100}%`;
+    if (total > 0 && progressBar) progressBar.style.width = `${(window.scrollY / total) * 100}%`;
     updateActiveLinkOnScroll();
 }, { passive: true });
 
@@ -168,6 +168,159 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
 if (window.ResizeObserver && menu) {
     new ResizeObserver(refreshIndicator).observe(menu);
 }
+
+
+/* ============================================================
+   CAROUSEL
+   ============================================================ */
+const carousel = document.querySelector('.banner-carousel');
+const slider = document.querySelector('.banner-list');
+const slides = Array.from(document.querySelectorAll('.banner-slide'));
+const dots = Array.from(document.querySelectorAll('.banner-dot'));
+const prevButton = document.querySelector('.banner-arrow.prev');
+const nextButton = document.querySelector('.banner-arrow.next');
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+let currentSlide = 0;
+let autoplayTimer = null;
+let interactionTimer = null;
+let isUserInteracting = false;
+let isPointerDown = false;
+let dragStartX = 0;
+let dragDeltaX = 0;
+const SLIDE_COUNT = slides.length;
+const AUTOPLAY_DELAY = 4000;
+const SWIPE_THRESHOLD = 60;
+const DRAG_THRESHOLD = 8;
+
+const setActiveSlide = (index) => {
+    const next = ((index % SLIDE_COUNT) + SLIDE_COUNT) % SLIDE_COUNT;
+    slides.forEach((slide, i) => {
+        const active = i === next;
+        slide.classList.toggle('active', active);
+        slide.setAttribute('aria-hidden', String(!active));
+        slide.tabIndex = active ? 0 : -1;
+    });
+    dots.forEach((dot, i) => {
+        const selected = i === next;
+        dot.classList.toggle('active', selected);
+        dot.setAttribute('aria-selected', String(selected));
+        dot.tabIndex = selected ? 0 : -1;
+    });
+    currentSlide = next;
+};
+
+const stopAutoplay = () => { clearInterval(autoplayTimer); autoplayTimer = null; };
+const startAutoplay = () => {
+    if (SLIDE_COUNT < 2 || document.hidden || reduceMotion) return;
+    stopAutoplay();
+    autoplayTimer = setInterval(() => showSlide(currentSlide + 1), AUTOPLAY_DELAY);
+};
+
+const holdInteraction = () => {
+    stopAutoplay();
+    isUserInteracting = true;
+    clearTimeout(interactionTimer);
+};
+
+const releaseInteraction = (delay = 1400) => {
+    clearTimeout(interactionTimer);
+    interactionTimer = setTimeout(() => {
+        isUserInteracting = false;
+        if (!document.hidden) scheduleAutoplay();
+    }, delay);
+};
+
+const scheduleAutoplay = () => {
+    if (autoplayTimer || isUserInteracting || SLIDE_COUNT < 2 || document.hidden) return;
+    startAutoplay();
+};
+
+const clearSliderOffset = () => {
+    if (!slider) return;
+    slider.style.transition = '';
+    slider.style.transform = '';
+};
+
+const showSlide = (index) => {
+    setActiveSlide(index);
+    clearSliderOffset();
+    if (!isUserInteracting) scheduleAutoplay();
+};
+
+// Pointer drag (touch)
+const onPointerDown = (e) => {
+    if (!slider || SLIDE_COUNT < 2) return;
+    if (e.pointerType !== 'touch' && e.pointerType !== 'pen') return;
+    if (e.target.closest('button, a')) return;
+    e.preventDefault();
+    holdInteraction();
+    isPointerDown = true;
+    dragStartX = e.clientX;
+    dragDeltaX = 0;
+    slider.style.transition = 'none';
+    carousel.setPointerCapture?.(e.pointerId);
+    document.addEventListener('pointermove', onPointerMove, { passive: false });
+    document.addEventListener('pointerup', onPointerUp);
+    document.addEventListener('pointercancel', onPointerUp);
+};
+
+const onPointerMove = (e) => {
+    if (!isPointerDown) return;
+    dragDeltaX = e.clientX - dragStartX;
+    if (Math.abs(dragDeltaX) > DRAG_THRESHOLD) {
+        e.preventDefault();
+        if (slider) slider.style.transform = `translateX(${dragDeltaX}px)`;
+    }
+};
+
+const onPointerUp = (e) => {
+    if (!isPointerDown) return;
+    isPointerDown = false;
+    carousel.releasePointerCapture?.(e?.pointerId);
+    document.removeEventListener('pointermove', onPointerMove);
+    document.removeEventListener('pointerup', onPointerUp);
+    document.removeEventListener('pointercancel', onPointerUp);
+    if (Math.abs(dragDeltaX) > SWIPE_THRESHOLD) {
+        dragDeltaX < 0 ? showSlide(currentSlide + 1) : showSlide(currentSlide - 1);
+    } else {
+        if (slider) {
+            slider.style.transition = 'transform .24s cubic-bezier(.22,.61,.36,1)';
+            slider.style.transform = '';
+            setTimeout(() => { if (slider) { slider.style.transition = ''; } }, 260);
+        }
+    }
+    releaseInteraction();
+};
+
+const initCarousel = () => {
+    if (!carousel || SLIDE_COUNT === 0) return;
+    setActiveSlide(0);
+
+    carousel.addEventListener('pointerenter', () => holdInteraction());
+    carousel.addEventListener('pointerleave', () => releaseInteraction(900));
+    carousel.addEventListener('pointerdown', onPointerDown, { passive: false });
+
+    carousel.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight') { e.preventDefault(); holdInteraction(); showSlide(currentSlide + 1); releaseInteraction(); }
+        if (e.key === 'ArrowLeft') { e.preventDefault(); holdInteraction(); showSlide(currentSlide - 1); releaseInteraction(); }
+    });
+
+    prevButton?.addEventListener('click', () => { holdInteraction(); showSlide(currentSlide - 1); releaseInteraction(); });
+    nextButton?.addEventListener('click', () => { holdInteraction(); showSlide(currentSlide + 1); releaseInteraction(); });
+
+    dots.forEach((dot, i) => {
+        dot.addEventListener('click', () => { holdInteraction(); showSlide(i); releaseInteraction(); });
+    });
+
+    document.addEventListener('visibilitychange', () => {
+        document.hidden ? stopAutoplay() : releaseInteraction(400);
+    });
+
+    scheduleAutoplay();
+};
+
+initCarousel();
 
 
 /* ============================================================
@@ -553,86 +706,89 @@ if (form) {
    ============================================================ */
 
 /* ---------- DATA ---------- */
-const EVENTOS = [
-    {
-        id: 0,
-        nome: 'OFFCampus na Copa',
-        tipo: 'Experiência Premium',
-        data: 'EM BREVE',
-        local: 'Curitiba, PR',
-        img: 'imagens/offcampushexa.png',
-        desc: 'Música ao vivo, áreas VIP e networking com convidados especiais para quem busca uma experiência premium. Vamos em busca do hexa com estilo e exclusividade! Dress code obrigatório. +18.',
-        regras: 'Documento com foto obrigatório. Proibido menores de 18 anos.',
-        lotes: [
-            { nome: 'Lote Promocional', preco: 49.90, disponivel: 50, total: 100 },
-            { nome: '1º Lote', preco: 79.90, disponivel: 200, total: 300 },
-            { nome: 'VIP', preco: 149.90, disponivel: 30, total: 50 },
-            { nome: 'Open Bar', preco: 199.90, disponivel: 20, total: 30 },
-        ]
-    },
-    {
-        id: 1,
-        nome: 'Resenha do Portes',
-        tipo: 'Festival Eletrônico',
-        data: 'EM BREVE',
-        local: 'Curitiba, PR',
-        img: 'imagens/resenhadoportes.png',
-        desc: 'Line-up exclusivo, produção premium e acesso controlado para uma noite inesquecível. Artistas confirmados de diferentes cidades e sets que vão da meia-noite ao amanhecer.',
-        regras: 'Documento obrigatório. Não é permitida a entrada de bebidas externas.',
-        lotes: [
-            { nome: '1º Lote', preco: 69.90, disponivel: 150, total: 250 },
-            { nome: '2º Lote', preco: 99.90, disponivel: 100, total: 200 },
-            { nome: 'Camarote', preco: 179.90, disponivel: 15, total: 20 },
-        ]
-    },
-    {
-        id: 2,
-        nome: 'Halloween OffCampus',
-        tipo: 'Ambiente VIP',
-        data: 'EM BREVE',
-        local: 'Curitiba, PR',
-        img: 'imagens/halloween.png',
-        desc: 'Experience completa para estudantes com open food, música e ambiente vip. A maior festa de Halloween universitária do sul do Brasil. Fantasia obrigatória para desconto.',
-        regras: 'Estudantes com carteirinha têm 20% de desconto. Fantasia incentivada.',
-        lotes: [
-            { nome: 'Lote Estudante', preco: 39.90, disponivel: 80, total: 150 },
-            { nome: '1º Lote', preco: 59.90, disponivel: 200, total: 400 },
-            { nome: 'VIP + Open Food', preco: 129.90, disponivel: 40, total: 60 },
-        ]
-    }
-];
+// Catálogo de eventos. Antes era um array fixo neste arquivo; agora é
+// preenchido por GET /api/public/events. O FORMATO dos objetos foi mantido
+// para que todas as telas e funções existentes continuem funcionando.
+let EVENTOS = [];
 
-/* ---------- STORAGE UTILS ---------- */
-const LS = {
-    get: (k) => { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } },
-    set: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch { } },
-    remove: (k) => { try { localStorage.removeItem(k); } catch { } },
+// Imagens dos banners ficam no frontend (são assets do repositório).
+// O banner_url do banco tem prioridade quando estiver preenchido.
+const IMAGENS_EVENTO = {
+    'OFFCampus na Copa': 'imagens/offcampushexa.png',
+    'Resenha do Portes': 'imagens/resenhadoportes.png',
+    'Halloween OffCampus': 'imagens/halloween.png',
 };
 
-const getUsers = () => LS.get('evo_users') || [];
-const saveUsers = (u) => LS.set('evo_users', u);
-const getSession = () => LS.get('evo_session');
-const saveSession = (s) => LS.set('evo_session', s);
-const clearSession = () => LS.remove('evo_session');
+function formatarDataEvento(iso) {
+    if (!iso) return 'EM BREVE';
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return 'EM BREVE';
+    return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+}
 
-// Seed demo accounts on first load
-(function seedDemo() {
-    const users = getUsers();
-    if (!users.find(u => u.email === 'admin@evotech.com')) {
-        users.push({ nome: 'Admin EvoTech', email: 'admin@evotech.com', senha: 'admin123', role: 'admin', cpf: '000.000.000-00', tel: '(41) 99999-9999', dt: '1990-01-01', ingressos: [], historico: [] });
+function mapearEvento(ev) {
+    return {
+        id: ev.id,
+        slug: ev.slug,
+        nome: String(ev.name ?? ''),
+        tipo: String(ev.type || 'Evento'),
+        data: formatarDataEvento(ev.eventDate),
+        local: String(ev.venue || ''),
+        img: String(ev.bannerUrl || IMAGENS_EVENTO[ev.name] || 'imagens/offcampushexa.png'),
+        desc: String(ev.description || ''),
+        regras: String(ev.rules || ''),
+        lotes: (ev.batches || []).map(b => ({
+            id: b.id,
+            nome: String(b.name ?? ''),
+            preco: num(b.price),
+            disponivel: num(b.available),
+            total: num(b.quantityTotal),
+        })),
+    };
+}
+
+async function carregarEventos() {
+    try {
+        const data = await EvoAPI.get('/public/events');
+        EVENTOS = data.map(mapearEvento);
+    } catch (err) {
+        // Sem API no ar, a landing page continua navegável; apenas a compra
+        // fica indisponível — e o usuário é avisado, em vez de ver dados falsos.
+        EVENTOS = [];
+        console.warn('Não foi possível carregar os eventos:', err.message);
     }
-    if (!users.find(u => u.email === 'demo@evotech.com')) {
-        users.push({
-            nome: 'João Cardoso', email: 'demo@evotech.com', senha: 'demo123', role: 'participante', cpf: '111.111.111-11', tel: '(41) 98888-8888', dt: '1998-05-12', ingressos: [
-                { id: 'EVT001', evento: 'Resenha do Portes', tipo: 'VIP', data: 'EM BREVE', code: 'RDP-VIP-7891', compradoEm: '2026-06-10' },
-            ], historico: [
-                { evento: 'OFFCampus Verão', data: '2025-12-15', status: 'Compareceu' },
-                { evento: 'Resenha do Portes', data: '2025-10-20', status: 'Compareceu' },
-            ]
-        });
+    return EVENTOS;
+}
+
+/* ---------- SESSÃO ---------- */
+/* Os dados de negócio saíram do localStorage. O que fica no navegador são
+   apenas os tokens da sessão, gerenciados por js/api.js. */
+const getSession = () => EvoAPI.session();
+const clearSession = () => EvoAPI.store.clearAuth();
+
+// Mostra o erro da API no campo correspondente do formulário.
+function aplicarErro(inputId, mensagem) {
+    const input = document.getElementById(inputId);
+    const alvo = document.getElementById(inputId + '-error');
+    if (mensagem) {
+        input?.classList.add('error');
+        if (alvo) alvo.textContent = mensagem;
+    } else {
+        input?.classList.remove('error');
+        if (alvo) alvo.textContent = '';
     }
-    saveUsers(users);
-})();
+}
+
+function ocupado(botao, ocupadoEstado, textoOriginal) {
+    if (!botao) return;
+    botao.disabled = ocupadoEstado;
+    if (ocupadoEstado) {
+        botao.dataset.textoOriginal = botao.textContent;
+        botao.textContent = 'Aguarde…';
+    } else {
+        botao.textContent = textoOriginal || botao.dataset.textoOriginal || botao.textContent;
+    }
+}
 
 /* ---------- MODAL ENGINE ---------- */
 const overlay = document.getElementById('modalOverlay');
@@ -665,6 +821,47 @@ function trapFocus(e) {
     }
 }
 
+const ModalScrollLock = {
+    savedScrollY: 0,
+    lockCount: 0,
+    lock() {
+        this.lockCount += 1;
+        if (this.lockCount > 1) return;
+        this.savedScrollY = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+        const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+        if (scrollbarWidth > 0) {
+            document.body.style.paddingRight = `${scrollbarWidth}px`;
+        }
+        document.body.style.position = 'fixed';
+        document.body.style.top = `-${this.savedScrollY}px`;
+        document.body.style.left = '0';
+        document.body.style.right = '0';
+        document.body.style.width = '100%';
+        document.body.style.overflow = 'hidden';
+        document.documentElement.classList.add('modal-open');
+        document.body.classList.add('modal-open');
+    },
+    unlock() {
+        if (this.lockCount <= 0) return;
+        this.lockCount -= 1;
+        if (this.lockCount > 0) return;
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.left = '';
+        document.body.style.right = '';
+        document.body.style.width = '';
+        document.body.style.overflow = '';
+        document.body.style.paddingRight = '';
+        document.documentElement.classList.remove('modal-open');
+        document.body.classList.remove('modal-open');
+        window.scrollTo({
+            top: this.savedScrollY,
+            left: 0,
+            behavior: 'instant'
+        });
+    }
+};
+
 function openModal(name) {
     if (!modals[name]) return;
     
@@ -675,6 +872,7 @@ function openModal(name) {
     // (e.g. login -> cadastro), keep the original trigger instead.
     if (!overlay.classList.contains('open')) {
         modalTrigger = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+        ModalScrollLock.lock();
     }
 
     const showNewModal = () => {
@@ -696,8 +894,13 @@ function openModal(name) {
         overlay.removeAttribute('aria-hidden');
         overlay.classList.add('open');
         activeModal = name;
-        document.body.style.overflow = 'hidden';
+        document.documentElement.classList.add('modal-open');
         document.body.classList.add('modal-open');
+        document.body.style.overflow = 'hidden';
+        if (modals[name]) {
+            modals[name].querySelectorAll('input[disabled]').forEach(inp => inp.disabled = false);
+            modals[name].scrollTop = 0;
+        }
         document.addEventListener('keydown', trapFocus, true);
 
         // Focus first input/control once the modal has visually settled.
@@ -735,8 +938,11 @@ function closeModal() {
     }
 
     overlay.classList.remove('open');
-    document.body.classList.remove('modal-open');
+    ModalScrollLock.unlock();
     document.removeEventListener('keydown', trapFocus, true);
+    document.querySelectorAll('#modalLogin input[type="password"], #modalCadastro input[type="password"]').forEach(inp => {
+        inp.disabled = true;
+    });
 
     const finishClose = () => {
         overlay.setAttribute('aria-hidden', 'true');
@@ -773,7 +979,7 @@ function closeModal() {
 }
 
 // Close on overlay click
-overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
+overlay?.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && activeModal) closeModal(); });
 
 // Close buttons
@@ -800,18 +1006,65 @@ function updateNavUI() {
         const initials = nomeSessao.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
         navActions.innerHTML = `
       <div class="nav-user-info">
-        <div class="nav-user-avatar" id="navAvatarBtn" title="${escapeHTML(nomeSessao)}" tabindex="0">${escapeHTML(initials)}</div>
+        <div class="nav-user-avatar" id="navAvatarBtn" role="button" title="${escapeHTML(nomeSessao)}" tabindex="0">${escapeHTML(initials)}</div>
         <span>${escapeHTML(nomeSessao.split(' ')[0])}</span>
-      </div>`;
-        document.getElementById('navAvatarBtn')?.addEventListener('click', () => {
-            if (session.role === 'admin') { window.location.href = 'admin.html'; }
-            else { buildParticipante(session); openModal('participante'); }
-        });
+      </div>
+      <button type="button" class="btn-secondary btn-sm" id="btnSairNav">Sair</button>`;
+        document.getElementById('navAvatarBtn')?.addEventListener('click', () => abrirAreaLogada());
         document.getElementById('navAvatarBtn')?.addEventListener('keydown', e => {
-            if (e.key === 'Enter' || e.key === ' ') e.target.click();
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); }
         });
+        document.getElementById('btnSairNav')?.addEventListener('click', encerrarSessao);
+    }
+    updateMobileActions(session);
+}
+
+// Avatar: admin vai para o painel; participante abre a própria área.
+// Revalida a sessão no clique: se os tokens sumiram, volta ao login em vez de
+// navegar para o painel (o admin-guard devolveria para a home, parecendo um "refresh").
+function abrirAreaLogada() {
+    const session = getSession();
+    if (!session) { updateNavUI(); openModal('login'); return; }
+    if (session.role === 'admin') { window.location.href = 'admin.html'; }
+    else { openModal('participante'); buildParticipante(session); }
+}
+
+// Encerra a sessão (revoga o refresh token no servidor, limpa o navegador) e
+// atualiza a interface. Usado pelo botão Sair da barra, do menu mobile e da
+// área do participante.
+async function encerrarSessao() {
+    try { await EvoAPI.logout(); } finally {
+        updateNavUI();
+        closeMobileMenu(false);
+        closeModal();
     }
 }
+
+// O menu mobile também precisa refletir a sessão (a barra .actions some em telas pequenas).
+function updateMobileActions(session) {
+    const box = mobileMenu?.querySelector('.mobile-actions');
+    if (!box) return;
+    if (!session) {
+        box.innerHTML = `
+        <a href="#" class="btn-secondary" id="btnEntrarMobile">Entrar</a>
+        <a href="#" class="btn-primary" id="btnCadastroMobile">Cadastrar</a>`;
+        document.getElementById('btnEntrarMobile')?.addEventListener('click', e => { e.preventDefault(); closeMobileMenu(false); openModal('login'); });
+        document.getElementById('btnCadastroMobile')?.addEventListener('click', e => { e.preventDefault(); closeMobileMenu(false); openModal('cadastro'); });
+    } else {
+        const rotulo = session.role === 'admin' ? 'Painel administrativo' : 'Minha conta';
+        box.innerHTML = `
+        <a href="#" class="btn-primary" id="btnContaMobile">${rotulo}</a>
+        <a href="#" class="btn-secondary" id="btnSairMobile">Sair</a>`;
+        document.getElementById('btnContaMobile')?.addEventListener('click', e => { e.preventDefault(); closeMobileMenu(false); abrirAreaLogada(); });
+        document.getElementById('btnSairMobile')?.addEventListener('click', e => { e.preventDefault(); encerrarSessao(); });
+    }
+}
+
+// Login/logout em outra aba: mantém esta aba coerente.
+window.addEventListener('storage', (e) => {
+    const K = window.EVO_CONFIG.STORAGE_KEYS;
+    if (e.key === null || e.key === K.auth || e.key === K.session) updateNavUI();
+});
 
 document.getElementById('btnEntrar')?.addEventListener('click', e => { e.preventDefault(); openModal('login'); });
 document.getElementById('btnCadastro')?.addEventListener('click', e => { e.preventDefault(); openModal('cadastro'); });
@@ -827,43 +1080,56 @@ document.getElementById('linkEsqueci')?.addEventListener('click', e => { e.preve
 document.getElementById('linkVoltarLogin')?.addEventListener('click', e => { e.preventDefault(); openModal('login'); });
 
 // Demo shortcuts
+// Atalhos de demonstração: agora fazem login de verdade contra a API,
+// usando as contas criadas pelo seed do banco.
+async function loginDemo(email, senha, destinoAdmin) {
+    try {
+        const user = await EvoAPI.login(email, senha);
+        if (destinoAdmin && user.role === 'admin') { window.location.href = 'admin.html'; return; }
+        updateNavUI();
+        closeModal();
+    } catch (err) {
+        aplicarErro('loginSenha', err.message);
+    }
+}
 document.getElementById('linkDemoAdmin')?.addEventListener('click', e => {
     e.preventDefault();
-    const u = getUsers().find(x => x.email === 'admin@evotech.com');
-    if (u) { saveSession(u); window.location.href = 'admin.html'; }
+    loginDemo('admin@evotech.com', 'admin123', true);
 });
 document.getElementById('linkDemoParticipante')?.addEventListener('click', e => {
     e.preventDefault();
-    const u = getUsers().find(x => x.email === 'demo@evotech.com');
-    if (u) { saveSession(u); updateNavUI(); closeModal(); }
+    loginDemo('demo@evotech.com', 'demo123', false);
 });
 
 /* ---------- LOGIN ---------- */
-document.getElementById('btnLoginSubmit')?.addEventListener('click', () => {
+document.getElementById('btnLoginSubmit')?.addEventListener('click', async () => {
     const email = document.getElementById('loginEmail').value.trim();
     const senha = document.getElementById('loginSenha').value;
     let ok = true;
+
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        document.getElementById('loginEmail').classList.add('error');
-        document.getElementById('loginEmail-error').textContent = 'E-mail inválido.';
-        ok = false;
-    } else { document.getElementById('loginEmail').classList.remove('error'); document.getElementById('loginEmail-error').textContent = ''; }
+        aplicarErro('loginEmail', 'E-mail inválido.'); ok = false;
+    } else { aplicarErro('loginEmail', null); }
+
     if (!senha || senha.length < 4) {
-        document.getElementById('loginSenha').classList.add('error');
-        document.getElementById('loginSenha-error').textContent = 'Informe sua senha.';
-        ok = false;
-    } else { document.getElementById('loginSenha').classList.remove('error'); document.getElementById('loginSenha-error').textContent = ''; }
+        aplicarErro('loginSenha', 'Informe sua senha.'); ok = false;
+    } else { aplicarErro('loginSenha', null); }
+
     if (!ok) return;
-    const user = getUsers().find(u => u.email === email && u.senha === senha);
-    if (!user) {
-        document.getElementById('loginSenha').classList.add('error');
-        document.getElementById('loginSenha-error').textContent = 'E-mail ou senha incorretos.';
-        return;
+
+    const botao = document.getElementById('btnLoginSubmit');
+    ocupado(botao, true);
+    try {
+        // A verificação de senha acontece no servidor, contra o hash bcrypt.
+        const user = await EvoAPI.login(email, senha);
+        if (user.role === 'admin') { window.location.href = 'admin.html'; return; }
+        updateNavUI();
+        closeModal();
+    } catch (err) {
+        aplicarErro('loginSenha', err.message);
+    } finally {
+        ocupado(botao, false, 'Entrar');
     }
-    saveSession(user);
-    if (user.role === 'admin') { window.location.href = 'admin.html'; return; }
-    updateNavUI();
-    closeModal();
 });
 
 /* ---------- CADASTRO ---------- */
@@ -886,24 +1152,17 @@ document.getElementById('cadCpf')?.addEventListener('input', e => { e.target.val
 document.getElementById('cadTel')?.addEventListener('input', e => { e.target.value = maskTel2(e.target.value); });
 document.getElementById('compraCpf')?.addEventListener('input', e => { e.target.value = maskCpf(e.target.value); });
 
-function maskCard(v) {
-    return v.replace(/\D/g, '').slice(0, 16).replace(/(\d{4})(?=\d)/g, '$1 ');
-}
-function maskValidade(v) {
-    v = v.replace(/\D/g, '').slice(0, 4);
-    if (v.length > 2) return v.slice(0, 2) + '/' + v.slice(2);
-    return v;
-}
-document.getElementById('compraCard')?.addEventListener('input', e => { e.target.value = maskCard(e.target.value); });
-document.getElementById('compraValidade')?.addEventListener('input', e => { e.target.value = maskValidade(e.target.value); });
+// As máscaras de cartão saíram junto com os campos de cartão do modal.
 
-document.getElementById('btnCadastroSubmit')?.addEventListener('click', () => {
+document.getElementById('btnCadastroSubmit')?.addEventListener('click', async () => {
     const nome = document.getElementById('cadNome').value.trim();
     const email = document.getElementById('cadEmail').value.trim();
     const cpf = document.getElementById('cadCpf').value.trim();
     const tel = document.getElementById('cadTel').value.trim();
     const dt = document.getElementById('cadDt').value;
     const senha = document.getElementById('cadSenha').value;
+
+    // Validação local continua (resposta imediata); o servidor valida de novo.
     const erros = {};
     if (nome.length < 3) erros.cadNome = 'Nome muito curto.';
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) erros.cadEmail = 'E-mail inválido.';
@@ -911,25 +1170,27 @@ document.getElementById('btnCadastroSubmit')?.addEventListener('click', () => {
     if (tel.replace(/\D/g, '').length < 10) erros.cadTel = 'Telefone inválido.';
     if (!dt) erros.cadDt = 'Data obrigatória.';
     if (senha.length < 6) erros.cadSenha = 'Mínimo 6 caracteres.';
-    ['cadNome', 'cadEmail', 'cadCpf', 'cadTel', 'cadDt', 'cadSenha'].forEach(id => {
-        const el = document.getElementById(id);
-        const er = document.getElementById(id + '-error');
-        if (erros[id]) { el?.classList.add('error'); if (er) er.textContent = erros[id]; }
-        else { el?.classList.remove('error'); if (er) er.textContent = ''; }
-    });
+    ['cadNome', 'cadEmail', 'cadCpf', 'cadTel', 'cadDt', 'cadSenha']
+        .forEach(id => aplicarErro(id, erros[id] || null));
     if (Object.keys(erros).length) return;
-    const users = getUsers();
-    if (users.find(u => u.email === email)) {
-        document.getElementById('cadEmail').classList.add('error');
-        document.getElementById('cadEmail-error').textContent = 'E-mail já cadastrado.';
-        return;
+
+    const botao = document.getElementById('btnCadastroSubmit');
+    ocupado(botao, true);
+    try {
+        await EvoAPI.register({ name: nome, email, password: senha, cpf, phone: tel, birthDate: dt });
+        updateNavUI();
+        closeModal();
+    } catch (err) {
+        // Erros de validação vindos do servidor caem no campo certo.
+        const mapa = { name: 'cadNome', email: 'cadEmail', cpf: 'cadCpf', phone: 'cadTel', birthDate: 'cadDt', password: 'cadSenha' };
+        let exibiu = false;
+        (err.details || []).forEach(d => {
+            if (mapa[d.field]) { aplicarErro(mapa[d.field], d.message); exibiu = true; }
+        });
+        if (!exibiu) aplicarErro('cadEmail', err.message);
+    } finally {
+        ocupado(botao, false, 'Criar conta');
     }
-    const newUser = { nome, email, cpf, tel, dt, senha, role: 'participante', ingressos: [], historico: [] };
-    users.push(newUser);
-    saveUsers(users);
-    saveSession(newUser);
-    updateNavUI();
-    closeModal();
 });
 
 /* ---------- RECUPERAR SENHA ---------- */
@@ -943,14 +1204,16 @@ document.getElementById('btnRecuperarSubmit')?.addEventListener('click', () => {
     }
     document.getElementById('recEmail').classList.remove('error');
     er.textContent = '';
+    // A API responde a mesma coisa exista ou não o e-mail (não revela cadastros).
+    EvoAPI.post('/auth/forgot-password', { email }).catch(() => { });
     document.getElementById('recSuccess').style.display = 'block';
 });
 
 /* ---------- LOGOUT ---------- */
-document.getElementById('btnLogout')?.addEventListener('click', () => { clearSession(); updateNavUI(); closeModal(); });
+document.getElementById('btnLogout')?.addEventListener('click', encerrarSessao);
 
 /* ---------- ÁREA DO PARTICIPANTE ---------- */
-function buildParticipante(user) {
+async function buildParticipante(user) {
     // Avatar
     const nomeUser = String(user.nome ?? '');
     const initials = nomeUser.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
@@ -963,28 +1226,131 @@ function buildParticipante(user) {
 
     // Perfil
     const pn = document.getElementById('perfilNome');
-    if (pn) pn.value = user.nome;
+    if (pn) pn.value = user.name || user.nome || '';
     const pe = document.getElementById('perfilEmail');
-    if (pe) pe.value = user.email;
+    if (pe) pe.value = user.email || '';
     const pt = document.getElementById('perfilTel');
-    if (pt) pt.value = user.tel || '';
+    if (pt) pt.value = user.phone || user.tel || '';
+
+    const ingList = document.getElementById('meusIngressos');
+    const histList = document.getElementById('meuHistorico');
+    const pedList = document.getElementById('meusPedidos');
+    if (ingList) ingList.innerHTML = '<div class="empty-state"><span>⏳</span>Carregando…</div>';
+    if (pedList) pedList.innerHTML = '<div class="empty-state"><span>⏳</span>Carregando pedidos…</div>';
+    if (histList) histList.innerHTML = '<div class="empty-state"><span>⏳</span>Carregando…</div>';
+
+    let ingressos = [];
+    let historico = [];
+    let pedidos = [];
+    try {
+        const [tickets, history, orders] = await Promise.all([
+            EvoAPI.get('/me/tickets').catch(() => []),
+            EvoAPI.get('/me/history').catch(() => []),
+            EvoAPI.get('/me/orders').catch(() => []),
+        ]);
+        ingressos = (tickets || []).map(t => ({
+            evento: t.event_name,
+            tipo: t.batch_name,
+            data: formatarDataEvento(t.event_date),
+            code: t.code,
+        }));
+        historico = (history || []).map(h => ({
+            evento: h.event_name,
+            data: new Date(h.checked_in_at).toLocaleDateString('pt-BR'),
+            status: 'Compareceu',
+        }));
+        pedidos = orders || [];
+    } catch (err) {
+        if (err.status === 401) {
+            // Sessão expirada de vez (refresh token inválido): a API já limpou os tokens.
+            updateNavUI();
+            openModal('login');
+            aplicarErro('loginSenha', 'Sua sessão expirou. Entre novamente.');
+            return;
+        }
+        if (ingList) ingList.innerHTML = `<div class="empty-state"><i data-lucide="triangle-alert" style="width:24px;height:24px;margin-bottom:8px;color:var(--yellow)"></i><p>${escapeHTML(err.message)}</p></div>`;
+        if (pedList) pedList.innerHTML = '';
+        if (histList) histList.innerHTML = '';
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+        return;
+    }
+
+    // Pedidos
+    if (pedList) {
+        pedList.innerHTML = '';
+        if (!pedidos.length) {
+            pedList.innerHTML = '<div class="empty-state"><i data-lucide="shopping-bag" style="width:28px;height:28px;margin-bottom:8px;color:var(--muted)"></i><p>Nenhum pedido realizado até o momento.</p></div>';
+        } else {
+            const statusLabels = {
+                paid: 'Confirmado',
+                pending: 'Aguardando Pagamento',
+                cancelled: 'Cancelado',
+                refunded: 'Estornado',
+            };
+            pedidos.forEach(p => {
+                const total = Number(p.total_amount || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                const data = new Date(p.created_at).toLocaleDateString('pt-BR');
+                const stClass = p.status || 'pending';
+                const stLabel = statusLabels[p.status] || p.status;
+                
+                let itensHTML = '';
+                if (p.items && p.items.length) {
+                    itensHTML = p.items.map(it => `
+                      <div>${escapeHTML(it.quantity)}x ${escapeHTML(it.batch_name)} — ${(Number(it.unit_price) * it.quantity).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</div>
+                    `).join('');
+                }
+
+                let ticketsHTML = '';
+                if (p.tickets && p.tickets.length) {
+                    ticketsHTML = `
+                      <div class="pedido-tickets">
+                        <div class="pedido-tickets-title">Ingressos emitidos para este pedido:</div>
+                        ${p.tickets.map(t => `
+                          <div class="pedido-ticket-row">
+                            <span>${escapeHTML(t.holder_name)} (${escapeHTML(t.batch_name)})</span>
+                            <span class="pedido-ticket-code">#${escapeHTML(t.code)}</span>
+                          </div>
+                        `).join('')}
+                      </div>
+                    `;
+                }
+
+                pedList.insertAdjacentHTML('beforeend', `
+                  <div class="pedido-card">
+                    <div class="pedido-header">
+                      <div>
+                        <span class="pedido-id">Pedido #${escapeHTML(p.id)}</span>
+                        <span style="font-size:0.8rem;color:var(--muted);margin-left:8px;display:inline-flex;align-items:center;gap:4px"><i data-lucide="calendar" style="width:13px;height:13px"></i>${escapeHTML(data)}</span>
+                      </div>
+                      <span class="pedido-status-badge ${escapeHTML(stClass)}">${escapeHTML(stLabel)}</span>
+                    </div>
+                    <div style="font-weight:600;font-size:0.95rem;color:var(--text)">${escapeHTML(p.event_name)}</div>
+                    <div style="font-size:0.85rem;color:var(--muted)">${itensHTML}</div>
+                    <div class="pedido-detalhes">
+                      <span>Total do pedido:</span>
+                      <span class="pedido-total">${escapeHTML(total)}</span>
+                    </div>
+                    ${ticketsHTML}
+                  </div>
+                `);
+            });
+        }
+    }
 
     // Ingressos
-    const ingList = document.getElementById('meusIngressos');
     if (ingList) {
         ingList.innerHTML = '';
-        const ingressos = (Array.isArray(user.ingressos) ? user.ingressos : []).filter(x => x && typeof x === 'object');
-        if (ingressos.length === 0) {
-            ingList.innerHTML = '<div class="empty-state"><span>🎫</span>Você ainda não comprou ingressos.</div>';
+        if (!ingressos.length) {
+            ingList.innerHTML = '<div class="empty-state"><i data-lucide="ticket" style="width:28px;height:28px;margin-bottom:8px;color:var(--muted)"></i><p>Você ainda não comprou ingressos.</p></div>';
         } else {
             ingressos.forEach(ing => {
                 ingList.insertAdjacentHTML('beforeend', `
           <div class="ingresso-card">
-            <div class="ingresso-qr">🎫</div>
+            <div class="ingresso-qr"><i data-lucide="ticket" style="width:32px;height:32px;color:var(--primary)"></i></div>
             <div class="ingresso-info">
               <div class="ingresso-evento">${escapeHTML(ing.evento)}</div>
               <div class="ingresso-tipo">${escapeHTML(ing.tipo)}</div>
-              <div class="ingresso-data">📅 ${escapeHTML(ing.data)}</div>
+              <div class="ingresso-data" style="display:flex;align-items:center;gap:4px"><i data-lucide="calendar" style="width:13px;height:13px"></i>${escapeHTML(ing.data)}</div>
               <div class="ingresso-code">#${escapeHTML(ing.code)}</div>
             </div>
           </div>`);
@@ -993,12 +1359,10 @@ function buildParticipante(user) {
     }
 
     // Histórico
-    const histList = document.getElementById('meuHistorico');
     if (histList) {
         histList.innerHTML = '';
-        const historico = (Array.isArray(user.historico) ? user.historico : []).filter(x => x && typeof x === 'object');
-        if (historico.length === 0) {
-            histList.innerHTML = '<div class="empty-state"><span>📋</span>Nenhum evento no histórico ainda.</div>';
+        if (!historico.length) {
+            histList.innerHTML = '<div class="empty-state"><i data-lucide="history" style="width:28px;height:28px;margin-bottom:8px;color:var(--muted)"></i><p>Nenhum evento no histórico ainda.</p></div>';
         } else {
             historico.forEach(h => {
                 histList.insertAdjacentHTML('beforeend', `
@@ -1007,11 +1371,12 @@ function buildParticipante(user) {
               <div class="hist-nome">${escapeHTML(h.evento)}</div>
               <div class="hist-data">${escapeHTML(h.data)}</div>
             </div>
-            <div class="hist-status">✓ ${escapeHTML(h.status)}</div>
+            <div class="hist-status" style="display:inline-flex;align-items:center;gap:4px"><i data-lucide="check" style="width:12px;height:12px"></i>${escapeHTML(h.status)}</div>
           </div>`);
             });
         }
     }
+    if (typeof lucide !== 'undefined') lucide.createIcons();
 }
 
 // Part tabs
@@ -1026,29 +1391,99 @@ document.querySelectorAll('.part-tab').forEach(tab => {
     });
 });
 
-// Salvar perfil
-document.getElementById('btnSalvarPerfil')?.addEventListener('click', () => {
-    const session = getSession();
-    if (!session) return;
+// Salvar perfil via requisição autenticada
+document.getElementById('btnSalvarPerfil')?.addEventListener('click', async () => {
     const nome = document.getElementById('perfilNome').value.trim();
     const tel = document.getElementById('perfilTel').value.trim();
-    const users = getUsers();
-    const idx = users.findIndex(u => u.email === session.email);
-    if (idx >= 0) {
-        users[idx].nome = nome || users[idx].nome;
-        users[idx].tel = tel || users[idx].tel;
-        saveUsers(users);
-        saveSession(users[idx]);
+    const aviso = document.getElementById('perfilSuccess');
+    const botao = document.getElementById('btnSalvarPerfil');
+    ocupado(botao, true);
+    try {
+        const user = await EvoAPI.put('/auth/me', { name: nome || undefined, phone: tel || undefined });
+        EvoAPI.store.setSession(user);
         updateNavUI();
+        if (aviso) {
+            aviso.textContent = 'Perfil atualizado com sucesso!';
+            aviso.style.color = 'var(--primary)';
+            aviso.style.display = 'block';
+            setTimeout(() => { aviso.style.display = 'none'; }, 3500);
+        }
+    } catch (err) {
+        if (aviso) {
+            aviso.textContent = err.message || 'Erro ao atualizar perfil.';
+            aviso.style.color = '#ef4444';
+            aviso.style.display = 'block';
+            setTimeout(() => { aviso.style.display = 'none'; }, 4000);
+        } else {
+            alert(err.message);
+        }
+    } finally {
+        ocupado(botao, false, 'Salvar alterações');
     }
-    document.getElementById('perfilSuccess').style.display = 'block';
-    setTimeout(() => { document.getElementById('perfilSuccess').style.display = 'none'; }, 3000);
+});
+
+// Botão Fechar/Cancelar do perfil: restaura dados originais e fecha modal
+document.getElementById('btnCancelarPerfil')?.addEventListener('click', () => {
+    const session = EvoAPI.store.getSession() || {};
+    const pn = document.getElementById('perfilNome');
+    if (pn) pn.value = session.name || session.nome || '';
+    const pt = document.getElementById('perfilTel');
+    if (pt) pt.value = session.phone || session.tel || '';
+    closeModal();
 });
 
 /* ---------- DASHBOARD ADMIN ---------- */
 /* ---------- EVENTO DETAIL ---------- */
+const EVENTOS_FALLBACK = [
+    {
+        id: 1,
+        slug: 'offcampus-na-copa',
+        nome: 'OFFCampus na copa?',
+        tipo: 'Festa Universitária',
+        data: '15 de Novembro de 2025',
+        local: 'Espaço Sunset Lounge',
+        img: 'imagens/offcampushexa.png',
+        desc: 'Música ao vivo, áreas VIP e networking exclusivo. Vamos em busca do hexa com estilo!',
+        regras: 'Classificação 18 anos. Obrigatória apresentação de documento oficial com foto.',
+        lotes: [
+            { id: 101, nome: 'Lote Promocional', preco: 45.0, disponivel: 32, total: 100 },
+            { id: 102, nome: 'Área VIP', preco: 90.0, disponivel: 15, total: 50 }
+        ]
+    },
+    {
+        id: 2,
+        slug: 'resenha-do-portes',
+        nome: 'Resenha do Portes',
+        tipo: 'Festival de Música Eletrônica',
+        data: '22 de Novembro de 2025',
+        local: 'Arena Music Park',
+        img: 'imagens/resenhadoportes.png',
+        desc: 'Festival com line-up exclusivo, produção premium e acesso controlado.',
+        regras: 'Classificação 18 anos. Proibida a entrada com bebidas externas.',
+        lotes: [
+            { id: 201, nome: 'Pista Open Air', preco: 55.0, disponivel: 48, total: 150 },
+            { id: 202, nome: 'Camarote Backstage', preco: 120.0, disponivel: 8, total: 30 }
+        ]
+    },
+    {
+        id: 3,
+        slug: 'halloween-offcampus',
+        nome: 'Halloween OffCampus',
+        tipo: 'Festa Temática & Open Food',
+        data: '31 de Outubro de 2025',
+        local: 'Mansão Boulevard',
+        img: 'imagens/halloween.png',
+        desc: 'Experiência completa para estudantes com open food, música e ambiente VIP temático.',
+        regras: 'Fantasia recomendada. Classificação 18 anos.',
+        lotes: [
+            { id: 301, nome: 'Geral + Open Food', preco: 70.0, disponivel: 20, total: 120 },
+            { id: 302, nome: 'VIP Premium Experience', preco: 140.0, disponivel: 12, total: 40 }
+        ]
+    }
+];
+
 function openEvento(idx) {
-    const ev = EVENTOS[idx];
+    const ev = (EVENTOS && EVENTOS[idx]) || EVENTOS_FALLBACK[idx];
     if (!ev) return;
     const cont = document.getElementById('eventoDetailContent');
     if (!cont) return;
@@ -1056,25 +1491,26 @@ function openEvento(idx) {
     <div class="ev-ribbon">${escapeHTML(ev.tipo)}</div>
     <h2 class="ev-title">${escapeHTML(ev.nome)}</h2>
     <div class="ev-meta">
-      <span>📅 ${escapeHTML(ev.data)}</span>
-      <span>📍 ${escapeHTML(ev.local)}</span>
+      <span style="display:inline-flex;align-items:center;gap:4px"><i data-lucide="calendar" style="width:14px;height:14px"></i>${escapeHTML(ev.data)}</span>
+      <span style="display:inline-flex;align-items:center;gap:4px"><i data-lucide="map-pin" style="width:14px;height:14px"></i>${escapeHTML(ev.local)}</span>
     </div>
     <p class="ev-desc">${escapeHTML(ev.desc)}</p>
-    <p class="ev-desc" style="font-size:.82rem;font-style:italic">⚠️ ${escapeHTML(ev.regras)}</p>
+    <p class="ev-desc" style="font-size:.82rem;font-style:italic;display:flex;align-items:center;gap:6px"><i data-lucide="triangle-alert" style="width:14px;height:14px;color:var(--yellow);flex-shrink:0"></i><span>${escapeHTML(ev.regras)}</span></p>
     <div class="ev-lotes-title">Tipos de Ingresso</div>
     <div class="ev-lotes">
       ${ev.lotes.map((l, i) => `
         <div class="ev-lote">
           <div>
             <div class="ev-lote-nome">${escapeHTML(l.nome)}</div>
-            <div class="ev-lote-disp">${num(l.disponivel)} disponíveis de ${num(l.total)}</div>
+            <div class="ev-lote-disp">${l.disponivel} disponíveis de ${l.total}</div>
           </div>
           <div class="ev-lote-right">
-            <div class="ev-lote-preco">R$ ${num(l.preco).toFixed(2).replace('.', ',')}</div>
+            <div class="ev-lote-preco">R$ ${l.preco.toFixed(2).replace('.', ',')}</div>
             <button class="ev-lote-btn" data-ev="${idx}" data-lote="${i}">Comprar</button>
           </div>
         </div>`).join('')}
     </div>`;
+    if (typeof lucide !== 'undefined') lucide.createIcons();
 
     // Banner: criado via DOM. A URL passa pela allowlist (http/https ou caminho
     // relativo) e é atribuída como propriedade, nunca interpolada em HTML.
@@ -1100,6 +1536,7 @@ function openEvento(idx) {
     });
     openModal('evento');
 }
+window.openEvento = openEvento;
 
 // Banner info buttons
 document.querySelectorAll('.banner-info').forEach(btn => {
@@ -1134,9 +1571,9 @@ function openCompra(evIdx, loteIdx) {
     <div class="compra-lote${i === loteIdx ? ' selected' : ''}" data-lote="${i}">
       <div>
         <div class="compra-lote-nome">${escapeHTML(l.nome)}</div>
-        <div class="compra-lote-disp">${num(l.disponivel)} disponíveis</div>
+        <div class="compra-lote-disp">${l.disponivel} disponíveis</div>
       </div>
-      <div class="compra-lote-preco">R$ ${num(l.preco).toFixed(2).replace('.', ',')}</div>
+      <div class="compra-lote-preco">R$ ${l.preco.toFixed(2).replace('.', ',')}</div>
     </div>`).join('');
 
     lotesEl.querySelectorAll('.compra-lote').forEach(el => {
@@ -1157,7 +1594,7 @@ function showCompraForm() {
     const lote = ev?.lotes[compraState.loteIdx];
     if (!lote) return;
     document.getElementById('compraTitulo').textContent = 'Finalizar compra';
-    document.getElementById('compraResumo').textContent = `✓ ${lote.nome} — ${ev.nome} — R$ ${lote.preco.toFixed(2).replace('.', ',')}`;
+    document.getElementById('compraResumo').textContent = `${lote.nome} — ${ev.nome} — R$ ${lote.preco.toFixed(2).replace('.', ',')}`;
     document.getElementById('compraForm').style.display = 'block';
 }
 
@@ -1182,65 +1619,76 @@ document.querySelectorAll('.plano-btn[data-plano]').forEach(btn => {
 });
 
 /* ---------- CONFIRMAR COMPRA ---------- */
-document.getElementById('btnConfirmarCompra')?.addEventListener('click', () => {
+document.getElementById('btnConfirmarCompra')?.addEventListener('click', async () => {
     const nome = document.getElementById('compraNome').value.trim();
     const email = document.getElementById('compraEmail').value.trim();
     const cpf = document.getElementById('compraCpf').value.trim();
     let ok = true;
-    if (!nome || nome.length < 3) { document.getElementById('compraNome').classList.add('error'); document.getElementById('compraNome-error').textContent = 'Nome obrigatório.'; ok = false; } else { document.getElementById('compraNome').classList.remove('error'); document.getElementById('compraNome-error').textContent = ''; }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { document.getElementById('compraEmail').classList.add('error'); document.getElementById('compraEmail-error').textContent = 'E-mail inválido.'; ok = false; } else { document.getElementById('compraEmail').classList.remove('error'); document.getElementById('compraEmail-error').textContent = ''; }
-    if (cpf.replace(/\D/g, '').length < 11) { document.getElementById('compraCpf').classList.add('error'); document.getElementById('compraCpf-error').textContent = 'CPF inválido.'; ok = false; } else { document.getElementById('compraCpf').classList.remove('error'); document.getElementById('compraCpf-error').textContent = ''; }
+    if (!nome || nome.length < 3) { aplicarErro('compraNome', 'Nome obrigatório.'); ok = false; } else { aplicarErro('compraNome', null); }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { aplicarErro('compraEmail', 'E-mail inválido.'); ok = false; } else { aplicarErro('compraEmail', null); }
+    if (cpf.replace(/\D/g, '').length < 11) { aplicarErro('compraCpf', 'CPF inválido.'); ok = false; } else { aplicarErro('compraCpf', null); }
     if (!ok) return;
 
     const ev = EVENTOS[compraState.eventoIdx];
     const lote = ev?.lotes[compraState.loteIdx];
     if (!lote) return;
 
-    // Generate ticket
-    const code = ev.nome.slice(0, 3).toUpperCase().replace(/ /g, '') + '-' + lote.nome.slice(0, 3).toUpperCase().replace(/ /g, '') + '-' + Math.floor(1000 + Math.random() * 9000);
-    const ticket = { id: code, evento: ev.nome, tipo: lote.nome, data: ev.data, code, compradoEm: new Date().toLocaleDateString('pt-BR') };
+    const botao = document.getElementById('btnConfirmarCompra');
+    ocupado(botao, true);
 
-    // Save to user
-    const session = getSession();
-    if (session) {
-        const users = getUsers();
-        const idx = users.findIndex(u => u.email === session.email);
-        if (idx >= 0) {
-            users[idx].ingressos = users[idx].ingressos || [];
-            users[idx].ingressos.push(ticket);
-            saveUsers(users);
-            saveSession(users[idx]);
-        }
+    let pedido;
+    try {
+        // O servidor é quem define o preço, reserva a vaga no lote e gera o
+        // código do ingresso. O frontend não decide nada disso.
+        pedido = await EvoAPI.post('/orders', {
+            batchId: lote.id,
+            quantity: 1,
+            buyerName: nome,
+            buyerEmail: email,
+            buyerCpf: cpf,
+        });
+    } catch (err) {
+        aplicarErro('compraCpf', err.message);
+        ocupado(botao, false, 'Confirmar compra');
+        return;
     }
+    ocupado(botao, false, 'Confirmar compra');
 
-    // Show success
+    // Atualiza a disponibilidade exibida com o dado real.
+    await carregarEventos();
+
+    const codigo = pedido.tickets?.[0]?.code || '(aguardando confirmação de pagamento)';
     document.getElementById('compraLotes').style.display = 'none';
     document.getElementById('compraForm').style.display = 'none';
     document.getElementById('compraTitulo').style.display = 'none';
     document.getElementById('compraEvento').style.display = 'none';
     document.getElementById('compraTicket').innerHTML = `
-    <div class="tk-row"><span>Evento:</span><b>${escapeHTML(ev.nome)}</b></div>
-    <div class="tk-row"><span>Ingresso:</span><b>${escapeHTML(lote.nome)}</b></div>
+    <div class="tk-row"><span>Evento:</span><b>${escapeHTML(pedido.eventName)}</b></div>
+    <div class="tk-row"><span>Ingresso:</span><b>${escapeHTML(pedido.batchName)}</b></div>
     <div class="tk-row"><span>Nome:</span><b>${escapeHTML(nome)}</b></div>
-    <div class="tk-row"><span>Valor:</span><b>R$ ${num(lote.preco).toFixed(2).replace('.', ',')}</b></div>
-    <div class="tk-code">#${escapeHTML(code)}</div>`;
+    <div class="tk-row"><span>Valor:</span><b>R$ ${Number(pedido.total).toFixed(2).replace('.', ',')}</b></div>
+    <div class="tk-code">#${escapeHTML(codigo)}</div>`;
     document.getElementById('compraSuccess').style.display = 'block';
 });
 
-document.getElementById('btnVerIngresso')?.addEventListener('click', () => {
+document.getElementById('btnVerIngresso')?.addEventListener('click', async () => {
     const session = getSession();
-    if (session) {
-        // Reload session
-        const freshUser = getUsers().find(u => u.email === session.email);
-        if (freshUser) {
-            saveSession(freshUser);
-            buildParticipante(freshUser);
-            openModal('participante');
-        }
-    } else {
-        openModal('login');
-    }
+    if (!session) { openModal('login'); return; }
+    openModal('participante');
+    await buildParticipante(session);
 });
 
 /* ---------- INIT ---------- */
+// A tela monta primeiro e os dados chegam da API em seguida.
 updateNavUI();
+carregarEventos().then(() => {
+    // Se a API não respondeu, avisa em vez de exibir preços desatualizados.
+    if (!EVENTOS.length) {
+        document.querySelectorAll('.banner-buy, .banner-info').forEach(btn => {
+            btn.addEventListener('click', e => {
+                e.preventDefault();
+                alert('Não foi possível carregar os eventos agora. Tente novamente em instantes.');
+            }, { capture: true });
+        });
+    }
+});

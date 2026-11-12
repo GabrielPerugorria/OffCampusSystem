@@ -37,7 +37,7 @@ const updateMeSchema = z.object({
   phone: phone.optional(),
   currentPassword: z.string().max(128).optional(),
   newPassword: password.optional(),
-}).refine(d => !d.newPassword || d.currentPassword,
+}).strict().refine(d => !d.newPassword || d.currentPassword,
   { message: 'Informe a senha atual para trocar a senha.', path: ['currentPassword'] });
 
 /* ---------- EVENTOS ---------- */

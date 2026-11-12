@@ -8,6 +8,12 @@ async function start() {
   try {
     await db.healthCheck();
     logger.info(`Banco conectado: ${env.db.database}@${env.db.host}:${env.db.port}`);
+    const { runMigrations } = require('./database/runMigrations');
+    await runMigrations();
+
+    // Inicia verificação periódica em background para liberar reservas expiradas
+    const { startReservationCleanupJob } = require('./services/orderService');
+    startReservationCleanupJob(60000);
   } catch (err) {
     logger.error('Não foi possível conectar ao MySQL. Verifique o .env.', err.message);
     process.exit(1);

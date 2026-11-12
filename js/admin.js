@@ -32,6 +32,66 @@ function sanitizeURL(url) {
   return '';
 }
 
+/* Atualiza ícones Lucide no DOM dinamicamente */
+function refreshIcons() {
+  if (typeof lucide !== 'undefined' && typeof lucide.createIcons === 'function') {
+    lucide.createIcons();
+  }
+}
+
+/* Ícones vetoriais SVG corporativos (Substitutos profissionais de Emojis) */
+const SVG_ICONS = {
+  edit: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>',
+  trash: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>',
+  check: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>',
+  alert: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--yellow)" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+  info: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>',
+  emptyCalendar: '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
+  emptyUsers: '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>',
+  emptyContacts: '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>',
+  mail: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>',
+  phone: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>',
+  ticket: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7v13"/><path d="M16 7v13"/></svg>',
+};
+
+/* Preservação rigorosa da rolagem e scroll lock nos modais */
+const ModalScrollLock = {
+  savedY: 0,
+  locks: 0,
+  lock() {
+    this.locks += 1;
+    if (this.locks > 1) return;
+    this.savedY = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+    if (scrollbarWidth > 0) {
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
+    }
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${this.savedY}px`;
+    document.body.style.left = '0';
+    document.body.style.right = '0';
+    document.body.style.width = '100%';
+    document.body.style.overflow = 'hidden';
+    document.documentElement.classList.add('modal-open');
+    document.body.classList.add('modal-open');
+  },
+  unlock() {
+    if (this.locks <= 0) return;
+    this.locks -= 1;
+    if (this.locks > 0) return;
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.left = '';
+    document.body.style.right = '';
+    document.body.style.width = '';
+    document.body.style.overflow = '';
+    document.body.style.paddingRight = '';
+    document.documentElement.classList.remove('modal-open');
+    document.body.classList.remove('modal-open');
+    window.scrollTo({ top: this.savedY, left: 0, behavior: 'instant' });
+  }
+};
+
 /* ============================================================
    CAMADA DE DADOS
    Antes: todo o painel vivia em localStorage['evotech_admin'].
@@ -108,9 +168,13 @@ function mapEvento(e) {
     regras: String(e.rules || ''),
     metaPublico: num(e.goalAttendance),
     metaFaturamento: num(e.goalRevenue),
+    sold: num(e.sold),
+    revenue: num(e.revenue),
+    checkins: num(e.checkins),
     lotes: (e.batches || []).map(b => ({
       id: b.id, nome: String(b.name ?? ''), preco: num(b.price),
       disponivel: num(b.available), total: num(b.quantityTotal),
+      sold: num(b.quantitySold),
     })),
   };
 }
@@ -139,7 +203,7 @@ async function carregarDados() {
     STATE = {
       eventos: eventos.map(mapEvento),
       bar: produtos.map(p => ({
-        id: p.id, nome: String(p.name ?? ''), emoji: String(p.emoji || '🍶'), cat: String(p.category ?? ''),
+        id: p.id, nome: String(p.name ?? ''), emoji: String(p.emoji || ''), cat: String(p.category ?? ''),
         custo: num(p.unitCost), estoque: num(p.stockQuantity), minimo: num(p.minStock),
       })),
       despesas: despesas.map(d => ({
@@ -243,6 +307,7 @@ initAdminInfo();
 const panels = {
   dashboard: { title:'Dashboard', sub:'Visão geral em tempo real', action:'+ Novo Evento', fn:'openModalEvento' },
   eventos:   { title:'Eventos', sub:'Gerencie eventos e lotes de ingresso', action:'+ Novo Evento', fn:'openModalEvento' },
+  pedidos:   { title:'Pedidos & Ingressos', sub:'Auditoria, confirmação manual e histórico transacional de compras', action:null },
   bar:       { title:'Open Bar', sub:'Controle de estoque e itens', action:'+ Adicionar Item', fn:'openModalBarItem' },
   portaria:  { title:'Portaria', sub:'Registro de entradas', action:null },
   financeiro:{ title:'Financeiro', sub:'Receitas e despesas', action:'+ Nova Despesa', fn:'openModalDespesa' },
@@ -259,7 +324,7 @@ const panels = {
 
 function goPanel(id) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  document.getElementById('panel-'+id).classList.add('active');
+  document.getElementById('panel-'+id)?.classList.add('active');
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.querySelector(`.nav-item[onclick="goPanel('${id}')"]`)?.classList.add('active');
 
@@ -270,7 +335,11 @@ function goPanel(id) {
   if(cfg.action) { btn.textContent = cfg.action; btn.classList.remove('is-hidden'); btn.onclick = window[cfg.fn] || null; }
   else btn.classList.add('is-hidden');
 
-  atualizar();
+  if (id === 'pedidos') {
+    carregarPedidosAdmin();
+  } else {
+    atualizar();
+  }
 }
 
 function openPrimaryAction() { /* handled per-panel */ }
@@ -301,6 +370,7 @@ function renderAll() {
   renderAuditoria();
   renderSistema();
   if (selectedEventoIdx !== null) renderLotes();
+  refreshIcons();
 }
 
 /* ===== DASHBOARD ===== */
@@ -309,71 +379,109 @@ function renderDashboard() {
   renderAlertasCentral();
   renderFunilDashboard();
   renderProjecaoDashboard();
-  const totalVendidos = STATE.eventos.reduce((acc,ev) =>
-    acc + ev.lotes.reduce((a,l) => a + (l.total - l.disponivel), 0), 0);
-  const totalReceita = STATE.eventos.reduce((acc,ev) =>
-    acc + ev.lotes.reduce((a,l) => a + (l.total - l.disponivel)*l.preco, 0), 0);
-  const totalDespesas = STATE.despesas.reduce((a,d) => a + d.valor, 0);
+
+  // Dados reais consolidados da API
+  const totalVendidos = STATE.eventos.reduce((acc, ev) => acc + (ev.sold !== undefined ? ev.sold : ev.lotes.reduce((a, l) => a + (l.sold || 0), 0)), 0);
+  const totalReceita = STATE.eventos.reduce((acc, ev) => acc + (ev.revenue !== undefined ? ev.revenue : 0), 0);
+  const totalDespesas = STATE.despesas.reduce((a, d) => a + d.valor, 0);
   const totalEntradas = STATE.entries.length;
 
-  const ticketMedioGeral = totalVendidos>0 ? totalReceita/totalVendidos : 0;
-  const roiGeral = totalDespesas>0 ? ((totalReceita-totalDespesas)/totalDespesas*100) : 0;
+  const ticketMedioGeral = totalVendidos > 0 ? totalReceita / totalVendidos : 0;
+  const saldoOperacional = totalReceita - totalDespesas;
+  const roiGeral = totalDespesas > 0 ? ((totalReceita - totalDespesas) / totalDespesas * 100) : 0;
+  const margemGeral = totalReceita > 0 ? ((totalReceita - totalDespesas) / totalReceita * 100) : 0;
+
+  const totalEventosAtivos = STATE.eventos.filter(e => e.status === 'ativo').length;
+  const totalEventosCadastrados = STATE.eventos.length;
 
   document.getElementById('kpi-grid').innerHTML = `
-    <div class="kpi-card purple"><div class="kpi-label">Eventos Ativos</div><div class="kpi-val">${STATE.eventos.filter(e=>e.status==='ativo').length}</div><div class="kpi-sub">${STATE.eventos.length} no total</div></div>
-    <div class="kpi-card green"><div class="kpi-label">Ingressos Vendidos</div><div class="kpi-val">${totalVendidos.toLocaleString('pt-BR')}</div><div class="kpi-sub">Todos os eventos</div></div>
-    <div class="kpi-card blue"><div class="kpi-label">Receita Total</div><div class="kpi-val">R$ ${(totalReceita/1000).toFixed(0)}k</div><div class="kpi-sub">${fmt_brl(totalReceita)}</div></div>
-    <div class="kpi-card yellow"><div class="kpi-label">Despesas</div><div class="kpi-val">R$ ${(totalDespesas/1000).toFixed(0)}k</div><div class="kpi-sub">${fmt_brl(totalDespesas)}</div></div>
-    <div class="kpi-card"><div class="kpi-label">Saldo</div><div class="kpi-val" style="color:${totalReceita-totalDespesas>0?'var(--green)':'var(--red)'}">${fmt_brl(totalReceita-totalDespesas)}</div><div class="kpi-sub">Receita - Despesas</div></div>
-    <div class="kpi-card"><div class="kpi-label">Ticket Médio Geral</div><div class="kpi-val">${fmt_brl(ticketMedioGeral)}</div><div class="kpi-sub">Receita ÷ ingressos vendidos</div></div>
-    <div class="kpi-card ${roiGeral>=0?'green':''}"><div class="kpi-label">ROI Geral</div><div class="kpi-val" style="color:${roiGeral>=0?'var(--green)':'var(--red)'}">${roiGeral.toFixed(1)}%</div><div class="kpi-sub">Retorno sobre despesas</div></div>
-    <div class="kpi-card"><div class="kpi-label">Entradas Hoje</div><div class="kpi-val">${totalEntradas}</div><div class="kpi-sub">pessoas registradas</div></div>
+    <div class="kpi-card">
+      <div class="kpi-label">Eventos Ativos</div>
+      <div class="kpi-val">${totalEventosAtivos}</div>
+      <div class="kpi-sub">${totalEventosCadastrados} cadastrados</div>
+    </div>
+    <div class="kpi-card green">
+      <div class="kpi-label">Ingressos Emitidos</div>
+      <div class="kpi-val">${totalVendidos.toLocaleString('pt-BR')}</div>
+      <div class="kpi-sub">Vendas confirmadas</div>
+    </div>
+    <div class="kpi-card blue">
+      <div class="kpi-label">Receita Confirmada</div>
+      <div class="kpi-val">${fmt_brl(totalReceita)}</div>
+      <div class="kpi-sub">Faturamento reconhecido</div>
+    </div>
+    <div class="kpi-card yellow">
+      <div class="kpi-label">Despesas Totais</div>
+      <div class="kpi-val">${fmt_brl(totalDespesas)}</div>
+      <div class="kpi-sub">Custos diretos e gerais</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Saldo Operacional</div>
+      <div class="kpi-val" style="color:${saldoOperacional >= 0 ? 'var(--green)' : 'var(--red)'}">${fmt_brl(saldoOperacional)}</div>
+      <div class="kpi-sub">Receita líquida - Custos</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Ticket Médio</div>
+      <div class="kpi-val">${fmt_brl(ticketMedioGeral)}</div>
+      <div class="kpi-sub">Receita / Ingressos</div>
+    </div>
+    <div class="kpi-card ${roiGeral >= 0 ? 'green' : ''}">
+      <div class="kpi-label">ROI Operacional</div>
+      <div class="kpi-val" style="color:${roiGeral >= 0 ? 'var(--green)' : 'var(--red)'}">${roiGeral.toFixed(1)}%</div>
+      <div class="kpi-sub">Margem: ${margemGeral.toFixed(1)}%</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Portaria (Check-ins)</div>
+      <div class="kpi-val">${totalEntradas}</div>
+      <div class="kpi-sub">Presenças registradas</div>
+    </div>
   `;
 
-  // Events bars
+  // Ocupação percentual por evento
   document.getElementById('dash-events-bars').innerHTML = STATE.eventos.map(ev => {
-    const vendidos = ev.lotes.reduce((a,l)=>a+(l.total-l.disponivel),0);
-    const pct = ev.capacidade > 0 ? Math.round((vendidos/ev.capacidade)*100) : 0;
-    const col = pct > 80 ? 'red' : pct > 50 ? 'yellow' : 'green';
+    const vendidos = ev.sold !== undefined ? ev.sold : ev.lotes.reduce((a, l) => a + (l.sold || 0), 0);
+    const pct = ev.capacidade > 0 ? Math.round((vendidos / ev.capacidade) * 100) : 0;
+    const col = pct >= 90 ? 'red' : pct >= 50 ? 'yellow' : 'green';
     return `<div class="progress-row">
-      <div class="progress-label" title="${escapeHTML(ev.nome)}">${escapeHTML(ev.nome.substring(0,22))}${ev.nome.length>22?'…':''}</div>
-      <div class="progress-track"><div class="progress-fill ${col}" style="width:${pct}%"></div></div>
-      <div class="progress-val">${pct}%</div>
+      <div class="progress-label" title="${escapeHTML(ev.nome)}">${escapeHTML(ev.nome.substring(0, 24))}${ev.nome.length > 24 ? '…' : ''}</div>
+      <div class="progress-track"><div class="progress-fill ${col}" style="width:${Math.min(pct, 100)}%"></div></div>
+      <div class="progress-val">${pct}% (${vendidos}/${ev.capacidade})</div>
     </div>`;
   }).join('');
 
-  // Bar levels
+  // Nível de estoque do Bar (sem emojis)
   document.getElementById('dash-bar-levels').innerHTML = STATE.bar.map(item => {
-    const pct = Math.round((item.estoque / (item.minimo * 5)) * 100);
-    const pctClamped = Math.min(pct, 100);
-    const col = item.estoque < item.minimo ? 'red' : item.estoque < item.minimo*2 ? 'yellow' : 'green';
+    const pct = item.minimo > 0 ? Math.round((item.estoque / (item.minimo * 4)) * 100) : 100;
+    const pctClamped = Math.min(Math.max(pct, 5), 100);
+    const col = item.estoque < item.minimo ? 'red' : item.estoque < item.minimo * 2 ? 'yellow' : 'green';
     return `<div class="progress-row">
-      <div class="progress-label">${escapeHTML(item.emoji)} ${escapeHTML(item.nome.substring(0,16))}</div>
+      <div class="progress-label">${escapeHTML(item.nome.substring(0, 20))} <span style="font-size:10px; color:var(--text3)">[${escapeHTML(item.cat)}]</span></div>
       <div class="progress-track"><div class="progress-fill ${col}" style="width:${pctClamped}%"></div></div>
       <div class="progress-val">${item.estoque} un</div>
     </div>`;
   }).join('');
 
-  // Entry log preview
+  // Entradas da portaria (sem emojis)
   const log = document.getElementById('dash-entry-log');
   document.getElementById('dash-entries-label').textContent = `${STATE.entries.length} pessoa(s) registrada(s)`;
-  if(STATE.entries.length === 0) {
-    log.innerHTML = '<div class="empty"><div class="empty-icon">🚪</div><p>Nenhuma entrada registrada</p></div>';
+  if (STATE.entries.length === 0) {
+    log.innerHTML = '<div class="empty"><p style="color:var(--text2)">Nenhuma entrada registrada até o momento</p></div>';
   } else {
-    log.innerHTML = [...STATE.entries].reverse().slice(0,5).map(e => `
+    log.innerHTML = [...STATE.entries].reverse().slice(0, 5).map(e => `
       <div class="entry-row">
         <span class="time">${escapeHTML(e.hora)}</span>
         <span class="name">${escapeHTML(e.nome)}</span>
-        <span class="badge badge-purple">${escapeHTML(e.evento.substring(0,12))}</span>
+        <span class="badge badge-purple">${escapeHTML(e.evento.substring(0, 16))}</span>
       </div>`).join('');
   }
 
-  // Expenses
+  // Despesas por categoria (sem emojis)
   document.getElementById('dash-expenses').innerHTML = STATE.despesas.map(d => {
-    const max = Math.max(...STATE.despesas.map(x=>x.valor));
-    const pct = Math.round((d.valor/max)*100);
+    const max = Math.max(...STATE.despesas.map(x => x.valor), 1);
+    const pct = Math.round((d.valor / max) * 100);
+    const catName = d.cat.replace(/[^\w\s\u00C0-\u00FF/]/g, '').trim();
     return `<div class="progress-row">
-      <div class="progress-label">${escapeHTML(d.cat.substring(0,18))}</div>
+      <div class="progress-label">${escapeHTML(catName.substring(0, 20))}</div>
       <div class="progress-track"><div class="progress-fill purple" style="width:${pct}%"></div></div>
       <div class="progress-val">${fmt_brl(d.valor)}</div>
     </div>`;
@@ -385,7 +493,7 @@ function renderEventos(search='') {
   const q = search.toLowerCase();
   const filtered = STATE.eventos.filter(e => !q || e.nome.toLowerCase().includes(q) || e.local.toLowerCase().includes(q));
   const tbody = document.getElementById('eventos-tbody');
-  if(filtered.length===0) { tbody.innerHTML=`<tr><td colspan="8"><div class="empty"><div class="empty-icon">📅</div><p>Nenhum evento encontrado</p></div></td></tr>`; return; }
+  if(filtered.length===0) { tbody.innerHTML=`<tr><td colspan="8"><div class="empty"><div class="empty-icon"><i data-lucide="calendar-days"></i></div><p>Nenhum evento encontrado</p></div></td></tr>`; if (typeof lucide !== 'undefined') lucide.createIcons(); return; }
 
   tbody.innerHTML = filtered.map((ev,i) => {
     const vendidos = ev.lotes.reduce((a,l)=>a+(l.total-l.disponivel),0);
@@ -403,11 +511,12 @@ function renderEventos(search='') {
       <td><span class="badge ${stBadge}">${escapeHTML(stLabel)}</span></td>
       <td style="white-space:nowrap">
         <button class="btn btn-outline btn-sm" onclick="verLotes(${idx})" style="margin-right:4px">Lotes</button>
-        <button class="btn btn-outline btn-sm" onclick="editEvento(${idx})" style="margin-right:4px">✏️</button>
-        <button class="btn btn-danger btn-sm" onclick="delEvento(${idx})">🗑</button>
+        <button class="btn btn-outline btn-sm" onclick="editEvento(${idx})" style="margin-right:4px"><i data-lucide="pencil"></i></button>
+        <button class="btn btn-danger btn-sm" onclick="delEvento(${idx})"><i data-lucide="trash-2"></i></button>
       </td>
     </tr>`;
   }).join('');
+  if (typeof lucide !== 'undefined') lucide.createIcons();
 }
 
 function openModalEvento() {
@@ -511,11 +620,12 @@ function renderLotes() {
       </td>
       <td>${vendidos} <span style="color:var(--text3);font-size:10px">(${l.total>0?Math.round(vendidos/l.total*100):0}%)</span></td>
       <td style="white-space:nowrap">
-        <button class="btn btn-outline btn-sm" onclick="editLote(${i})" style="margin-right:4px">✏️</button>
-        <button class="btn btn-danger btn-sm" onclick="delLote(${i})">🗑</button>
+        <button class="btn btn-outline btn-sm" onclick="editLote(${i})" style="margin-right:4px"><i data-lucide="pencil"></i></button>
+        <button class="btn btn-danger btn-sm" onclick="delLote(${i})"><i data-lucide="trash-2"></i></button>
       </td>
     </tr>`;
   }).join('');
+  if (typeof lucide !== 'undefined') lucide.createIcons();
 }
 
 // Os botões ± agora conversam com o banco. "Disponível" é derivado
@@ -594,7 +704,7 @@ function renderBar(search='') {
   // Alerts
   const low = STATE.bar.filter(b => b.estoque < b.minimo);
   document.getElementById('bar-alerts').innerHTML = low.map(b =>
-    `<div class="alert alert-warning">⚠️ Estoque baixo: <b>${escapeHTML(b.emoji)} ${escapeHTML(b.nome)}</b> — ${b.estoque} un. (mín: ${b.minimo})</div>`
+    `<div class="alert alert-warning"><i data-lucide="triangle-alert" style="width:14px;height:14px;vertical-align:middle;margin-right:4px"></i> Estoque baixo: <b>${escapeHTML(b.emoji)} ${escapeHTML(b.nome)}</b> — ${b.estoque} un. (mín: ${b.minimo})</div>`
   ).join('');
 
   // Stock visual
@@ -627,10 +737,10 @@ function renderBar(search='') {
         </div>
       </td>
       <td>R$ ${item.custo.toFixed(2).replace('.',',')}</td>
-      <td><span class="badge ${low?'badge-red':'badge-green'}">${low?'⚠ Baixo':'OK'}</span></td>
+      <td><span class="badge ${low?'badge-red':'badge-green'}">${low?'Baixo':'OK'}</span></td>
       <td style="white-space:nowrap">
-        <button class="btn btn-outline btn-sm" onclick="editBarItem(${idx})" style="margin-right:4px">✏️</button>
-        <button class="btn btn-danger btn-sm" onclick="delBarItem(${idx})">🗑</button>
+        <button class="btn btn-outline btn-sm" onclick="editBarItem(${idx})" style="margin-right:4px"><i data-lucide="pencil"></i></button>
+        <button class="btn btn-danger btn-sm" onclick="delBarItem(${idx})"><i data-lucide="trash-2"></i></button>
       </td>
     </tr>`;
   }).join('');
@@ -671,7 +781,7 @@ async function salvarBarItem() {
   const idx = parseInt(document.getElementById('bar-edit-idx').value);
   const payload = {
     name: document.getElementById('bar-nome').value.trim(),
-    emoji: document.getElementById('bar-emoji').value.trim() || '🍶',
+    emoji: document.getElementById('bar-emoji').value.trim(),
     category: document.getElementById('bar-cat').value,
     unitCost: parseFloat(document.getElementById('bar-custo').value) || 0,
     stockQuantity: parseInt(document.getElementById('bar-estoque').value) || 0,
@@ -717,15 +827,18 @@ function renderPortaria() {
   document.getElementById('portaria-total').textContent = `${STATE.entries.length} pessoa(s) registrada(s)`;
 
   if(!STATE.entries.length) {
-    log.innerHTML='<div class="empty"><div class="empty-icon">🚪</div><p>Nenhuma entrada ainda</p></div>';
+    log.innerHTML='<div class="empty"><div class="empty-icon"><i data-lucide="scan-line"></i></div><p>Nenhuma entrada ainda</p></div>';
   } else {
-    log.innerHTML = [...STATE.entries].reverse().map(e=>`
+    log.innerHTML = [...STATE.entries].reverse().map(e => {
+      const codigoBadge = e.codigo ? `<span style="color:var(--text3);font-size:10px">${escapeHTML(e.codigo)}</span>` : '';
+      return `
       <div class="entry-row">
         <span class="time">${escapeHTML(e.hora)}</span>
         <span class="name">${escapeHTML(e.nome)}</span>
         <span class="badge badge-purple" style="font-size:9px;max-width:100px;overflow:hidden;text-overflow:ellipsis">${escapeHTML(e.evento.substring(0,14))}</span>
-        ${e.codigo ? `<span style="color:var(--text3);font-size:10px">${escapeHTML(e.codigo)}</span>` : ''}
-      </div>`).join('');
+        ${codigoBadge}
+      </div>`;
+    }).join('');
   }
 
   // Count per event
@@ -752,7 +865,7 @@ async function registrarEntrada() {
     await atualizar();
     box.style.borderColor = 'var(--green)';
     setTimeout(() => box.style.borderColor = '', 1500);
-    toast(`✓ ${entrada.guestName} — ${entrada.eventName}`, 'success');
+    toast(`Check-in: ${entrada.guestName} — ${entrada.eventName}`, 'success');
   } catch (err) {
     box.style.borderColor = 'var(--red)';
     setTimeout(() => box.style.borderColor = '', 2500);
@@ -801,8 +914,8 @@ function renderFinanceiro() {
     <td>${escapeHTML(d.desc)}</td>
     <td>${fmt_brl(d.valor)}</td>
     <td style="white-space:nowrap">
-      <button class="btn btn-outline btn-sm" onclick="editDespesa(${i})" style="margin-right:4px">✏️</button>
-      <button class="btn btn-danger btn-sm" onclick="delDespesa(${i})">🗑</button>
+      <button class="btn btn-outline btn-sm" onclick="editDespesa(${i})" style="margin-right:4px" title="Editar"><i data-lucide="pencil"></i></button>
+      <button class="btn btn-danger btn-sm" onclick="delDespesa(${i})" title="Excluir"><i data-lucide="trash-2"></i></button>
     </td>
   </tr>`).join('');
 
@@ -837,7 +950,7 @@ function editDespesa(idx) {
 async function salvarDespesa() {
   const idx = parseInt(document.getElementById('desp-edit-idx').value);
   const catTexto = document.getElementById('desp-cat').value;
-  // O select traz "🛡️ Segurança": separa ícone e nome para a tabela de categorias.
+  // O select traz "Segurança": separa ícone e nome para a tabela de categorias.
   const partes = catTexto.trim().split(' ');
   const temIcone = partes.length > 1 && !/^[a-zA-ZÀ-ú]/.test(partes[0]);
   const payload = {
@@ -872,7 +985,7 @@ function renderParticipantes(search='') {
 
   document.getElementById('part-count').textContent = `${filtered.length} participante(s)`;
   const tbody = document.getElementById('part-tbody');
-  if(!filtered.length) { tbody.innerHTML=`<tr><td colspan="7"><div class="empty"><div class="empty-icon">👥</div><p>Nenhum participante encontrado</p></div></td></tr>`; return; }
+  if(!filtered.length) { tbody.innerHTML=`<tr><td colspan="7"><div class="empty"><div class="empty-icon"><i data-lucide="users"></i></div><p>Nenhum participante encontrado</p></div></td></tr>`; refreshIcons(); return; }
 
   tbody.innerHTML = filtered.map((p)=>{
     const idx = STATE.participantes.indexOf(p);
@@ -889,6 +1002,7 @@ function renderParticipantes(search='') {
       </td>
     </tr>`;
   }).join('');
+  refreshIcons();
 }
 
 async function togglePart(idx) {
@@ -909,7 +1023,7 @@ function renderContatos(search='') {
   const q = search.toLowerCase();
   const filtered = STATE.contatos.filter(c=>!q||c.nome.toLowerCase().includes(q)||c.cargo.toLowerCase().includes(q)||c.cat.toLowerCase().includes(q));
   const grid = document.getElementById('contatos-grid');
-  if(!filtered.length) { grid.innerHTML=`<div class="empty"><div class="empty-icon">📇</div><p>Nenhum contato encontrado</p></div>`; return; }
+  if(!filtered.length) { grid.innerHTML=`<div class="empty"><div class="empty-icon"><i data-lucide="book-user"></i></div><p>Nenhum contato encontrado</p></div>`; refreshIcons(); return; }
 
   const catColor = {
     'Artista / DJ':'badge-purple','Segurança':'badge-blue','Fornecedor':'badge-green',
@@ -923,16 +1037,17 @@ function renderContatos(search='') {
       <div class="contact-avatar">${escapeHTML(initials)}</div>
       <div class="contact-name">${escapeHTML(c.nome)}</div>
       <div class="contact-email" style="margin-bottom:4px"><span class="badge ${pick(catColor, c.cat, 'badge-yellow')}" style="font-size:9px">${escapeHTML(c.cat)}</span> ${escapeHTML(c.cargo)}</div>
-      <div class="contact-email">✉ ${escapeHTML(c.email)}</div>
-      <div class="contact-tel">📞 ${escapeHTML(c.tel)}</div>
-      ${c.valor?`<div style="font-size:11px;color:var(--text3);margin-top:4px">💰 ${fmt_brl(c.valor)}</div>`:''}
+      <div class="contact-email"><i data-lucide="mail" style="width:12px;height:12px;vertical-align:middle;margin-right:4px"></i>${escapeHTML(c.email)}</div>
+      <div class="contact-tel"><i data-lucide="phone" style="width:12px;height:12px;vertical-align:middle;margin-right:4px"></i>${escapeHTML(c.tel)}</div>
+      ${c.valor?`<div style="font-size:11px;color:var(--text3);margin-top:4px"><i data-lucide="wallet" style="width:12px;height:12px;vertical-align:middle;margin-right:4px"></i>${fmt_brl(c.valor)}</div>`:''}
       ${c.obs?`<div style="font-size:11px;color:var(--text3);margin-top:4px;font-style:italic">${escapeHTML(c.obs)}</div>`:''}
       <div class="contact-actions">
-        <button class="btn btn-outline btn-sm" onclick="editContato(${idx})">✏️ Editar</button>
-        <button class="btn btn-danger btn-sm" onclick="delContato(${idx})">🗑</button>
+        <button class="btn btn-outline btn-sm" onclick="editContato(${idx})" style="display:inline-flex;align-items:center;gap:4px"><i data-lucide="pencil"></i> Editar</button>
+        <button class="btn btn-danger btn-sm" onclick="delContato(${idx})" title="Excluir"><i data-lucide="trash-2"></i></button>
       </div>
     </div>`;
   }).join('');
+  refreshIcons();
 }
 
 function openModalContato() {
@@ -1036,16 +1151,16 @@ function renderAlertasCentral() {
 
   // Estoque de bar baixo
   STATE.bar.filter(b => b.estoque < b.minimo).forEach(b => {
-    alerts.push({tipo:'warning', icon:'⚠️', title:'Estoque baixo:', text:`${b.emoji} ${b.nome} está com ${b.estoque} un. (mínimo: ${b.minimo}).`});
+    alerts.push({tipo:'warning', lucide:'triangle-alert', title:'Estoque baixo:', text:`${b.nome} está com ${b.estoque} un. (mínimo: ${b.minimo}).`});
   });
 
   // Orçamento estourado (despesas > receita)
   const totalReceita = STATE.eventos.reduce((a,ev)=>a+eventoStats(ev).receita,0);
   const totalDespesas = STATE.despesas.reduce((a,d)=>a+d.valor,0);
   if (totalDespesas > totalReceita && totalReceita > 0) {
-    alerts.push({tipo:'danger', icon:'🚨', title:'Orçamento:', text:`As despesas (${fmt_brl(totalDespesas)}) já superam a receita registrada (${fmt_brl(totalReceita)}).`});
+    alerts.push({tipo:'danger', lucide:'alert-octagon', title:'Orçamento:', text:`As despesas (${fmt_brl(totalDespesas)}) já superam a receita registrada (${fmt_brl(totalReceita)}).`});
   } else if (totalReceita > 0 && totalDespesas > totalReceita*0.8) {
-    alerts.push({tipo:'warning', icon:'⚠️', title:'Orçamento:', text:`As despesas já consomem ${Math.round(totalDespesas/totalReceita*100)}% da receita registrada.`});
+    alerts.push({tipo:'warning', lucide:'triangle-alert', title:'Orçamento:', text:`As despesas já consomem ${Math.round(totalDespesas/totalReceita*100)}% da receita registrada.`});
   }
 
   // Ritmo de vendas abaixo do esperado (eventos próximos com baixa ocupação)
@@ -1055,20 +1170,21 @@ function renderAlertasCentral() {
     const diasRestantes = Math.ceil((new Date(ev.data+'T23:59') - hoje) / 86400000);
     const st = eventoStats(ev);
     if (diasRestantes >= 0 && diasRestantes <= 14 && st.ocupacao < 50) {
-      alerts.push({tipo:'warning', icon:'📉', title:'Ritmo de vendas:', text:`"${ev.nome}" está a ${diasRestantes} dia(s) do evento com apenas ${Math.round(st.ocupacao)}% de ocupação vendida.`});
+      alerts.push({tipo:'warning', lucide:'trending-down', title:'Ritmo de vendas:', text:`"${ev.nome}" está a ${diasRestantes} dia(s) do evento com apenas ${Math.round(st.ocupacao)}% de ocupação vendida.`});
     }
     if (ev.metaFaturamento && st.receita < ev.metaFaturamento*0.5 && diasRestantes <= 14 && diasRestantes >= 0) {
-      alerts.push({tipo:'warning', icon:'🎯', title:'Meta em risco:', text:`"${ev.nome}" está a ${Math.round(st.receita/ev.metaFaturamento*100)}% da meta de faturamento faltando ${diasRestantes} dia(s).`});
+      alerts.push({tipo:'warning', lucide:'target', title:'Meta em risco:', text:`"${ev.nome}" está a ${Math.round(st.receita/ev.metaFaturamento*100)}% da meta de faturamento faltando ${diasRestantes} dia(s).`});
     }
   });
 
   // Modo contingência ligado
   if (STATE.sistema?.modoContingencia) {
-    alerts.push({tipo:'info', icon:'🛰️', title:'Contingência ativa:', text:'O sistema está operando em modo offline/contingência. Dados serão sincronizados automaticamente.'});
+    alerts.push({tipo:'info', lucide:'radio', title:'Contingência ativa:', text:'O sistema está operando em modo offline/contingência. Dados serão sincronizados automaticamente.'});
   }
 
   if (!alerts.length) {
-    el.innerHTML = `<div class="alert alert-ok"><span class="alert-icon">✅</span><span><span class="alert-title">Tudo sob controle.</span>Nenhum alerta crítico no momento.</span></div>`;
+    el.innerHTML = `<div class="alert alert-ok"><span class="alert-icon"><i data-lucide="check-circle-2" style="color:var(--green)"></i></span><span><span class="alert-title">Tudo sob controle.</span>Nenhum alerta crítico no momento.</span></div>`;
+    refreshIcons();
     return;
   }
   // Todos os campos do alerta são texto puro; o escape acontece aqui, uma única vez.
@@ -1076,9 +1192,10 @@ function renderAlertasCentral() {
   el.innerHTML = alerts.slice(0,6).map(a => {
     const tipo = TIPOS_ALERTA.includes(a.tipo) ? a.tipo : 'info';
     return `
-    <div class="alert alert-${tipo}"><span class="alert-icon">${escapeHTML(a.icon)}</span><span><span class="alert-title">${escapeHTML(a.title)}</span>${escapeHTML(a.text)}</span></div>
+    <div class="alert alert-${tipo}"><span class="alert-icon"><i data-lucide="${escapeHTML(a.lucide || 'info')}"></i></span><span><span class="alert-title">${escapeHTML(a.title)}</span>${escapeHTML(a.text)}</span></div>
   `;
   }).join('');
+  refreshIcons();
 }
 
 function renderFunilDashboard() {
@@ -1197,9 +1314,9 @@ function renderComparativo() {
     return { ev, ...st, margem, roi };
   }).sort((a,b) => b.receita - a.receita);
 
-  const medals = ['🥇','🥈','🥉'];
+  const medals = ['1º','2º','3º'];
   tbody.innerHTML = rows.map((r,i) => `<tr>
-    <td>${i<3?`<span class="rank-badge">${medals[i]}</span>`:i+1}</td>
+    <td>${i<3?`<span class="rank-badge rank-${i+1}">${medals[i]}</span>`:i+1}</td>
     <td><b>${escapeHTML(r.ev.nome)}</b></td>
     <td>${r.vendidos.toLocaleString('pt-BR')}</td>
     <td>${Math.round(r.ocupacao)}%</td>
@@ -1218,10 +1335,10 @@ function renderComparativo() {
       const melhorTicket = [...rows].sort((a,b)=>b.ticketMedio-a.ticketMedio)[0];
       const piorOcupacao = [...rows].sort((a,b)=>a.ocupacao-b.ocupacao)[0];
       insightsEl.innerHTML = `
-        <div class="insight-box"><span class="ic">🧠</span><span><b>Melhor margem:</b> "${escapeHTML(melhorMargem.ev.nome)}" opera com margem estimada de ${melhorMargem.margem.toFixed(1)}%, o padrão mais saudável do portfólio atual.</span></div>
-        <div class="insight-box"><span class="ic">👥</span><span><b>Maior público:</b> "${escapeHTML(maiorPublico.ev.nome)}" vendeu ${maiorPublico.vendidos.toLocaleString('pt-BR')} ingressos — use esse formato como referência para replicar em novos eventos.</span></div>
-        <div class="insight-box"><span class="ic">🎟️</span><span><b>Melhor ticket médio:</b> "${escapeHTML(melhorTicket.ev.nome)}" com ${fmt_brl(melhorTicket.ticketMedio)} por ingresso, indicando forte aceitação de lotes premium.</span></div>
-        ${piorOcupacao.ocupacao<60?`<div class="insight-box"><span class="ic">⚠️</span><span><b>Atenção:</b> "${escapeHTML(piorOcupacao.ev.nome)}" está com apenas ${Math.round(piorOcupacao.ocupacao)}% de ocupação — considere reforçar marketing ou revisar preço dos lotes.</span></div>`:''}
+        <div class="insight-box"><span class="ic"><i data-lucide="brain-circuit"></i></span><span><b>Melhor margem:</b> "${escapeHTML(melhorMargem.ev.nome)}" opera com margem estimada de ${melhorMargem.margem.toFixed(1)}%, o padrão mais saudável do portfólio atual.</span></div>
+        <div class="insight-box"><span class="ic"><i data-lucide="users"></i></span><span><b>Maior público:</b> "${escapeHTML(maiorPublico.ev.nome)}" vendeu ${maiorPublico.vendidos.toLocaleString('pt-BR')} ingressos — use esse formato como referência para replicar em novos eventos.</span></div>
+        <div class="insight-box"><span class="ic"><i data-lucide="ticket"></i></span><span><b>Melhor ticket médio:</b> "${escapeHTML(melhorTicket.ev.nome)}" com ${fmt_brl(melhorTicket.ticketMedio)} por ingresso, indicando forte aceitação de lotes premium.</span></div>
+        ${piorOcupacao.ocupacao<60?`<div class="insight-box"><span class="ic"><i data-lucide="triangle-alert"></i></span><span><b>Atenção:</b> "${escapeHTML(piorOcupacao.ev.nome)}" está com apenas ${Math.round(piorOcupacao.ocupacao)}% de ocupação — considere reforçar marketing ou revisar preço dos lotes.</span></div>`:''}
       `;
     }
   }
@@ -1332,12 +1449,13 @@ function renderEquipe(search='') {
       <td><span class="badge badge-purple">${escapeHTML(m.perfil)}</span></td>
       <td><span class="badge ${m.status==='ativo'?'badge-green':'badge-red'}">${m.status==='ativo'?'Ativo':'Inativo'}</span></td>
       <td style="white-space:nowrap">
-        <button class="btn btn-outline btn-sm" onclick="editEquipe(${idx})" style="margin-right:4px">✏️</button>
+        <button class="btn btn-outline btn-sm" onclick="editEquipe(${idx})" style="margin-right:4px" title="Editar"><i data-lucide="pencil"></i></button>
         <button class="btn btn-outline btn-sm" onclick="toggleEquipe(${idx})" style="margin-right:4px">${m.status==='ativo'?'Desativar':'Ativar'}</button>
-        <button class="btn btn-danger btn-sm" onclick="delEquipe(${idx})">🗑</button>
+        <button class="btn btn-danger btn-sm" onclick="delEquipe(${idx})" title="Excluir"><i data-lucide="trash-2"></i></button>
       </td>
     </tr>`;
   }).join('') || `<tr><td colspan="5"><div class="empty"><p>Nenhum membro encontrado</p></div></td></tr>`;
+  refreshIcons();
 
   if (permTbody) {
     const modulos = [
@@ -1350,7 +1468,7 @@ function renderEquipe(search='') {
       ['Auditoria & Sistema', [1,0,0,0,0]],
     ];
     permTbody.innerHTML = modulos.map(([nome, perms]) => `<tr>
-      <td>${nome}</td>${perms.map(p=>`<td class="${p?'perm-yes':'perm-no'}">${p?'✓':'—'}</td>`).join('')}
+      <td>${nome}</td>${perms.map(p=>`<td class="${p?'perm-yes':'perm-no'}">${p?'<i data-lucide="check" style="width:13px;height:13px;stroke-width:2.5"></i>':'—'}</td>`).join('')}
     </tr>`).join('');
   }
 }
@@ -1427,7 +1545,8 @@ function renderAuditoria() {
   if (sub) sub.textContent = `${log.length} registro(s)`;
   el.innerHTML = log.length ? log.map(l => `
     <div class="audit-row"><span class="time">${escapeHTML(l.hora)}</span><span class="who">${escapeHTML(l.usuario)}</span><span class="what">${escapeHTML(l.acao)}</span></div>
-  `).join('') : '<div class="empty"><div class="empty-icon">🧾</div><p>Nenhuma ação registrada ainda</p></div>';
+  `).join('') : '<div class="empty"><div class="empty-icon"><i data-lucide="shield-check"></i></div><p>Nenhuma ação registrada ainda</p></div>';
+  refreshIcons();
 }
 
 /* ===== SISTEMA & CONTINGÊNCIA ===== */
@@ -1486,6 +1605,7 @@ function openModal(id) {
   const el = document.getElementById(id);
   if (!el) return;
   adminModalTrigger = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+  ModalScrollLock.lock();
   el.classList.remove('hidden');
   el.setAttribute('aria-hidden', 'false');
   const first = el.querySelector('input, select, textarea, button.modal-close');
@@ -1497,6 +1617,7 @@ function closeModal(id) {
   if (el.contains(document.activeElement)) document.activeElement.blur();
   el.classList.add('hidden');
   el.setAttribute('aria-hidden', 'true');
+  ModalScrollLock.unlock();
   
   const trigger = adminModalTrigger;
   window.setTimeout(() => {
@@ -1562,6 +1683,199 @@ setInterval(() => {
   // mesmos dados (portaria, bar, financeiro) ao mesmo tempo.
   if (document.querySelector('.panel.active')) atualizar();
 }, 60000);
+
+/* ===== GESTÃO DE PEDIDOS & INGRESSOS ===== */
+let pedidosAdminCache = [];
+
+async function carregarPedidosAdmin() {
+  const tbody = document.getElementById('pedidos-tbody');
+  const counter = document.getElementById('pedidos-counter');
+  if (tbody) tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:24px; color:var(--text2)">Carregando pedidos…</td></tr>`;
+
+  try {
+    const res = await EvoAPI.get('/orders', { limit: 100 });
+    pedidosAdminCache = res.rows || res || [];
+    if (counter) counter.textContent = `${pedidosAdminCache.length} pedido(s) registrado(s)`;
+    filtrarPedidosAdmin();
+  } catch (err) {
+    if (tbody) tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:24px; color:var(--red)">Erro ao carregar pedidos: ${escapeHTML(err.message)}</td></tr>`;
+    toast('Falha ao carregar pedidos: ' + err.message, 'error');
+  }
+}
+
+function filtrarPedidosAdmin() {
+  const search = (document.getElementById('pedidos-search')?.value || '').toLowerCase().trim();
+  const statusFilter = document.getElementById('pedidos-filter-status')?.value || '';
+  const tbody = document.getElementById('pedidos-tbody');
+  if (!tbody) return;
+
+  const filtrados = pedidosAdminCache.filter(p => {
+    const matchStatus = !statusFilter || p.status === statusFilter;
+    const matchSearch = !search ||
+      String(p.id).includes(search) ||
+      (p.buyer_name && p.buyer_name.toLowerCase().includes(search)) ||
+      (p.buyer_email && p.buyer_email.toLowerCase().includes(search)) ||
+      (p.buyer_cpf && p.buyer_cpf.includes(search)) ||
+      (p.event_name && p.event_name.toLowerCase().includes(search));
+    return matchStatus && matchSearch;
+  });
+
+  if (!filtrados.length) {
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:24px; color:var(--text2)">Nenhum pedido encontrado para os filtros selecionados.</td></tr>`;
+    return;
+  }
+
+  const badgeMap = {
+    paid: { label: 'Confirmado', bg: 'rgba(34,197,94,.15)', color: '#22c55e', border: 'rgba(34,197,94,.3)' },
+    pending: { label: 'Pendente', bg: 'rgba(234,179,8,.15)', color: '#eab308', border: 'rgba(234,179,8,.3)' },
+    cancelled: { label: 'Cancelado', bg: 'rgba(156,163,175,.15)', color: '#9ca3af', border: 'rgba(156,163,175,.3)' },
+    refunded: { label: 'Estornado', bg: 'rgba(239,68,68,.15)', color: '#ef4444', border: 'rgba(239,68,68,.3)' },
+  };
+
+  tbody.innerHTML = filtrados.map(p => {
+    const b = badgeMap[p.status] || { label: p.status, bg: 'rgba(255,255,255,.1)', color: '#fff', border: 'transparent' };
+    const valor = Number(p.total_amount || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    const dataCriacao = p.created_at ? new Date(p.created_at).toLocaleString('pt-BR') : '—';
+    
+    // Informações de auditoria
+    let auditInfo = '—';
+    if (p.status === 'paid' && p.confirmed_by_name) {
+      auditInfo = `<span style="font-size:12px; color:var(--accent)">Por ${escapeHTML(p.confirmed_by_name)} em ${p.confirmed_at ? new Date(p.confirmed_at).toLocaleDateString('pt-BR') : ''}</span>`;
+    } else if (p.status === 'cancelled') {
+      auditInfo = `<span style="font-size:12px; color:var(--text3)">Cancelado ${p.cancelled_by_name ? 'por ' + escapeHTML(p.cancelled_by_name) : ''}</span>`;
+    } else if (p.status === 'paid' && p.payment_method === 'pix') {
+      auditInfo = '<span style="font-size:12px; color:var(--text2)">Auto / PIX</span>';
+    }
+
+    const acoes = [];
+    acoes.push(`<button class="btn btn-outline btn-xs" onclick="verDetalhesPedidoAdmin(${p.id})">Detalhes</button>`);
+    if (p.status === 'pending') {
+      acoes.push(`<button class="btn btn-primary btn-xs" onclick="confirmarPedidoAdmin(${p.id})">Confirmar</button>`);
+      acoes.push(`<button class="btn btn-outline btn-xs" style="color:var(--red); border-color:rgba(239,68,68,.3)" onclick="cancelarPedidoAdmin(${p.id})">Cancelar</button>`);
+    }
+
+    return `
+      <tr>
+        <td style="font-weight:700">#${p.id}</td>
+        <td>
+          <div style="font-weight:600">${escapeHTML(p.buyer_name)}</div>
+          <div style="font-size:12px; color:var(--text2)">${escapeHTML(p.buyer_email)}</div>
+        </td>
+        <td>${escapeHTML(p.event_name)}</td>
+        <td style="font-weight:700">${escapeHTML(valor)}</td>
+        <td><span style="display:inline-block; padding:3px 8px; border-radius:12px; font-size:11px; font-weight:600; background:${b.bg}; color:${b.color}; border:1px solid ${b.border}">${escapeHTML(b.label)}</span></td>
+        <td style="font-size:12px; color:var(--text2)">${escapeHTML(dataCriacao)}</td>
+        <td>${auditInfo}</td>
+        <td><div style="display:flex; gap:6px; flex-wrap:wrap;">${acoes.join('')}</div></td>
+      </tr>
+    `;
+  }).join('');
+}
+
+async function confirmarPedidoAdmin(orderId) {
+  if (!confirm(`Confirma a validação manual do pagamento para o Pedido #${orderId}?\nEsta ação emitirá os ingressos oficiais e dará baixa nos lotes correspondentes.`)) {
+    return;
+  }
+  try {
+    const res = await EvoAPI.post(`/orders/${orderId}/confirm`);
+    toast(`Pedido #${orderId} confirmado com sucesso! ${res.tickets?.length || 0} ingresso(s) emitido(s).`, 'success');
+    await carregarPedidosAdmin();
+    atualizar();
+  } catch (err) {
+    toast(`Erro ao confirmar pedido: ${err.message}`, 'error');
+  }
+}
+
+async function cancelarPedidoAdmin(orderId) {
+  const motivo = prompt(`Informe o motivo do cancelamento do Pedido #${orderId}:`);
+  if (motivo === null) return;
+
+  try {
+    await EvoAPI.post(`/orders/${orderId}/cancel`, { reason: motivo || undefined });
+    toast(`Pedido #${orderId} cancelado.`, 'success');
+    await carregarPedidosAdmin();
+    atualizar();
+  } catch (err) {
+    toast(`Erro ao cancelar pedido: ${err.message}`, 'error');
+  }
+}
+
+async function verDetalhesPedidoAdmin(orderId) {
+  openModal('modal-pedido-detalhe');
+  const title = document.getElementById('modal-pedido-title');
+  const content = document.getElementById('modal-pedido-content');
+  if (title) title.textContent = `Pedido #${orderId}`;
+  if (content) content.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text2)">Carregando…</div>';
+
+  try {
+    const p = await EvoAPI.get(`/orders/${orderId}`);
+    const valor = Number(p.total_amount || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    const dataCriacao = p.created_at ? new Date(p.created_at).toLocaleString('pt-BR') : '—';
+    const dataPagamento = p.paid_at ? new Date(p.paid_at).toLocaleString('pt-BR') : '—';
+
+    let itensHTML = '';
+    if (p.items && p.items.length) {
+      itensHTML = `
+        <div style="margin-top:16px;">
+          <div style="font-weight:700; margin-bottom:8px; font-size:13px; text-transform:uppercase; color:var(--accent)">Itens Contratados</div>
+          <table style="width:100%; font-size:13px;">
+            <thead><tr><th>Lote</th><th>Qtd</th><th>Valor Unitário</th><th>Subtotal</th></tr></thead>
+            <tbody>
+              ${p.items.map(it => `
+                <tr>
+                  <td>${escapeHTML(it.batch_name)}</td>
+                  <td>${it.quantity}</td>
+                  <td>R$ ${Number(it.unit_price).toFixed(2).replace('.', ',')}</td>
+                  <td style="font-weight:600">R$ ${(Number(it.unit_price) * it.quantity).toFixed(2).replace('.', ',')}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    let ticketsHTML = '';
+    if (p.tickets && p.tickets.length) {
+      ticketsHTML = `
+        <div style="margin-top:16px;">
+          <div style="font-weight:700; margin-bottom:8px; font-size:13px; text-transform:uppercase; color:var(--secondary)">Ingressos Oficiais Emitidos (${p.tickets.length})</div>
+          <table style="width:100%; font-size:13px;">
+            <thead><tr><th>Código</th><th>Titular</th><th>Lote</th><th>Status</th><th>Check-in</th></tr></thead>
+            <tbody>
+              ${p.tickets.map(t => `
+                <tr>
+                  <td style="font-family:monospace; font-weight:700; color:var(--accent)">#${escapeHTML(t.code)}</td>
+                  <td>${escapeHTML(t.holder_name)}</td>
+                  <td>${escapeHTML(t.batch_name)}</td>
+                  <td><span style="font-size:11px; padding:2px 6px; border-radius:10px; background:${t.status==='used'?'rgba(59,130,246,.2)':'rgba(34,197,94,.2)'}; color:${t.status==='used'?'#60a5fa':'#4ade80'}">${t.status==='used'?'Utilizado':'Válido'}</span></td>
+                  <td>${t.checked_in_at ? new Date(t.checked_in_at).toLocaleString('pt-BR') : 'Ainda não realizado'}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    content.innerHTML = `
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:14px; background:var(--surface2); padding:16px; border-radius:var(--radius-sm); border:1px solid var(--border);">
+        <div><span style="color:var(--text2); font-size:12px;">Comprador:</span> <div style="font-weight:600">${escapeHTML(p.buyer_name)}</div></div>
+        <div><span style="color:var(--text2); font-size:12px;">E-mail:</span> <div style="font-weight:600">${escapeHTML(p.buyer_email)}</div></div>
+        <div><span style="color:var(--text2); font-size:12px;">CPF:</span> <div style="font-weight:600">${escapeHTML(p.buyer_cpf || '—')}</div></div>
+        <div><span style="color:var(--text2); font-size:12px;">Evento:</span> <div style="font-weight:600">${escapeHTML(p.event_name)}</div></div>
+        <div><span style="color:var(--text2); font-size:12px;">Valor Total:</span> <div style="font-weight:700; color:var(--accent); font-size:15px">${escapeHTML(valor)}</div></div>
+        <div><span style="color:var(--text2); font-size:12px;">Status:</span> <div style="font-weight:700; text-transform:uppercase">${escapeHTML(p.status)}</div></div>
+        <div><span style="color:var(--text2); font-size:12px;">Data Criação:</span> <div>${escapeHTML(dataCriacao)}</div></div>
+        <div><span style="color:var(--text2); font-size:12px;">Data Confirmação:</span> <div>${escapeHTML(dataPagamento)}</div></div>
+      </div>
+      ${itensHTML}
+      ${ticketsHTML}
+    `;
+  } catch (err) {
+    content.innerHTML = `<div style="text-align:center; padding:20px; color:var(--red)">Erro ao buscar detalhes: ${escapeHTML(err.message)}</div>`;
+  }
+}
 
 /* ===== INIT ===== */
 atualizar();

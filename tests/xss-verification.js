@@ -214,7 +214,7 @@ console.log('\n=== Test Suite 3: Template Context Simulations ===');
 {
   const evNome = '" onmouseover="alert(1)" x="';
   const result = '<div class="progress-label" title="' + escapeHTML(evNome) + '">' + escapeHTML(evNome.substring(0,22)) + '</div>';
-  assert(!result.includes('onmouseover'), 'Attribute injection: no onmouseover in title attr');
+  assert(!result.includes('" onmouseover='), 'Attribute injection: quotes broken in attribute');
   assert(result.includes('&quot;'), 'Attribute injection: quotes escaped in title');
 }
 
@@ -250,7 +250,8 @@ console.log('\n=== Test Suite 3: Template Context Simulations ===');
   };
   const result = '<div class="tk-row"><span>Evento:</span><b>' + escapeHTML(pedido.eventName) + '</b></div><div class="tk-row"><span>Ingresso:</span><b>' + escapeHTML(pedido.batchName) + '</b></div>';
   assert(!result.includes('<script>'), 'Purchase: no script in event name');
-  assert(!result.includes('onerror'), 'Purchase: no onerror in batch name');
+  assert(!result.includes('<img'), 'Purchase: no unescaped img in batch name');
+  assert(result.includes('&lt;img'), 'Purchase: img escaped in batch name');
 }
 
 // Simulate select option injection
@@ -320,7 +321,7 @@ filesToCheck.forEach(function(cfg) {
     if (/^\s*''/.test(template)) return;
 
     // Find ${something.field} where field is a known user-data field
-    var regex = /\$\{(?!escapeHTML\()(?!sanitizeURL\()(?!fmt_brl\()(?!Math\.)(?!\d)([\w.]+\.(?:nome|email|desc|regras|local|tipo|cat|cargo|obs|tel|cpf|usuario|acao|codigo|evento|perfil))/g;
+    var regex = /\$\{(?!escapeHTML\()(?!sanitizeURL\()(?!fmt_brl\()(?!Math\.)(?!\d)([\w.]+\.(?:nome|email|desc|regras|local|tipo|cat|cargo|obs|tel|cpf|usuario|acao|codigo|evento|perfil)\b)/g;
     var m;
     while ((m = regex.exec(template)) !== null) {
       rawFieldsFound.push(m[1]);

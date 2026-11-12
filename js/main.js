@@ -821,6 +821,47 @@ function trapFocus(e) {
     }
 }
 
+const ModalScrollLock = {
+    savedScrollY: 0,
+    lockCount: 0,
+    lock() {
+        this.lockCount += 1;
+        if (this.lockCount > 1) return;
+        this.savedScrollY = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+        const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+        if (scrollbarWidth > 0) {
+            document.body.style.paddingRight = `${scrollbarWidth}px`;
+        }
+        document.body.style.position = 'fixed';
+        document.body.style.top = `-${this.savedScrollY}px`;
+        document.body.style.left = '0';
+        document.body.style.right = '0';
+        document.body.style.width = '100%';
+        document.body.style.overflow = 'hidden';
+        document.documentElement.classList.add('modal-open');
+        document.body.classList.add('modal-open');
+    },
+    unlock() {
+        if (this.lockCount <= 0) return;
+        this.lockCount -= 1;
+        if (this.lockCount > 0) return;
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.left = '';
+        document.body.style.right = '';
+        document.body.style.width = '';
+        document.body.style.overflow = '';
+        document.body.style.paddingRight = '';
+        document.documentElement.classList.remove('modal-open');
+        document.body.classList.remove('modal-open');
+        window.scrollTo({
+            top: this.savedScrollY,
+            left: 0,
+            behavior: 'instant'
+        });
+    }
+};
+
 function openModal(name) {
     if (!modals[name]) return;
     
@@ -831,6 +872,7 @@ function openModal(name) {
     // (e.g. login -> cadastro), keep the original trigger instead.
     if (!overlay.classList.contains('open')) {
         modalTrigger = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+        ModalScrollLock.lock();
     }
 
     const showNewModal = () => {
@@ -896,8 +938,7 @@ function closeModal() {
     }
 
     overlay.classList.remove('open');
-    document.documentElement.classList.remove('modal-open');
-    document.body.classList.remove('modal-open');
+    ModalScrollLock.unlock();
     document.removeEventListener('keydown', trapFocus, true);
     document.querySelectorAll('#modalLogin input[type="password"], #modalCadastro input[type="password"]').forEach(inp => {
         inp.disabled = true;
@@ -1185,35 +1226,40 @@ async function buildParticipante(user) {
 
     // Perfil
     const pn = document.getElementById('perfilNome');
-    if (pn) pn.value = user.nome;
+    if (pn) pn.value = user.name || user.nome || '';
     const pe = document.getElementById('perfilEmail');
-    if (pe) pe.value = user.email;
+    if (pe) pe.value = user.email || '';
     const pt = document.getElementById('perfilTel');
-    if (pt) pt.value = user.tel || '';
+    if (pt) pt.value = user.phone || user.tel || '';
 
     const ingList = document.getElementById('meusIngressos');
     const histList = document.getElementById('meuHistorico');
+    const pedList = document.getElementById('meusPedidos');
     if (ingList) ingList.innerHTML = '<div class="empty-state"><span>⏳</span>Carregando…</div>';
+    if (pedList) pedList.innerHTML = '<div class="empty-state"><span>⏳</span>Carregando pedidos…</div>';
     if (histList) histList.innerHTML = '<div class="empty-state"><span>⏳</span>Carregando…</div>';
 
     let ingressos = [];
     let historico = [];
+    let pedidos = [];
     try {
-        const [tickets, history] = await Promise.all([
-            EvoAPI.get('/me/tickets'),
-            EvoAPI.get('/me/history'),
+        const [tickets, history, orders] = await Promise.all([
+            EvoAPI.get('/me/tickets').catch(() => []),
+            EvoAPI.get('/me/history').catch(() => []),
+            EvoAPI.get('/me/orders').catch(() => []),
         ]);
-        ingressos = tickets.map(t => ({
+        ingressos = (tickets || []).map(t => ({
             evento: t.event_name,
             tipo: t.batch_name,
             data: formatarDataEvento(t.event_date),
             code: t.code,
         }));
-        historico = history.map(h => ({
+        historico = (history || []).map(h => ({
             evento: h.event_name,
             data: new Date(h.checked_in_at).toLocaleDateString('pt-BR'),
             status: 'Compareceu',
         }));
+        pedidos = orders || [];
     } catch (err) {
         if (err.status === 401) {
             // Sessão expirada de vez (refresh token inválido): a API já limpou os tokens.
@@ -1222,25 +1268,89 @@ async function buildParticipante(user) {
             aplicarErro('loginSenha', 'Sua sessão expirou. Entre novamente.');
             return;
         }
-        if (ingList) ingList.innerHTML = `<div class="empty-state"><span>⚠️</span>${escapeHTML(err.message)}</div>`;
+        if (ingList) ingList.innerHTML = `<div class="empty-state"><i data-lucide="triangle-alert" style="width:24px;height:24px;margin-bottom:8px;color:var(--yellow)"></i><p>${escapeHTML(err.message)}</p></div>`;
+        if (pedList) pedList.innerHTML = '';
         if (histList) histList.innerHTML = '';
+        if (typeof lucide !== 'undefined') lucide.createIcons();
         return;
+    }
+
+    // Pedidos
+    if (pedList) {
+        pedList.innerHTML = '';
+        if (!pedidos.length) {
+            pedList.innerHTML = '<div class="empty-state"><i data-lucide="shopping-bag" style="width:28px;height:28px;margin-bottom:8px;color:var(--muted)"></i><p>Nenhum pedido realizado até o momento.</p></div>';
+        } else {
+            const statusLabels = {
+                paid: 'Confirmado',
+                pending: 'Aguardando Pagamento',
+                cancelled: 'Cancelado',
+                refunded: 'Estornado',
+            };
+            pedidos.forEach(p => {
+                const total = Number(p.total_amount || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                const data = new Date(p.created_at).toLocaleDateString('pt-BR');
+                const stClass = p.status || 'pending';
+                const stLabel = statusLabels[p.status] || p.status;
+                
+                let itensHTML = '';
+                if (p.items && p.items.length) {
+                    itensHTML = p.items.map(it => `
+                      <div>${escapeHTML(it.quantity)}x ${escapeHTML(it.batch_name)} — ${(Number(it.unit_price) * it.quantity).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</div>
+                    `).join('');
+                }
+
+                let ticketsHTML = '';
+                if (p.tickets && p.tickets.length) {
+                    ticketsHTML = `
+                      <div class="pedido-tickets">
+                        <div class="pedido-tickets-title">Ingressos emitidos para este pedido:</div>
+                        ${p.tickets.map(t => `
+                          <div class="pedido-ticket-row">
+                            <span>${escapeHTML(t.holder_name)} (${escapeHTML(t.batch_name)})</span>
+                            <span class="pedido-ticket-code">#${escapeHTML(t.code)}</span>
+                          </div>
+                        `).join('')}
+                      </div>
+                    `;
+                }
+
+                pedList.insertAdjacentHTML('beforeend', `
+                  <div class="pedido-card">
+                    <div class="pedido-header">
+                      <div>
+                        <span class="pedido-id">Pedido #${escapeHTML(p.id)}</span>
+                        <span style="font-size:0.8rem;color:var(--muted);margin-left:8px;display:inline-flex;align-items:center;gap:4px"><i data-lucide="calendar" style="width:13px;height:13px"></i>${escapeHTML(data)}</span>
+                      </div>
+                      <span class="pedido-status-badge ${escapeHTML(stClass)}">${escapeHTML(stLabel)}</span>
+                    </div>
+                    <div style="font-weight:600;font-size:0.95rem;color:var(--text)">${escapeHTML(p.event_name)}</div>
+                    <div style="font-size:0.85rem;color:var(--muted)">${itensHTML}</div>
+                    <div class="pedido-detalhes">
+                      <span>Total do pedido:</span>
+                      <span class="pedido-total">${escapeHTML(total)}</span>
+                    </div>
+                    ${ticketsHTML}
+                  </div>
+                `);
+            });
+        }
     }
 
     // Ingressos
     if (ingList) {
         ingList.innerHTML = '';
         if (!ingressos.length) {
-            ingList.innerHTML = '<div class="empty-state"><span>🎫</span>Você ainda não comprou ingressos.</div>';
+            ingList.innerHTML = '<div class="empty-state"><i data-lucide="ticket" style="width:28px;height:28px;margin-bottom:8px;color:var(--muted)"></i><p>Você ainda não comprou ingressos.</p></div>';
         } else {
             ingressos.forEach(ing => {
                 ingList.insertAdjacentHTML('beforeend', `
           <div class="ingresso-card">
-            <div class="ingresso-qr">🎫</div>
+            <div class="ingresso-qr"><i data-lucide="ticket" style="width:32px;height:32px;color:var(--primary)"></i></div>
             <div class="ingresso-info">
               <div class="ingresso-evento">${escapeHTML(ing.evento)}</div>
               <div class="ingresso-tipo">${escapeHTML(ing.tipo)}</div>
-              <div class="ingresso-data">📅 ${escapeHTML(ing.data)}</div>
+              <div class="ingresso-data" style="display:flex;align-items:center;gap:4px"><i data-lucide="calendar" style="width:13px;height:13px"></i>${escapeHTML(ing.data)}</div>
               <div class="ingresso-code">#${escapeHTML(ing.code)}</div>
             </div>
           </div>`);
@@ -1252,7 +1362,7 @@ async function buildParticipante(user) {
     if (histList) {
         histList.innerHTML = '';
         if (!historico.length) {
-            histList.innerHTML = '<div class="empty-state"><span>📋</span>Nenhum evento no histórico ainda.</div>';
+            histList.innerHTML = '<div class="empty-state"><i data-lucide="history" style="width:28px;height:28px;margin-bottom:8px;color:var(--muted)"></i><p>Nenhum evento no histórico ainda.</p></div>';
         } else {
             historico.forEach(h => {
                 histList.insertAdjacentHTML('beforeend', `
@@ -1261,11 +1371,12 @@ async function buildParticipante(user) {
               <div class="hist-nome">${escapeHTML(h.evento)}</div>
               <div class="hist-data">${escapeHTML(h.data)}</div>
             </div>
-            <div class="hist-status">✓ ${escapeHTML(h.status)}</div>
+            <div class="hist-status" style="display:inline-flex;align-items:center;gap:4px"><i data-lucide="check" style="width:12px;height:12px"></i>${escapeHTML(h.status)}</div>
           </div>`);
             });
         }
     }
+    if (typeof lucide !== 'undefined') lucide.createIcons();
 }
 
 // Part tabs
@@ -1280,7 +1391,7 @@ document.querySelectorAll('.part-tab').forEach(tab => {
     });
 });
 
-// Salvar perfil
+// Salvar perfil via requisição autenticada
 document.getElementById('btnSalvarPerfil')?.addEventListener('click', async () => {
     const nome = document.getElementById('perfilNome').value.trim();
     const tel = document.getElementById('perfilTel').value.trim();
@@ -1292,14 +1403,33 @@ document.getElementById('btnSalvarPerfil')?.addEventListener('click', async () =
         EvoAPI.store.setSession(user);
         updateNavUI();
         if (aviso) {
+            aviso.textContent = 'Perfil atualizado com sucesso!';
+            aviso.style.color = 'var(--primary)';
             aviso.style.display = 'block';
-            setTimeout(() => { aviso.style.display = 'none'; }, 3000);
+            setTimeout(() => { aviso.style.display = 'none'; }, 3500);
         }
     } catch (err) {
-        alert(err.message);
+        if (aviso) {
+            aviso.textContent = err.message || 'Erro ao atualizar perfil.';
+            aviso.style.color = '#ef4444';
+            aviso.style.display = 'block';
+            setTimeout(() => { aviso.style.display = 'none'; }, 4000);
+        } else {
+            alert(err.message);
+        }
     } finally {
         ocupado(botao, false, 'Salvar alterações');
     }
+});
+
+// Botão Fechar/Cancelar do perfil: restaura dados originais e fecha modal
+document.getElementById('btnCancelarPerfil')?.addEventListener('click', () => {
+    const session = EvoAPI.store.getSession() || {};
+    const pn = document.getElementById('perfilNome');
+    if (pn) pn.value = session.name || session.nome || '';
+    const pt = document.getElementById('perfilTel');
+    if (pt) pt.value = session.phone || session.tel || '';
+    closeModal();
 });
 
 /* ---------- DASHBOARD ADMIN ---------- */
@@ -1361,11 +1491,11 @@ function openEvento(idx) {
     <div class="ev-ribbon">${escapeHTML(ev.tipo)}</div>
     <h2 class="ev-title">${escapeHTML(ev.nome)}</h2>
     <div class="ev-meta">
-      <span>📅 ${escapeHTML(ev.data)}</span>
-      <span>📍 ${escapeHTML(ev.local)}</span>
+      <span style="display:inline-flex;align-items:center;gap:4px"><i data-lucide="calendar" style="width:14px;height:14px"></i>${escapeHTML(ev.data)}</span>
+      <span style="display:inline-flex;align-items:center;gap:4px"><i data-lucide="map-pin" style="width:14px;height:14px"></i>${escapeHTML(ev.local)}</span>
     </div>
     <p class="ev-desc">${escapeHTML(ev.desc)}</p>
-    <p class="ev-desc" style="font-size:.82rem;font-style:italic">⚠️ ${escapeHTML(ev.regras)}</p>
+    <p class="ev-desc" style="font-size:.82rem;font-style:italic;display:flex;align-items:center;gap:6px"><i data-lucide="triangle-alert" style="width:14px;height:14px;color:var(--yellow);flex-shrink:0"></i><span>${escapeHTML(ev.regras)}</span></p>
     <div class="ev-lotes-title">Tipos de Ingresso</div>
     <div class="ev-lotes">
       ${ev.lotes.map((l, i) => `
@@ -1380,6 +1510,7 @@ function openEvento(idx) {
           </div>
         </div>`).join('')}
     </div>`;
+    if (typeof lucide !== 'undefined') lucide.createIcons();
 
     // Banner: criado via DOM. A URL passa pela allowlist (http/https ou caminho
     // relativo) e é atribuída como propriedade, nunca interpolada em HTML.
@@ -1463,7 +1594,7 @@ function showCompraForm() {
     const lote = ev?.lotes[compraState.loteIdx];
     if (!lote) return;
     document.getElementById('compraTitulo').textContent = 'Finalizar compra';
-    document.getElementById('compraResumo').textContent = `✓ ${lote.nome} — ${ev.nome} — R$ ${lote.preco.toFixed(2).replace('.', ',')}`;
+    document.getElementById('compraResumo').textContent = `${lote.nome} — ${ev.nome} — R$ ${lote.preco.toFixed(2).replace('.', ',')}`;
     document.getElementById('compraForm').style.display = 'block';
 }
 
