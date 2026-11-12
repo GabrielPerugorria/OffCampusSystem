@@ -39,10 +39,13 @@
 [data-reveal-group].is-visible > [data-reveal]:nth-child(10) { transition-delay: .56s; }
 
 /* ------------------------------------------------------------
-   COMO FUNCIONA — fluxo progressivo
+   COMO FUNCIONA — notebook, tablet e smartphone com telas reais
+   Todas as medidas dos aparelhos usam cqw (largura do palco), então
+   a composição inteira escala de forma proporcional em qualquer tela.
    ------------------------------------------------------------ */
 .how-it-works {
-  padding: 140px 32px;
+  /* topo compensa o header fixo; base curta mantém tudo num só quadro */
+  padding: clamp(28px, 4svh, 40px) 24px clamp(20px, 3svh, 36px);
   position: relative;
   overflow: hidden;
 }
@@ -51,7 +54,7 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse 60% 50% at 50% 0%, var(--primary-glow), transparent 70%);
+  background: radial-gradient(ellipse 58% 46% at 50% 62%, rgba(34, 197, 94, 0.10), transparent 72%);
   pointer-events: none;
 }
 
@@ -59,80 +62,382 @@
   max-width: 1180px;
   margin: 0 auto;
   position: relative;
-}
-
-.hiw-flow {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0;
-  margin-top: 32px;
-}
-
-.hiw-step {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  width: 148px;
   text-align: center;
 }
 
-.hiw-step-num {
-  width: 52px;
-  height: 52px;
+.how-it-works .section-label { margin-bottom: 8px; }
+
+.how-it-works .section-heading {
+  max-width: 880px;
+  margin: 0 auto 12px;
+  font-size: clamp(1.75rem, 3.3vw, 2.6rem);
+  line-height: 1.12;
+  text-wrap: balance;
+}
+
+.how-it-works .section-sub {
+  max-width: 660px;
+  margin: 0 auto;
+  font-size: clamp(0.9rem, 1.25vw, 1.02rem);
+  line-height: 1.55;
+  text-wrap: balance;
+}
+
+/* ---------- Palco ---------- */
+.hiw-stage {
+  position: relative;
+  /* a largura respeita a altura útil da janela: título, descrição e aparelhos cabem juntos */
+  width: min(100%, max(640px, min(1080px, calc((100svh - 385px) * 2.17))));
+  max-width: 100%;
+  aspect-ratio: 100 / 46;
+  margin: clamp(10px, 2svh, 26px) auto 0;
+  container-type: inline-size;
+}
+
+.hiw-scene {
+  position: absolute;
+  inset: 0;
+  perspective: 150cqw;
+  perspective-origin: 50% 40%;
+}
+
+.hiw-device {
+  position: absolute;
+  --s: 1; /* fator de escala das molduras (maior no layout mobile) */
+  filter:
+    drop-shadow(0 2.2cqw 2.6cqw rgba(0, 0, 0, 0.55))
+    drop-shadow(0 0.35cqw 0.5cqw rgba(0, 0, 0, 0.55));
+}
+
+/* Peças comuns: moldura interna preta, câmera e vidro da tela */
+.hiw-bezel {
+  position: relative;
+  background: #030504;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+.hiw-cam {
+  position: absolute;
+  width: calc(0.34cqw * var(--s));
+  height: calc(0.34cqw * var(--s));
+  min-width: 3px;
+  min-height: 3px;
   border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #2f3a4a 0%, #0b0f16 70%);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+.hiw-screen {
+  position: relative;
+  overflow: hidden;
+  background: #050a07;
+}
+
+.hiw-screen img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* Reflexo discreto de vidro sobre qualquer tela */
+.hiw-screen::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(118deg, rgba(255, 255, 255, 0.075) 0%, rgba(255, 255, 255, 0.02) 28%, transparent 46%),
+    linear-gradient(0deg, rgba(255, 255, 255, 0.025), transparent 18%);
+}
+
+/* ============================================================
+   NOTEBOOK
+   ============================================================ */
+.hiw-laptop {
+  --s: 1;
+  left: 21cqw;
+  top: 4cqw;
+  width: 58cqw;
+  z-index: 2;
+}
+
+.hiw-laptop-lid {
+  position: relative;
+  padding: calc(0.62cqw * var(--s)) calc(0.62cqw * var(--s)) calc(0.7cqw * var(--s));
+  border-radius: calc(1.5cqw * var(--s)) calc(1.5cqw * var(--s)) calc(0.2cqw * var(--s)) calc(0.2cqw * var(--s));
+  background: linear-gradient(165deg, #51574f 0%, #2b302c 22%, #1a1e1b 62%, #121513 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.17),
+    inset 0 1px 0 rgba(255, 255, 255, 0.34),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.6);
+}
+
+.hiw-laptop .hiw-bezel {
+  padding: calc(0.62cqw * var(--s)) calc(0.5cqw * var(--s)) calc(0.5cqw * var(--s));
+  border-radius: calc(1.05cqw * var(--s)) calc(1.05cqw * var(--s)) calc(0.12cqw * var(--s)) calc(0.12cqw * var(--s));
+}
+
+.hiw-laptop .hiw-cam {
+  top: calc(0.2cqw * var(--s));
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.hiw-laptop .hiw-screen {
+  aspect-ratio: 16 / 10;
+  border-radius: calc(0.3cqw * var(--s));
+}
+
+/* Base: dobradiça, chanfro de abertura e lábio frontal */
+.hiw-laptop-base {
+  position: relative;
+  height: calc(1.55cqw * var(--s));
+  margin: 0 calc(-2.6cqw * var(--s));
+  border-radius: 0 0 calc(2.2cqw * var(--s)) calc(2.2cqw * var(--s)) / 0 0 calc(1.1cqw * var(--s)) calc(1.1cqw * var(--s));
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.55) 0, rgba(0, 0, 0, 0) 14%),
+    linear-gradient(180deg, #8b918c 0%, #5b615d 22%, #343936 62%, #1b1e1c 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.5);
+}
+
+.hiw-laptop-base::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: calc(11cqw * var(--s));
+  height: calc(0.5cqw * var(--s));
+  transform: translateX(-50%);
+  border-radius: 0 0 calc(0.7cqw * var(--s)) calc(0.7cqw * var(--s));
+  background: linear-gradient(180deg, #0d0f0e 0%, #2e3330 70%, #444a46 100%);
+  box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.12);
+}
+
+/* ============================================================
+   TABLET (paisagem)
+   ============================================================ */
+.hiw-tablet {
+  --s: 1;
+  left: 2cqw;
+  top: 22.4cqw;
+  width: 30cqw;
+  z-index: 3;
+  transform: rotateY(13deg) rotateZ(-1.2deg);
+  transform-origin: 30% 60%;
+}
+
+.hiw-tablet-frame {
+  position: relative;
+  padding: calc(0.3cqw * var(--s));
+  border-radius: calc(2.1cqw * var(--s));
+  background: linear-gradient(150deg, #5a605b 0%, #2e332f 26%, #1b1f1c 70%, #131614 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.32),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.55);
+}
+
+.hiw-tablet .hiw-bezel {
+  padding: calc(0.78cqw * var(--s));
+  border-radius: calc(1.8cqw * var(--s));
+}
+
+.hiw-tablet .hiw-cam {
+  left: calc(0.28cqw * var(--s));
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.hiw-tablet .hiw-screen {
+  aspect-ratio: 1600 / 1112;
+  border-radius: calc(0.95cqw * var(--s));
+}
+
+/* ============================================================
+   SMARTPHONE
+   ============================================================ */
+.hiw-phone {
+  --s: 1;
+  left: 82.2cqw;
+  top: 18.4cqw;
+  width: 12.6cqw;
+  z-index: 4;
+  transform: rotateY(-11deg) rotateZ(1deg);
+  transform-origin: 70% 60%;
+}
+
+.hiw-phone-frame {
+  position: relative;
+  padding: calc(0.26cqw * var(--s));
+  border-radius: calc(2.35cqw * var(--s));
+  background: linear-gradient(140deg, #6a706b 0%, #343935 24%, #1d211e 68%, #141715 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.34),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.55);
+}
+
+.hiw-phone .hiw-bezel {
+  padding: calc(0.4cqw * var(--s));
+  border-radius: calc(2.1cqw * var(--s));
+}
+
+.hiw-phone .hiw-screen {
+  aspect-ratio: 390 / 844;
+  border-radius: calc(1.72cqw * var(--s));
+}
+
+.hiw-island {
+  position: absolute;
+  z-index: 3;
+  top: calc(0.95cqw * var(--s));
+  left: 50%;
+  width: calc(3.5cqw * var(--s));
+  height: calc(1cqw * var(--s));
+  transform: translateX(-50%);
+  border-radius: 999px;
+  background: #000;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
+/* Botões laterais */
+.hiw-btn {
+  position: absolute;
+  width: calc(0.22cqw * var(--s));
+  min-width: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #565c57, #2a2e2b);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+.hiw-btn-l1 { left: calc(-0.16cqw * var(--s)); top: calc(5.1cqw * var(--s)); height: calc(1.5cqw * var(--s)); }
+.hiw-btn-l2 { left: calc(-0.16cqw * var(--s)); top: calc(7.2cqw * var(--s)); height: calc(2.3cqw * var(--s)); }
+.hiw-btn-r  { right: calc(-0.16cqw * var(--s)); top: calc(6.6cqw * var(--s)); height: calc(3.4cqw * var(--s)); background: linear-gradient(270deg, #565c57, #2a2e2b); }
+
+/* ============================================================
+   NOTIFICAÇÕES — emergem das bordas das telas
+   Sem JS ou com movimento reduzido ficam visíveis e estáticas.
+   ============================================================ */
+.hiw-notif {
+  position: absolute;
+  z-index: 8;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+.hiw-stage.is-animated .hiw-notif { opacity: 0; }
+
+.hiw-notif-laptop { left: 52cqw; top: -0.3cqw; transform-origin: 50% 100%; }
+.hiw-notif-tablet { left: 0.6cqw; top: 12.6cqw; transform-origin: 40% 100%; }
+.hiw-notif-phone  { right: 0.6cqw; top: 10.4cqw; transform-origin: 80% 100%; }
+
+.hiw-notif-card {
   display: flex;
   align-items: center;
-  justify-content: center;
-  font-family: 'Sora', sans-serif;
-  font-weight: 700;
-  font-size: .95rem;
-  color: var(--primary);
-  background: var(--surface-2);
-  border: 1px solid var(--border-green);
-  box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
-  transition: box-shadow .3s var(--ease-out), border-color .3s var(--ease-out), color .3s var(--ease-out);
+  gap: max(8px, 0.85cqw);
+  width: max-content;
+  max-width: 27cqw;
+  padding: max(7px, 0.75cqw) max(11px, 1.1cqw) max(7px, 0.75cqw) max(7px, 0.75cqw);
+  border-radius: max(11px, 1.15cqw);
+  background: rgba(9, 16, 12, 0.94);
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  box-shadow:
+    0 1.4cqw 2.6cqw rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  text-align: left;
 }
 
-.hiw-step:hover .hiw-step-num {
-  box-shadow: 0 0 24px rgba(34, 197, 94, .35);
-  border-color: var(--primary);
-  color: var(--secondary);
-}
-
-.hiw-step-label {
-  font-size: .8rem;
-  font-weight: 600;
-  letter-spacing: .04em;
-  color: var(--muted);
-  text-transform: uppercase;
-}
-
-.hiw-step.is-final .hiw-step-num {
-  background: var(--primary);
-  color: #021007;
-  border-color: var(--primary);
-}
-
-.hiw-step.is-final .hiw-step-label {
-  color: var(--secondary);
-}
-
-.hiw-arrow {
+.hiw-notif-icon {
   flex: 0 0 auto;
-  width: 40px;
-  height: 1px;
-  background: linear-gradient(90deg, var(--border-green), rgba(34, 197, 94, .05));
-  margin: 0 6px;
-  position: relative;
-  top: -14px;
+  display: grid;
+  place-items: center;
+  width: max(28px, 2.7cqw);
+  height: max(28px, 2.7cqw);
+  border-radius: max(8px, 0.8cqw);
+  color: #4ade80;
+  background: rgba(34, 197, 94, 0.14);
+  border: 1px solid rgba(34, 197, 94, 0.22);
 }
 
-@media (max-width: 900px) {
-  .hiw-flow { flex-direction: column; align-items: flex-start; gap: 22px; }
-  .hiw-step { flex-direction: row; width: auto; text-align: left; gap: 16px; }
-  .hiw-arrow { display: none; }
+.hiw-notif-icon svg { width: 55%; height: 55%; }
+
+.hiw-notif-text { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+
+.hiw-notif-text strong {
+  font-size: max(11.5px, 1.2cqw);
+  line-height: 1.2;
+  font-weight: 650;
+  color: #f3f4f6;
+  white-space: nowrap;
+}
+
+.hiw-notif-text small {
+  font-size: max(10.5px, 1cqw);
+  line-height: 1.25;
+  color: #9ca3af;
+  white-space: nowrap;
+}
+
+/* ============================================================
+   RESPONSIVO — tablet/mobile: notebook em cima, tablet e celular
+   lado a lado embaixo, sem sobreposição entre aparelhos.
+   ============================================================ */
+@media (max-width: 760px) {
+  .how-it-works { padding: 44px 18px 36px; }
+
+  .hiw-stage {
+    width: 100%;
+    aspect-ratio: 100 / 134;
+    margin-top: 18px;
+  }
+
+  .hiw-scene { perspective: none; }
+
+  .hiw-laptop { --s: 1.62; left: 3cqw; top: 8cqw; width: 94cqw; }
+
+  .hiw-tablet {
+    --s: 1.9;
+    left: 2cqw;
+    top: 84cqw;
+    width: 57cqw;
+    transform: none;
+  }
+
+  .hiw-phone {
+    --s: 2.15;
+    left: 68cqw;
+    top: 76cqw;
+    width: 27cqw;
+    transform: none;
+  }
+
+  .hiw-notif-laptop { left: auto; right: 3cqw; top: 0.5cqw; }
+  .hiw-notif-tablet { left: 3cqw; top: 74.5cqw; }
+  .hiw-notif-phone  { right: 3cqw; top: 66cqw; }
+
+  .hiw-notif-card { max-width: 62cqw; }
+}
+
+@media (max-width: 380px) {
+  .hiw-notif-text strong { font-size: 11px; }
+  .hiw-notif-text small { font-size: 10px; }
+}
+
+/* Telas largas e baixas (notebooks de 768px de altura): limita a altura do palco */
+@media (min-width: 761px) and (max-height: 760px) {
+  .how-it-works { padding-top: 28px; }
+}
+
+/* Movimento reduzido: sem ciclo de animação; notificações estáticas */
+@media (prefers-reduced-motion: reduce) {
+  .hiw-stage.is-animated .hiw-notif { opacity: 1; }
+  .hiw-notif { will-change: auto; }
 }
 
 /* ------------------------------------------------------------

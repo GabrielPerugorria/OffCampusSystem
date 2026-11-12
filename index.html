@@ -370,61 +370,86 @@
   <section class="how-it-works" id="como-funciona" aria-label="Como a EvoTech funciona">
     <div class="hiw-inner">
       <div class="section-label reveal">Como funciona</div>
-      <h2 class="section-heading reveal">A camada inteligente que conecta cada etapa do evento.</h2>
+      <h2 class="section-heading reveal">Tudo o que seu evento precisa. Agora esta na sua mão.</h2>
       <p class="section-sub reveal">
-        A EvoTech não é apenas ticketing. É a infraestrutura que transforma cada evento em dados, e cada dado em uma
-        decisão melhor para o próximo.
+        Da venda de ingressos ao controle financeiro, conectamos as ferramentas essenciais para tornar os seus eventos em algo muito mais organizado e lucrativo.
       </p>
 
-      <div class="hiw-flow" role="list" aria-label="Fluxo da plataforma" data-reveal-group>
-        <div class="hiw-step" role="listitem" data-reveal>
-          <span class="hiw-step-num" aria-hidden="true">01</span>
-          <span class="hiw-step-label">Evento</span>
-        </div>
-        <div class="hiw-arrow" aria-hidden="true"></div>
-        <div class="hiw-step" role="listitem" data-reveal>
-          <span class="hiw-step-num" aria-hidden="true">02</span>
-          <span class="hiw-step-label">Ingressos</span>
-        </div>
-        <div class="hiw-arrow" aria-hidden="true"></div>
-        <div class="hiw-step" role="listitem" data-reveal>
-          <span class="hiw-step-num" aria-hidden="true">03</span>
-          <span class="hiw-step-label">Check-in</span>
-        </div>
-        <div class="hiw-arrow" aria-hidden="true"></div>
-        <div class="hiw-step" role="listitem" data-reveal>
-          <span class="hiw-step-num" aria-hidden="true">04</span>
-          <span class="hiw-step-label">PDV</span>
-        </div>
-        <div class="hiw-arrow" aria-hidden="true"></div>
-        <div class="hiw-step" role="listitem" data-reveal>
-          <span class="hiw-step-num" aria-hidden="true">05</span>
-          <span class="hiw-step-label">Estoque</span>
-        </div>
-        <div class="hiw-arrow" aria-hidden="true"></div>
-        <div class="hiw-step" role="listitem" data-reveal>
-          <span class="hiw-step-num" aria-hidden="true">06</span>
-          <span class="hiw-step-label">Financeiro</span>
-        </div>
-        <div class="hiw-arrow" aria-hidden="true"></div>
-        <div class="hiw-step" role="listitem" data-reveal>
-          <span class="hiw-step-num" aria-hidden="true">07</span>
-          <span class="hiw-step-label">Marketing</span>
-        </div>
-        <div class="hiw-arrow" aria-hidden="true"></div>
-        <div class="hiw-step" role="listitem" data-reveal>
-          <span class="hiw-step-num" aria-hidden="true">08</span>
-          <span class="hiw-step-label">Dados</span>
-        </div>
-        <div class="hiw-arrow" aria-hidden="true"></div>
-        <div class="hiw-step" role="listitem" data-reveal>
-          <span class="hiw-step-num" aria-hidden="true">09</span>
-          <span class="hiw-step-label">Inteligência artificial</span>
-        </div>
-        <div class="hiw-arrow" aria-hidden="true"></div>
-        <div class="hiw-step is-final" role="listitem" data-reveal>
-          <span class="hiw-step-num" aria-hidden="true">10</span>
-          <span class="hiw-step-label">Decisões melhores</span>
+      <!-- Composição: notebook, tablet e smartphone com telas reais do painel EvoTech -->
+      <div class="hiw-stage reveal" id="hiw-stage" role="img" aria-label="Painel da EvoTech em notebook, tablet e smartphone: dashboard, portaria e controle de estoque do bar">
+        <div class="hiw-scene" aria-hidden="true">
+
+          <!-- Notebook -->
+          <div class="hiw-device hiw-laptop">
+            <div class="hiw-laptop-lid">
+              <div class="hiw-bezel">
+                <span class="hiw-cam"></span>
+                <div class="hiw-screen">
+                  <img src="imagens/hiw/tela-dashboard.webp" width="2200" height="1376" alt="" loading="lazy" decoding="async">
+                </div>
+              </div>
+            </div>
+            <div class="hiw-laptop-base"></div>
+          </div>
+
+          <!-- Tablet -->
+          <div class="hiw-device hiw-tablet">
+            <div class="hiw-tablet-frame">
+              <div class="hiw-bezel">
+                <span class="hiw-cam"></span>
+                <div class="hiw-screen">
+                  <img src="imagens/hiw/tela-portaria.webp" width="1800" height="1250" alt="" loading="lazy" decoding="async">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Smartphone -->
+          <div class="hiw-device hiw-phone">
+            <span class="hiw-btn hiw-btn-l1"></span>
+            <span class="hiw-btn hiw-btn-l2"></span>
+            <span class="hiw-btn hiw-btn-r"></span>
+            <div class="hiw-phone-frame">
+              <div class="hiw-bezel">
+                <span class="hiw-island"></span>
+                <div class="hiw-screen">
+                  <img src="imagens/hiw/tela-openbar.webp" width="680" height="1472" alt="" loading="lazy" decoding="async">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Notificações (decorativas): emergem das bordas das telas -->
+          <div class="hiw-notif hiw-notif-laptop" data-hiw-notif>
+            <div class="hiw-notif-card">
+              <span class="hiw-notif-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 17 9 11 13 15 21 7"></polyline><polyline points="15 7 21 7 21 13"></polyline></svg></span>
+              <span class="hiw-notif-text">
+                <strong>Atualização de faturamento</strong>
+                <small>Receita do evento atualizada</small>
+              </span>
+            </div>
+          </div>
+
+          <div class="hiw-notif hiw-notif-tablet" data-hiw-notif>
+            <div class="hiw-notif-card">
+              <span class="hiw-notif-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></span>
+              <span class="hiw-notif-text">
+                <strong>Check-in validado</strong>
+                <small>Entrada registrada na portaria</small>
+              </span>
+            </div>
+          </div>
+
+          <div class="hiw-notif hiw-notif-phone" data-hiw-notif>
+            <div class="hiw-notif-card">
+              <span class="hiw-notif-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2z"></path></svg></span>
+              <span class="hiw-notif-text">
+                <strong>Nova venda realizada</strong>
+                <small>Ingresso pago via Pix</small>
+              </span>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
@@ -1452,6 +1477,7 @@
   <script src="js/api.js?v=20261024"></script>
   <script src="js/main.js?v=20261024"></script>
   <script src="js/brand-story.js"></script>
+  <script src="js/how-it-works.js"></script>
   <script src="js/events-totem.js"></script>
 </body>
 
