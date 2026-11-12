@@ -671,7 +671,7 @@
     if (eventosFiltrados.length === 0) {
       gridContainer.innerHTML = `
         <div class="catalog-state-box">
-          <span class="catalog-state-icon">🔍</span>
+          <span class="catalog-state-icon"><i data-lucide="search"></i></span>
           <h3 class="catalog-state-title">Nenhum evento encontrado</h3>
           <p class="catalog-state-desc">
             Não encontramos eventos com os critérios selecionados. Tente ajustar os termos de pesquisa, mudar a localidade ou limpar alguns filtros.
@@ -681,6 +681,9 @@
           </button>
         </div>
       `;
+      if (typeof window.lucide !== 'undefined' && typeof window.lucide.createIcons === 'function') {
+        window.lucide.createIcons({ root: gridContainer });
+      }
       document.getElementById('btnEmptyReset')?.addEventListener('click', () => {
         resetarFiltros();
         aplicarFiltros();
@@ -764,11 +767,11 @@
         <div class="ev-ribbon">${escapeHTML(ev.tipo)}</div>
         <h2 class="ev-title">${escapeHTML(ev.nome)}</h2>
         <div class="ev-meta">
-          <span>📅 ${escapeHTML(ev.dataExibicao)}</span>
-          <span>📍 ${escapeHTML(ev.local)} - ${escapeHTML(ev.cidade)}/${escapeHTML(ev.uf)}</span>
+          <span><i data-lucide="calendar"></i> ${escapeHTML(ev.dataExibicao)}</span>
+          <span><i data-lucide="map-pin"></i> ${escapeHTML(ev.local)} - ${escapeHTML(ev.cidade)}/${escapeHTML(ev.uf)}</span>
         </div>
         <p class="ev-desc">${escapeHTML(ev.desc)}</p>
-        <p class="ev-desc" style="font-size:.82rem;font-style:italic">⚠️ ${escapeHTML(ev.regras)}</p>
+        <p class="ev-desc" style="font-size:.82rem;font-style:italic"><i data-lucide="alert-triangle"></i> ${escapeHTML(ev.regras)}</p>
         <div class="ev-lotes-title">Ingressos Disponíveis</div>
         <div class="ev-lotes">
           ${ev.lotes.map((l, i) => `
@@ -784,6 +787,10 @@
             </div>`).join('')}
         </div>
       `;
+
+      if (typeof window.lucide !== 'undefined' && typeof window.lucide.createIcons === 'function') {
+        window.lucide.createIcons({ root: cont });
+      }
 
       const banner = document.createElement('img');
       banner.className = 'ev-banner';

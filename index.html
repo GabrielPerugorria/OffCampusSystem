@@ -459,30 +459,38 @@
       <div class="section-label reveal">A transformação</div>
       <h2 class="section-heading reveal">De planilhas soltas a inteligência conectada.</h2>
 
-      <div class="ba-grid">
-        <div class="ba-col is-antes reveal">
-          <div class="ba-col-title">Antes</div>
+      <div class="ba-split">
+        <div class="ba-side ba-side--before reveal">
+          <div class="ba-side-header">
+            <span class="ba-side-tag ba-side-tag--before">Antes</span>
+            <p class="ba-side-subtitle">Gestão fragmentada e manual</p>
+          </div>
           <ul class="ba-list">
-            <li><span class="ba-mark" aria-hidden="true">✕</span> Sistemas separados para cada etapa do evento</li>
-            <li><span class="ba-mark" aria-hidden="true">✕</span> Planilhas manuais e informação espalhada</li>
-            <li><span class="ba-mark" aria-hidden="true">✕</span> Dados que chegam atrasados, quando já não ajudam</li>
-            <li><span class="ba-mark" aria-hidden="true">✕</span> Decisões baseadas em experiência e intuição</li>
-            <li><span class="ba-mark" aria-hidden="true">✕</span> Nenhuma visão completa da operação</li>
+            <li><span class="ba-mark ba-mark--x" aria-hidden="true"><i data-lucide="x"></i></span> Sistemas separados para cada etapa do evento</li>
+            <li><span class="ba-mark ba-mark--x" aria-hidden="true"><i data-lucide="x"></i></span> Planilhas manuais e informação espalhada</li>
+            <li><span class="ba-mark ba-mark--x" aria-hidden="true"><i data-lucide="x"></i></span> Dados que chegam atrasados, quando já não ajudam</li>
+            <li><span class="ba-mark ba-mark--x" aria-hidden="true"><i data-lucide="x"></i></span> Decisões baseadas em experiência e intuição</li>
+            <li><span class="ba-mark ba-mark--x" aria-hidden="true"><i data-lucide="x"></i></span> Nenhuma visão completa da operação</li>
           </ul>
         </div>
 
-        <div class="ba-divider" aria-hidden="true">
-          <span class="ba-divider-arrow">→</span>
+        <div class="ba-center-divider" aria-hidden="true">
+          <div class="ba-divider-line"></div>
+          <div class="ba-divider-icon"><i data-lucide="arrow-right"></i></div>
+          <div class="ba-divider-line"></div>
         </div>
 
-        <div class="ba-col is-depois reveal">
-          <div class="ba-col-title">Com a EvoTech</div>
+        <div class="ba-side ba-side--after reveal">
+          <div class="ba-side-header">
+            <span class="ba-side-tag ba-side-tag--after">Com a EvoTech</span>
+            <p class="ba-side-subtitle">Inteligência operacional integrada</p>
+          </div>
           <ul class="ba-list">
-            <li><span class="ba-mark" aria-hidden="true">✓</span> Dados conectados em uma única plataforma</li>
-            <li><span class="ba-mark" aria-hidden="true">✓</span> Operação acompanhada em tempo real</li>
-            <li><span class="ba-mark" aria-hidden="true">✓</span> Inteligência artificial lendo cada evento</li>
-            <li><span class="ba-mark" aria-hidden="true">✓</span> Histórico completo de todos os eventos</li>
-            <li><span class="ba-mark" aria-hidden="true">✓</span> Decisões baseadas em dados, não em achismo</li>
+            <li><span class="ba-mark ba-mark--check" aria-hidden="true"><i data-lucide="check"></i></span> Dados conectados em uma única plataforma</li>
+            <li><span class="ba-mark ba-mark--check" aria-hidden="true"><i data-lucide="check"></i></span> Operação acompanhada em tempo real</li>
+            <li><span class="ba-mark ba-mark--check" aria-hidden="true"><i data-lucide="check"></i></span> Inteligência artificial lendo cada evento</li>
+            <li><span class="ba-mark ba-mark--check" aria-hidden="true"><i data-lucide="check"></i></span> Histórico completo de todos os eventos</li>
+            <li><span class="ba-mark ba-mark--check" aria-hidden="true"><i data-lucide="check"></i></span> Decisões baseadas em dados, não em achismo</li>
           </ul>
         </div>
       </div>
@@ -839,7 +847,7 @@
                     </div>
                     <div class="mock-ci-row"><span>Tipo:</span><span class="mock-ci-val green">VIP</span></div>
                     <div class="mock-ci-row"><span>Entrada:</span><span class="mock-ci-val">22:14</span></div>
-                    <div class="mock-ci-status ok">✓ Válido</div>
+                    <div class="mock-ci-status ok"><i data-lucide="check" style="width:14px;height:14px;display:inline-block;vertical-align:middle;margin-right:3px"></i> Válido</div>
                   </div>
                 </div>
               </div>
@@ -859,96 +867,64 @@
       <p class="section-sub">Uma plataforma pensada do zero para quem organiza eventos de verdade — com foco em
         operação, dados e experiência.</p>
 
-      <div class="diferenciais-grid" role="list">
+      <div class="dif-editorial" role="list">
 
-        <div class="dif-card featured" role="listitem" tabindex="0">
-          <div class="dif-icon" aria-hidden="true">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-              stroke-linecap="round" stroke-linejoin="round">
-              <path d="M18 20V10" />
-              <path d="M12 20V4" />
-              <path d="M6 20v-6" />
-            </svg>
+        <!-- Item destaque — layout horizontal -->
+        <div class="dif-hero-item" role="listitem">
+          <div class="dif-hero-icon" aria-hidden="true">
+            <i data-lucide="bar-chart-3"></i>
           </div>
-          <h3>Dashboard Inteligente</h3>
-          <p>Monitoramento em tempo real de todos os indicadores estratégicos: vendas, ocupação, receita, consumo e
-            equipe — sem sair de uma tela.</p>
+          <div class="dif-hero-body">
+            <h3>Dashboard Inteligente</h3>
+            <p>Monitoramento em tempo real de todos os indicadores estratégicos: vendas, ocupação, receita, consumo e
+              equipe — sem sair de uma tela.</p>
+          </div>
         </div>
 
-        <div class="dif-card" role="listitem" tabindex="0">
-          <div class="dif-icon" aria-hidden="true">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-              stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="11" width="18" height="11" rx="2" />
-              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-            </svg>
+        <div class="dif-separator" aria-hidden="true"></div>
+
+        <!-- Grid compacto — 3 colunas -->
+        <div class="dif-compact-grid">
+          <div class="dif-compact-item" role="listitem">
+            <div class="dif-compact-icon" aria-hidden="true"><i data-lucide="lock"></i></div>
+            <h3>Portaria com QR Code</h3>
+            <p>Check-in instantâneo e seguro. Ingressos duplicados são bloqueados automaticamente. Alertas em tempo real
+              para sua equipe.</p>
           </div>
-          <h3>Portaria com QR Code</h3>
-          <p>Check-in instantâneo e seguro. Ingressos duplicados são bloqueados automaticamente. Alertas em tempo real
-            para sua equipe.</p>
+
+          <div class="dif-compact-item" role="listitem">
+            <div class="dif-compact-icon" aria-hidden="true"><i data-lucide="list"></i></div>
+            <h3>Open Bar Inteligente</h3>
+            <p>Controle de estoque em tempo real com consumo por produto e por participante. Previsão de reposição para
+              eliminar desperdícios.</p>
+          </div>
+
+          <div class="dif-compact-item" role="listitem">
+            <div class="dif-compact-icon" aria-hidden="true"><i data-lucide="dollar-sign"></i></div>
+            <h3>Gestão Financeira Completa</h3>
+            <p>Receitas e despesas por categoria, ROI por evento, ticket médio e comparativos de desempenho. Tomada de
+              decisão baseada em dados.</p>
+          </div>
         </div>
 
-        <div class="dif-card" role="listitem" tabindex="0">
-          <div class="dif-icon" aria-hidden="true">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-              stroke-linecap="round" stroke-linejoin="round">
-              <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" />
-            </svg>
-          </div>
-          <h3>Open Bar Inteligente</h3>
-          <p>Controle de estoque em tempo real com consumo por produto e por participante. Previsão de reposição para
-            eliminar desperdícios.</p>
-        </div>
+        <div class="dif-separator" aria-hidden="true"></div>
 
-        <div class="dif-card" role="listitem" tabindex="0">
-          <div class="dif-icon" aria-hidden="true">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-              stroke-linecap="round" stroke-linejoin="round">
-              <line x1="12" y1="1" x2="12" y2="23" />
-              <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-            </svg>
+        <!-- Grid compacto — 2 colunas -->
+        <div class="dif-compact-grid dif-compact-grid--2col">
+          <div class="dif-compact-item" role="listitem">
+            <div class="dif-compact-icon" aria-hidden="true"><i data-lucide="gift"></i></div>
+            <h3>Ingressos Digitais</h3>
+            <p>Compra simplificada, geração instantânea e envio automático. Histórico de participações acessível a
+              qualquer momento na área do participante.</p>
           </div>
-          <h3>Gestão Financeira Completa</h3>
-          <p>Receitas e despesas por categoria, ROI por evento, ticket médio e comparativos de desempenho. Tomada de
-            decisão baseada em dados.</p>
-        </div>
 
-        <div class="dif-card" role="listitem" tabindex="0">
-          <div class="dif-icon" aria-hidden="true">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-              stroke-linecap="round" stroke-linejoin="round">
-              <path d="M20 12V22H4V12" />
-              <path d="M22 7H2v5h20V7z" />
-              <path d="M12 22V7" />
-              <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z" />
-              <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" />
-            </svg>
+          <div class="dif-compact-item" role="listitem">
+            <div class="dif-compact-icon" aria-hidden="true"><i data-lucide="radio"></i></div>
+            <h3>Tudo em tempo real</h3>
+            <p>Vendas, acessos, consumo e financeiro atualizados em tempo real. Sem planilhas, sem retrabalho — decisões
+              mais rápidas e seguras durante o evento.</p>
           </div>
-          <h3>Ingressos Digitais</h3>
-          <p>Compra simplificada, geração instantânea e envio automático. Histórico de participações acessível a
-            qualquer momento na área do participante.</p>
         </div>
-
-        <div class="dif-card" role="listitem" tabindex="0">
-          <div class="dif-icon" aria-hidden="true">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-              stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="3" />
-              <path d="M19.07 4.93l-1.41 1.41" />
-              <path d="M4.93 4.93l1.41 1.41" />
-              <path d="M2 12h2" />
-              <path d="M20 12h2" />
-              <path d="M19.07 19.07l-1.41-1.41" />
-              <path d="M4.93 19.07l1.41-1.41" />
-              <path d="M12 2v2" />
-              <path d="M12 20v2" />
-            </svg>
-          </div>
-          <h3>Tudo em tempo real</h3>
-          <p>Vendas, acessos, consumo e financeiro atualizados em tempo real. Sem planilhas, sem retrabalho — decisões
-            mais rápidas e seguras durante o evento.</p>
-        </div>
-
       </div>
     </div>
   </section>
@@ -969,13 +945,13 @@
             <div class="plano-desc">Ideal para eventos pontuais e testes da plataforma.</div>
           </div>
           <ul class="plano-features" aria-label="Recursos do plano Starter">
-            <li><span aria-hidden="true">✓</span> Até 1 evento ativo</li>
-            <li><span aria-hidden="true">✓</span> Até 100 ingressos</li>
-            <li><span aria-hidden="true">✓</span> Venda de ingressos básica</li>
-            <li><span aria-hidden="true">✓</span> Portaria com QR Code</li>
-            <li class="disabled"><span aria-hidden="true">✗</span> Dashboard executivo</li>
-            <li class="disabled"><span aria-hidden="true">✗</span> Controle financeiro</li>
-            <li class="disabled"><span aria-hidden="true">✗</span> Open Bar</li>
+            <li><span class="plano-mark plano-mark--check" aria-hidden="true"><i data-lucide="check"></i></span> Até 1 evento ativo</li>
+            <li><span class="plano-mark plano-mark--check" aria-hidden="true"><i data-lucide="check"></i></span> Até 100 ingressos</li>
+            <li><span class="plano-mark plano-mark--check" aria-hidden="true"><i data-lucide="check"></i></span> Venda de ingressos básica</li>
+            <li><span class="plano-mark plano-mark--check" aria-hidden="true"><i data-lucide="check"></i></span> Portaria com QR Code</li>
+            <li class="disabled"><span class="plano-mark plano-mark--x" aria-hidden="true"><i data-lucide="x"></i></span> Dashboard executivo</li>
+            <li class="disabled"><span class="plano-mark plano-mark--x" aria-hidden="true"><i data-lucide="x"></i></span> Controle financeiro</li>
+            <li class="disabled"><span class="plano-mark plano-mark--x" aria-hidden="true"><i data-lucide="x"></i></span> Open Bar</li>
           </ul>
           <a href="#" class="btn-secondary plano-btn" data-plano="Starter">Começar grátis</a>
         </div>
@@ -989,13 +965,13 @@
             <div class="plano-desc">Para organizadores que querem operação profissional completa.</div>
           </div>
           <ul class="plano-features" aria-label="Recursos do plano Pro">
-            <li><span aria-hidden="true">✓</span> Até 10 eventos simultâneos</li>
-            <li><span aria-hidden="true">✓</span> Ingressos ilimitados</li>
-            <li><span aria-hidden="true">✓</span> Dashboard executivo</li>
-            <li><span aria-hidden="true">✓</span> Controle financeiro completo</li>
-            <li><span aria-hidden="true">✓</span> Controle de Open Bar</li>
-            <li><span aria-hidden="true">✓</span> Gestão de atrações</li>
-            <li><span aria-hidden="true">✓</span> Relatórios e exportação</li>
+            <li><span class="plano-mark plano-mark--check" aria-hidden="true"><i data-lucide="check"></i></span> Até 10 eventos simultâneos</li>
+            <li><span class="plano-mark plano-mark--check" aria-hidden="true"><i data-lucide="check"></i></span> Ingressos ilimitados</li>
+            <li><span class="plano-mark plano-mark--check" aria-hidden="true"><i data-lucide="check"></i></span> Dashboard executivo</li>
+            <li><span class="plano-mark plano-mark--check" aria-hidden="true"><i data-lucide="check"></i></span> Controle financeiro completo</li>
+            <li><span class="plano-mark plano-mark--check" aria-hidden="true"><i data-lucide="check"></i></span> Controle de Open Bar</li>
+            <li><span class="plano-mark plano-mark--check" aria-hidden="true"><i data-lucide="check"></i></span> Gestão de atrações</li>
+            <li><span class="plano-mark plano-mark--check" aria-hidden="true"><i data-lucide="check"></i></span> Relatórios e exportação</li>
           </ul>
           <a href="#" class="btn-primary plano-btn" data-plano="Pro">Assinar Pro</a>
         </div>
@@ -1007,13 +983,13 @@
             <div class="plano-desc">Para grandes organizações com múltiplas equipes e eventos.</div>
           </div>
           <ul class="plano-features" aria-label="Recursos do plano Enterprise">
-            <li><span aria-hidden="true">✓</span> Eventos ilimitados</li>
-            <li><span aria-hidden="true">✓</span> Multi-organização</li>
-            <li><span aria-hidden="true">✓</span> Tudo do plano Pro</li>
-            <li><span aria-hidden="true">✓</span> Suporte dedicado 24/7</li>
-            <li><span aria-hidden="true">✓</span> API de integração</li>
-            <li><span aria-hidden="true">✓</span> SLA garantido</li>
-            <li><span aria-hidden="true">✓</span> Onboarding presencial</li>
+            <li><span class="plano-mark plano-mark--check" aria-hidden="true"><i data-lucide="check"></i></span> Eventos ilimitados</li>
+            <li><span class="plano-mark plano-mark--check" aria-hidden="true"><i data-lucide="check"></i></span> Multi-organização</li>
+            <li><span class="plano-mark plano-mark--check" aria-hidden="true"><i data-lucide="check"></i></span> Tudo do plano Pro</li>
+            <li><span class="plano-mark plano-mark--check" aria-hidden="true"><i data-lucide="check"></i></span> Suporte dedicado 24/7</li>
+            <li><span class="plano-mark plano-mark--check" aria-hidden="true"><i data-lucide="check"></i></span> API de integração</li>
+            <li><span class="plano-mark plano-mark--check" aria-hidden="true"><i data-lucide="check"></i></span> SLA garantido</li>
+            <li><span class="plano-mark plano-mark--check" aria-hidden="true"><i data-lucide="check"></i></span> Onboarding presencial</li>
           </ul>
           <a href="#contato" class="btn-secondary plano-btn">Falar com vendas</a>
         </div>
@@ -1032,19 +1008,19 @@
           todo o histórico de participações em um só lugar.</p>
         <ul class="participante-features" role="list" aria-label="Funcionalidades para participantes">
           <li role="listitem">
-            <span class="feat-icon" aria-hidden="true">✓</span>
+            <span class="feat-icon" aria-hidden="true"><i data-lucide="check"></i></span>
             Visualização e download de ingressos digitais
           </li>
           <li role="listitem">
-            <span class="feat-icon" aria-hidden="true">✓</span>
+            <span class="feat-icon" aria-hidden="true"><i data-lucide="check"></i></span>
             Histórico completo de eventos participados
           </li>
           <li role="listitem">
-            <span class="feat-icon" aria-hidden="true">✓</span>
+            <span class="feat-icon" aria-hidden="true"><i data-lucide="check"></i></span>
             Atualização de dados pessoais
           </li>
           <li role="listitem">
-            <span class="feat-icon" aria-hidden="true">✓</span>
+            <span class="feat-icon" aria-hidden="true"><i data-lucide="check"></i></span>
             Acompanhamento de todas as compras realizadas
           </li>
         </ul>
@@ -1059,15 +1035,15 @@
               <div class="part-name">João Cardoso</div>
               <div class="part-email">joao@email.com</div>
             </div>
-            <div class="part-badge-ok">● Ativo</div>
+            <div class="part-badge-ok"><i data-lucide="circle-dot" style="width:12px;height:12px;display:inline-block;vertical-align:middle;color:#22c55e"></i> Ativo</div>
           </div>
           <div class="part-ingresso">
             <div class="part-ing-label">Próximo evento</div>
             <div class="part-ing-evento">Halloween OffCampus</div>
             <div class="part-ing-info">
-              <span>🎫 VIP</span>
-              <span>📍 Curitiba, PR</span>
-              <span>📅 EM BREVE</span>
+              <span><i data-lucide="ticket" style="width:14px;height:14px;display:inline-block;vertical-align:middle;margin-right:4px"></i> VIP</span>
+              <span><i data-lucide="map-pin" style="width:14px;height:14px;display:inline-block;vertical-align:middle;margin-right:4px"></i> Curitiba, PR</span>
+              <span><i data-lucide="calendar" style="width:14px;height:14px;display:inline-block;vertical-align:middle;margin-right:4px"></i> EM BREVE</span>
             </div>
             <div class="part-qr-placeholder">
               <svg width="48" height="48" viewBox="0 0 48 48" fill="none" aria-label="QR Code do ingresso">
@@ -1092,9 +1068,9 @@
           </div>
           <div class="part-historico">
             <div class="part-hist-title">Histórico recente</div>
-            <div class="part-hist-item"><span>Resenha do Portes</span><span class="part-hist-tag">✓ Compareceu</span>
+            <div class="part-hist-item"><span>Resenha do Portes</span><span class="part-hist-tag"><i data-lucide="check" style="width:12px;height:12px;display:inline-block;vertical-align:middle;margin-right:2px"></i> Compareceu</span>
             </div>
-            <div class="part-hist-item"><span>OFFCampus Verão</span><span class="part-hist-tag">✓ Compareceu</span>
+            <div class="part-hist-item"><span>OFFCampus Verão</span><span class="part-hist-tag"><i data-lucide="check" style="width:12px;height:12px;display:inline-block;vertical-align:middle;margin-right:2px"></i> Compareceu</span>
             </div>
           </div>
         </div>
@@ -1110,36 +1086,57 @@
       <p class="section-sub">Painel atualizado continuamente com os indicadores mais relevantes para a saúde financeira
         de cada evento.</p>
 
-      <div class="indicadores-grid" role="list" aria-label="Indicadores financeiros da plataforma">
-        <div class="ind-card" role="listitem" tabindex="0">
-          <div class="ind-icon" aria-hidden="true">💰</div>
-          <div class="ind-label">Receita Total</div>
-          <div class="ind-desc">Soma de todas as fontes: ingressos, patrocínios e outros ganhos por evento.</div>
+      <div class="ind-showcase" role="list" aria-label="Indicadores financeiros da plataforma">
+        <!-- Linha principal — métricas de destaque -->
+        <div class="ind-row ind-row--hero">
+          <div class="ind-item ind-item--featured" role="listitem">
+            <div class="ind-item-icon" aria-hidden="true"><i data-lucide="banknote"></i></div>
+            <div class="ind-item-body">
+              <h3 class="ind-item-name">Receita Total</h3>
+              <p class="ind-item-desc">Soma de todas as fontes: ingressos, patrocínios e outros ganhos por evento.</p>
+            </div>
+          </div>
+          <div class="ind-item ind-item--featured" role="listitem">
+            <div class="ind-item-icon" aria-hidden="true"><i data-lucide="bar-chart-2"></i></div>
+            <div class="ind-item-body">
+              <h3 class="ind-item-name">Lucro Líquido</h3>
+              <p class="ind-item-desc">Receita menos todas as despesas registradas, visualizado por evento ou período.</p>
+            </div>
+          </div>
+          <div class="ind-item ind-item--featured" role="listitem">
+            <div class="ind-item-icon" aria-hidden="true"><i data-lucide="trending-up"></i></div>
+            <div class="ind-item-body">
+              <h3 class="ind-item-name">ROI por Evento</h3>
+              <p class="ind-item-desc">Retorno sobre investimento calculado automaticamente para cada evento realizado.</p>
+            </div>
+          </div>
         </div>
-        <div class="ind-card" role="listitem" tabindex="0">
-          <div class="ind-icon" aria-hidden="true">📊</div>
-          <div class="ind-label">Lucro Líquido</div>
-          <div class="ind-desc">Receita menos todas as despesas registradas, visualizado por evento ou período.</div>
-        </div>
-        <div class="ind-card" role="listitem" tabindex="0">
-          <div class="ind-icon" aria-hidden="true">📈</div>
-          <div class="ind-label">ROI por Evento</div>
-          <div class="ind-desc">Retorno sobre investimento calculado automaticamente para cada evento realizado.</div>
-        </div>
-        <div class="ind-card" role="listitem" tabindex="0">
-          <div class="ind-icon" aria-hidden="true">🎯</div>
-          <div class="ind-label">Ticket Médio</div>
-          <div class="ind-desc">Receita média gerada por participante confirmado em cada evento.</div>
-        </div>
-        <div class="ind-card" role="listitem" tabindex="0">
-          <div class="ind-icon" aria-hidden="true">👥</div>
-          <div class="ind-label">Taxa de Ocupação</div>
-          <div class="ind-desc">Percentual de capacidade preenchida com comparativo entre eventos.</div>
-        </div>
-        <div class="ind-card" role="listitem" tabindex="0">
-          <div class="ind-icon" aria-hidden="true">⚡</div>
-          <div class="ind-label">Custo por Participante</div>
-          <div class="ind-desc">Custo médio operacional dividido pelo número de participantes presentes.</div>
+
+        <div class="ind-divider" aria-hidden="true"></div>
+
+        <!-- Linha secundária — métricas complementares -->
+        <div class="ind-row ind-row--secondary">
+          <div class="ind-item" role="listitem">
+            <div class="ind-item-icon" aria-hidden="true"><i data-lucide="target"></i></div>
+            <div class="ind-item-body">
+              <h3 class="ind-item-name">Ticket Médio</h3>
+              <p class="ind-item-desc">Receita média gerada por participante confirmado em cada evento.</p>
+            </div>
+          </div>
+          <div class="ind-item" role="listitem">
+            <div class="ind-item-icon" aria-hidden="true"><i data-lucide="users"></i></div>
+            <div class="ind-item-body">
+              <h3 class="ind-item-name">Taxa de Ocupação</h3>
+              <p class="ind-item-desc">Percentual de capacidade preenchida com comparativo entre eventos.</p>
+            </div>
+          </div>
+          <div class="ind-item" role="listitem">
+            <div class="ind-item-icon" aria-hidden="true"><i data-lucide="zap"></i></div>
+            <div class="ind-item-body">
+              <h3 class="ind-item-name">Custo por Participante</h3>
+              <p class="ind-item-desc">Custo médio operacional dividido pelo número de participantes presentes.</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -1154,10 +1151,10 @@
         <p>Solicite acesso à plataforma EvoTech Events e transforme a gestão dos seus eventos com tecnologia de ponta.
         </p>
         <div class="contato-bullets" role="list">
-          <div role="listitem"><span aria-hidden="true">✓</span> Acesso completo a todos os módulos</div>
-          <div role="listitem"><span aria-hidden="true">✓</span> Suporte em campo antes, durante e após o evento</div>
-          <div role="listitem"><span aria-hidden="true">✓</span> Dashboard com indicadores em tempo real</div>
-          <div role="listitem"><span aria-hidden="true">✓</span> Onboarding assistido pela equipe EvoTech</div>
+          <div role="listitem"><span class="contato-bullet-icon" aria-hidden="true"><i data-lucide="check"></i></span> Acesso completo a todos os módulos</div>
+          <div role="listitem"><span class="contato-bullet-icon" aria-hidden="true"><i data-lucide="check"></i></span> Suporte em campo antes, durante e após o evento</div>
+          <div role="listitem"><span class="contato-bullet-icon" aria-hidden="true"><i data-lucide="check"></i></span> Dashboard com indicadores em tempo real</div>
+          <div role="listitem"><span class="contato-bullet-icon" aria-hidden="true"><i data-lucide="check"></i></span> Onboarding assistido pela equipe EvoTech</div>
         </div>
       </div>
       <form class="contato-form" novalidate aria-label="Formulário de contato">
@@ -1193,7 +1190,7 @@
           Solicitar Acesso
         </button>
         <div class="form-success" id="formSuccess" role="status" aria-live="polite" hidden>
-          <span aria-hidden="true">✓</span> Mensagem enviada com sucesso! Entraremos em contato em breve.
+          <span class="form-success-icon" aria-hidden="true"><i data-lucide="check"></i></span> Mensagem enviada com sucesso! Entraremos em contato em breve.
         </div>
       </form>
     </div>
@@ -1378,7 +1375,7 @@
 
     <!-- RECUPERAR SENHA -->
     <div class="modal" id="modalRecuperar" aria-label="Recuperar senha" style="display:none">
-      <button class="modal-close" id="modalRecuperarClose" aria-label="Fechar">✕</button>
+      <button class="modal-close" id="modalRecuperarClose" aria-label="Fechar"><i data-lucide="x"></i></button>
       <div class="modal-logo">
         <img src="imagens/favicon.png" alt="EvoTech" width="36" height="36">
         <span>EvoTech<b>Events</b></span>
@@ -1391,13 +1388,13 @@
         <span class="mfield-error" id="recEmail-error"></span>
       </div>
       <button class="btn-primary btn-full modal-submit" id="btnRecuperarSubmit">Enviar instruções</button>
-      <div id="recSuccess" class="modal-success" style="display:none">✓ Instruções enviadas! Verifique seu e-mail.</div>
+      <div id="recSuccess" class="modal-success" style="display:none"><i data-lucide="check" style="width:16px;height:16px;display:inline-block;vertical-align:middle;margin-right:6px"></i> Instruções enviadas! Verifique seu e-mail.</div>
       <div class="modal-alt"><a href="#" class="modal-link" id="linkVoltarLogin">← Voltar ao login</a></div>
     </div>
 
     <!-- ÁREA DO PARTICIPANTE -->
     <div class="modal modal-wide" id="modalParticipante" aria-label="Área do participante" style="display:none">
-      <button class="modal-close" id="modalParticipanteClose" aria-label="Fechar">✕</button>
+      <button class="modal-close" id="modalParticipanteClose" aria-label="Fechar"><i data-lucide="x"></i></button>
       <div class="part-header">
         <div class="part-avatar-big" id="partAvatar">JC</div>
         <div>
@@ -1439,20 +1436,20 @@
             <button class="btn-secondary" id="btnCancelarPerfil" type="button">Fechar</button>
             <button class="btn-primary" id="btnSalvarPerfil" type="button">Salvar alterações</button>
           </div>
-          <div id="perfilSuccess" class="modal-success" style="display:none">✓ Perfil atualizado com sucesso!</div>
+          <div id="perfilSuccess" class="modal-success" style="display:none"><i data-lucide="check" style="width:16px;height:16px;display:inline-block;vertical-align:middle;margin-right:6px"></i> Perfil atualizado com sucesso!</div>
         </div>
       </div>
     </div>
 
     <!-- MODAL EVENTO (detalhe) -->
     <div class="modal modal-wide" id="modalEvento" aria-label="Detalhes do evento" style="display:none">
-      <button class="modal-close" id="modalEventoClose" aria-label="Fechar">✕</button>
+      <button class="modal-close" id="modalEventoClose" aria-label="Fechar"><i data-lucide="x"></i></button>
       <div class="evento-detail" id="eventoDetailContent"></div>
     </div>
 
     <!-- MODAL COMPRA DE INGRESSO -->
     <div class="modal" id="modalCompra" aria-label="Comprar ingresso" style="display:none">
-      <button class="modal-close" id="modalCompraClose" aria-label="Fechar">✕</button>
+      <button class="modal-close" id="modalCompraClose" aria-label="Fechar"><i data-lucide="x"></i></button>
       <h2 class="modal-title" id="compraTitulo">Comprar Ingresso</h2>
       <p class="modal-sub" id="compraEvento">Evento</p>
       <div class="compra-lotes" id="compraLotes"></div>
@@ -1483,7 +1480,7 @@
         <button class="btn-primary btn-full modal-submit" id="btnConfirmarCompra">Confirmar compra</button>
       </div>
       <div id="compraSuccess" style="display:none" class="compra-success">
-        <div class="compra-check">✓</div>
+        <div class="compra-check"><i data-lucide="check"></i></div>
         <h3>Ingresso confirmado!</h3>
         <p>Seu ingresso foi gerado e está disponível na área do participante.</p>
         <div class="compra-ticket" id="compraTicket"></div>
