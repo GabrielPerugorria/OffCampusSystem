@@ -1,10 +1,10 @@
-﻿/* ============================================================
-   INTRO SPLASH — EvoTech Events · "Eventos em movimento"
+/* ============================================================
+   INTRO SPLASH � EvoTech Events � "Eventos em movimento"
    Fundo preto, detalhes verdes, esfera 3D (canvas 2D) + texto,
-   barra de progresso e botão "Pular". Duração total ≈ 2,5 s.
-   Arquivos: index.html (#introSplash) · css/intro-splash.css ·
-   js/intro-splash.js  (única intro do projeto)
-   O overlay só aparece se o <script> inline do <head> marcar
+   barra de progresso e bot�o "Pular". Dura��o total � 2,5 s.
+   Arquivos: index.html (#introSplash) � css/intro-splash.css �
+   js/intro-splash.js  (�nica intro do projeto)
+   O overlay s� aparece se o <script> inline do <head> marcar
    <html class="intro-on">; sem JS o site nunca fica bloqueado.
    ============================================================ */
 
@@ -34,7 +34,7 @@ html.intro-on, html.intro-on body { overflow: hidden; }
 
 #introSplash.is-leaving { opacity: 0; pointer-events: none; }
 
-/* brilho verde discreto atrás da esfera */
+/* brilho verde discreto atr�s da esfera */
 #introSplash::before {
   content: "";
   position: absolute;
@@ -67,7 +67,7 @@ html.intro-on, html.intro-on body { overflow: hidden; }
   pointer-events: none;
 }
 
-/* reserva quadrada onde o canvas desenha a esfera (mantém proporção 1:1) */
+/* reserva quadrada onde o canvas desenha a esfera (mant�m propor��o 1:1) */
 .intro-orb {
   width: var(--intro-orb);
   height: var(--intro-orb);
@@ -76,11 +76,11 @@ html.intro-on, html.intro-on body { overflow: hidden; }
 
 .intro-title {
   margin: 0;
-  font-family: "Sora", "Inter", system-ui, sans-serif;
+  font-family: 'Space Grotesk', "Inter", system-ui, sans-serif;
   font-weight: 800;
   font-size: clamp(1.15rem, 4.8vw, 2.1rem);
   letter-spacing: .3em;
-  padding-left: .3em; /* compensa o espaçamento do último caractere */
+  padding-left: .3em; /* compensa o espa�amento do �ltimo caractere */
   line-height: 1.1;
   color: #fff;
   text-shadow: 0 0 22px rgba(34, 197, 94, .45);
@@ -130,7 +130,7 @@ html.intro-on, html.intro-on body { overflow: hidden; }
   will-change: transform;
 }
 
-/* botão pular */
+/* bot�o pular */
 .intro-skip {
   position: absolute;
   z-index: 3;

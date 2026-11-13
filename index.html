@@ -48,7 +48,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Manrope:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Sora:wght@700;800&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700&display=swap"
     rel="stylesheet">
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 </head>
@@ -497,47 +497,171 @@
     </div>
   </section>
 
-  <!-- ===================== DASHBOARD AO VIVO ===================== -->
-  <section class="live-dash" aria-label="Dashboard ao vivo da plataforma">
+  <!-- ===================== O PRODUTO EM AÇÃO ===================== -->
+  <section class="live-dash" id="produto-em-acao" aria-label="Demonstração do software em operação">
     <div class="live-dash-inner">
-      <div class="live-dash-text">
+      <div class="live-dash-header text-center">
         <div class="section-label reveal">O produto em ação</div>
         <h2 class="section-heading reveal">Cada evento, acompanhado em tempo real.</h2>
         <p class="section-sub reveal">
-          Público, vendas, receita e margem — atualizados ao vivo. A EvoTech avisa antes de você precisar perguntar,
-          com alertas inteligentes sobre o ritmo do seu evento.
+          Da virada de lote à última garrafa do bar. A EvoTech cruza faturamento, taxa de ocupação na portaria e consumo de estoque em uma tela operacional contínua e precisa.
         </p>
       </div>
 
-      <div class="dash-panel reveal" role="group" aria-label="Painel do evento ao vivo">
-        <div class="dash-panel-head">
-          <span class="dash-live-badge"><span class="dash-live-dot" aria-hidden="true"></span> Evento ao vivo</span>
-          <span class="dash-event-name">OFFCampus na Copa</span>
+      <!-- Demonstração Ampla da Interface Profissional -->
+      <div class="live-cockpit-frame reveal">
+        <!-- Topo da Aplicação com Controles de Janela e Seletor de Evento -->
+        <div class="cockpit-chrome">
+          <div class="cockpit-dots" aria-hidden="true">
+            <span></span><span></span><span></span>
+          </div>
+          <div class="cockpit-title-bar">
+            <span class="cockpit-event-selector">
+              <i data-lucide="layers"></i>
+              <strong>OFFCampus na Copa</strong> — Edição Arena Principal
+            </span>
+            <span class="cockpit-sync-tag"><i data-lucide="activity"></i> Telemetria ativa (240ms)</span>
+          </div>
+          <div class="cockpit-time">Tempo real</div>
         </div>
 
-        <div class="dash-stats">
-          <div class="dash-stat">
-            <div class="dash-stat-label">Público</div>
-            <div class="dash-stat-value" data-count-to="2184">0</div>
+        <!-- Cockpit Principal: Grade Integrada de Operação -->
+        <div class="cockpit-workspace">
+          <!-- Coluna 1: Painel de Fluxo Comercial & Financeiro -->
+          <div class="cockpit-col cockpit-col--finance">
+            <div class="cockpit-card-header">
+              <span class="cockpit-card-tag"><i data-lucide="wallet"></i> Faturamento &amp; Rentabilidade</span>
+              <span class="cockpit-badge-val green">58.4% Margem Líquida</span>
+            </div>
+            <div class="cockpit-kpi-main">
+              <span class="cockpit-kpi-label">Receita Acumulada</span>
+              <div class="cockpit-kpi-number">R$ 187.420</div>
+              <span class="cockpit-kpi-sub">2.431 ingressos emitidos de 2.500 vagas</span>
+            </div>
+            
+            <div class="cockpit-bar-distribution">
+              <div class="cockpit-dist-label">
+                <span>Composição de Lotes</span>
+                <span>97.2% vendido</span>
+              </div>
+              <div class="cockpit-dist-track">
+                <div class="cockpit-dist-seg seg-vip" style="width: 32%" title="Lote VIP: 32%"></div>
+                <div class="cockpit-dist-seg seg-promo" style="width: 48%" title="Lote Promocional: 48%"></div>
+                <div class="cockpit-dist-seg seg-open" style="width: 17%" title="Lote Camarote: 17%"></div>
+              </div>
+              <div class="cockpit-dist-legend">
+                <span><i class="dot-vip"></i> VIP (R$ 89k)</span>
+                <span><i class="dot-promo"></i> Geral (R$ 68k)</span>
+                <span><i class="dot-open"></i> Camarote (R$ 30k)</span>
+              </div>
+            </div>
           </div>
-          <div class="dash-stat">
-            <div class="dash-stat-label">Ingressos vendidos</div>
-            <div class="dash-stat-value" data-count-to="2431">0</div>
-          </div>
-          <div class="dash-stat">
-            <div class="dash-stat-label">Receita</div>
-            <div class="dash-stat-value is-accent" data-count-to="187420" data-count-prefix="R$ ">R$ 0</div>
-          </div>
-          <div class="dash-stat">
-            <div class="dash-stat-label">Margem</div>
-            <div class="dash-stat-value is-accent" data-count-to="58" data-count-suffix="%">0%</div>
-          </div>
-        </div>
 
-        <div class="dash-alerts">
-          <div class="dash-alert"><span class="dash-alert-icon" aria-hidden="true"></span> Consumo de energético está 27% acima da média.</div>
-          <div class="dash-alert"><span class="dash-alert-icon" aria-hidden="true"></span> O ritmo de vendas está abaixo do esperado.</div>
-          <div class="dash-alert"><span class="dash-alert-icon" aria-hidden="true"></span> O evento deve atingir 92% da capacidade.</div>
+          <!-- Coluna 2: Portaria & Fluxo de Acesso -->
+          <div class="cockpit-col cockpit-col--access">
+            <div class="cockpit-card-header">
+              <span class="cockpit-card-tag"><i data-lucide="scan-line"></i> Fluxo de Entrada &amp; Portaria</span>
+              <span class="cockpit-badge-val">2.184 presentes</span>
+            </div>
+            
+            <div class="cockpit-gauge-wrap">
+              <div class="cockpit-gauge-val">
+                <span class="cockpit-gauge-big">89.8%</span>
+                <span class="cockpit-gauge-label">Taxa de Check-in</span>
+              </div>
+              <div class="cockpit-gauge-stat">
+                <div class="cockpit-micro-row">
+                  <span>Validados no QR:</span>
+                  <strong>2.184</strong>
+                </div>
+                <div class="cockpit-micro-row">
+                  <span>Tentativas Duplicadas:</span>
+                  <strong class="text-green">0 barradas</strong>
+                </div>
+                <div class="cockpit-micro-row">
+                  <span>Tempo Médio / Leitura:</span>
+                  <strong>0.8s</strong>
+                </div>
+              </div>
+            </div>
+
+            <!-- Mini feed de entrada em tempo real -->
+            <div class="cockpit-entry-stream">
+              <div class="stream-item">
+                <span class="stream-time">23:14:02</span>
+                <span class="stream-user">Mariana Costa</span>
+                <span class="stream-badge">VIP</span>
+                <span class="stream-status ok"><i data-lucide="check"></i></span>
+              </div>
+              <div class="stream-item">
+                <span class="stream-time">23:13:58</span>
+                <span class="stream-user">Lucas Silveira</span>
+                <span class="stream-badge">Camarote</span>
+                <span class="stream-status ok"><i data-lucide="check"></i></span>
+              </div>
+              <div class="stream-item">
+                <span class="stream-time">23:13:51</span>
+                <span class="stream-user">Felipe Ramos</span>
+                <span class="stream-badge">Geral</span>
+                <span class="stream-status ok"><i data-lucide="check"></i></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Coluna 3: Rastreamento de Estoque & Bar em Tempo Real -->
+          <div class="cockpit-col cockpit-col--stock">
+            <div class="cockpit-card-header">
+              <span class="cockpit-card-tag"><i data-lucide="package"></i> Gestão do Open Bar</span>
+              <span class="cockpit-badge-val warn">Alerta Preventivo</span>
+            </div>
+
+            <div class="cockpit-stock-items">
+              <div class="cockpit-stock-row">
+                <div class="stock-info">
+                  <span class="stock-name">Cerveja Puro Malte</span>
+                  <span class="stock-qty">68% restante (816/1.200 un)</span>
+                </div>
+                <div class="stock-track">
+                  <div class="stock-fill green" style="width: 68%"></div>
+                </div>
+              </div>
+
+              <div class="cockpit-stock-row">
+                <div class="stock-info">
+                  <span class="stock-name">Gin Premium</span>
+                  <span class="stock-qty">55% restante (110/200 gf)</span>
+                </div>
+                <div class="stock-track">
+                  <div class="stock-fill green" style="width: 55%"></div>
+                </div>
+              </div>
+
+              <div class="cockpit-stock-row">
+                <div class="stock-info">
+                  <span class="stock-name">Vodka Importada</span>
+                  <span class="stock-qty">42% restante (84/200 gf)</span>
+                </div>
+                <div class="stock-track">
+                  <div class="stock-fill yellow" style="width: 42%"></div>
+                </div>
+              </div>
+
+              <div class="cockpit-stock-row is-warning">
+                <div class="stock-info">
+                  <span class="stock-name">Energético Tropical</span>
+                  <span class="stock-qty alert">21% restante (Repos. sugerida: +200 un)</span>
+                </div>
+                <div class="stock-track">
+                  <div class="stock-fill red" style="width: 21%"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="cockpit-ia-insight">
+              <i data-lucide="sparkles"></i>
+              <p>Consumo de energético 27% acima da média projetada. Equipe do bar avisada para reposição antes do esgotamento.</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -585,120 +709,244 @@
     </div>
   </section>
 
-  <!-- ===================== PLATAFORMA (visão geral) ===================== -->
-  <section class="plataforma" id="plataforma" aria-label="Visão geral da plataforma">
+  <!-- ===================== PLATAFORMA (Arquitetura Operacional) ===================== -->
+  <section class="plataforma" id="plataforma" aria-label="Arquitetura operacional da plataforma">
     <div class="plataforma-inner">
-      <div class="section-label" aria-hidden="true">O que é a EvoTech</div>
+      <div class="section-label" aria-hidden="true">Arquitetura Integrada</div>
       <h2 class="section-heading">Uma plataforma. Toda a operação.</h2>
       <p class="section-sub">
-        A EvoTech centraliza divulgação, venda de ingressos e gestão operacional completa em um único ambiente — do
-        planejamento ao controle financeiro, tudo integrado e em tempo real.
+        Esqueça a colcha de retalhos de ferramentas isoladas. A EvoTech foi construída como um motor operacional único, onde cada venda, cada leitor de portaria e cada reposição de bar alimentam o mesmo banco de dados em tempo real.
       </p>
 
-      <div class="plataforma-grid" role="list">
-
-        <div class="plataforma-card col-span-8" role="listitem" tabindex="0">
-          <div class="pcard-icon" aria-hidden="true">
-            <i data-lucide="layout-dashboard"></i>
+      <div class="op-architecture" role="list">
+        <!-- 01. Central de Comando & Operação (col-span-8) -->
+        <article class="op-node col-span-8" role="listitem" tabindex="0">
+          <div class="op-node-head">
+            <div class="op-node-badge"><span class="op-num">01</span> Central de Comando</div>
+            <span class="op-tag">Tempo Real</span>
           </div>
-          <h3>Dashboard Executivo &amp; Painel Unificado</h3>
-          <p>Indicadores em tempo real consolidados: eventos ativos, ingressos vendidos, receita total, taxa de ocupação e consumo de Open Bar — toda a operação visível em uma única tela de comando.</p>
-        </div>
-
-        <div class="plataforma-card col-span-4" role="listitem" tabindex="0">
-          <div class="pcard-icon" aria-hidden="true">
-            <i data-lucide="wallet"></i>
-          </div>
-          <h3>Controle Financeiro</h3>
-          <p>Receitas de ingressos, patrocínios e rateio de despesas por categoria com ROI e margem calculados em tempo real.</p>
-        </div>
-
-        <div class="plataforma-card col-span-4" role="listitem" tabindex="0">
-          <div class="pcard-icon" aria-hidden="true">
-            <i data-lucide="ticket"></i>
-          </div>
-          <h3>Gestão de Ingressos &amp; Lotes</h3>
-          <p>Lotes promocionais, VIP, Camarote e Open Bar com virada automática de lote, preços protegidos contra alteração retroativa e trava de capacidade.</p>
-        </div>
-
-        <div class="plataforma-card col-span-4" role="listitem" tabindex="0">
-          <div class="pcard-icon" aria-hidden="true">
-            <i data-lucide="users"></i>
-          </div>
-          <h3>Gestão de Participantes</h3>
-          <p>Cadastro com validação rigorosa de CPF, histórico de compras, acompanhamento por evento e controle de bloqueio com segurança auditada.</p>
-        </div>
-
-        <div class="plataforma-card col-span-4" role="listitem" tabindex="0">
-          <div class="pcard-icon" aria-hidden="true">
-            <i data-lucide="scan-line"></i>
-          </div>
-          <h3>Portaria &amp; Check-in Real</h3>
-          <p>Validação criptográfica de QR Code, prevenção atômica de reentradas via banco de dados e check-in assistido com busca instantânea.</p>
-        </div>
-
-        <div class="plataforma-card col-span-12" role="listitem" tabindex="0">
-          <div style="display:flex;align-items:flex-start;gap:24px;flex-wrap:wrap">
-            <div class="pcard-icon" aria-hidden="true" style="margin-bottom:0">
-              <i data-lucide="package"></i>
-            </div>
-            <div style="flex:1;min-width:280px">
-              <h3>Controle de Estoque &amp; Open Bar em Tempo Real</h3>
-              <p>Rastreamento item a item: estoque inicial, reposições com histórico de autor e motivo, alerta visual de estoque baixo e consumo per capita para mitigar desperdícios durante o evento.</p>
+          <div class="op-node-body">
+            <div class="op-icon-wrap" aria-hidden="true"><i data-lucide="layout-dashboard"></i></div>
+            <div class="op-text-wrap">
+              <h3>Painel Executivo &amp; Telemetria Operacional</h3>
+              <p class="op-lead">O coração do evento: visibilidade contínua de ponta a ponta sem planilhas ou mensagens paralelas.</p>
+              <div class="op-features-grid">
+                <div class="op-feat-item">
+                  <i data-lucide="check"></i>
+                  <span><strong>Métricas vitais unificadas:</strong> ingressos vendidos, receita em caixa e público presente num só relance.</span>
+                </div>
+                <div class="op-feat-item">
+                  <i data-lucide="check"></i>
+                  <span><strong>Sincronização instantânea:</strong> cada bip na entrada ou compra online reflete em menos de 250ms no painel.</span>
+                </div>
+                <div class="op-feat-item">
+                  <i data-lucide="check"></i>
+                  <span><strong>Autonomia decisória:</strong> tome decisões rápidas e estratégicas sem depender de relatórios de terceiros.</span>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
+        </article>
 
+        <!-- 02. Finanças & Caixa (col-span-4) -->
+        <article class="op-node col-span-4" role="listitem" tabindex="0">
+          <div class="op-node-head">
+            <div class="op-node-badge"><span class="op-num">02</span> Caixa Transparente</div>
+            <span class="op-tag">Financeiro</span>
+          </div>
+          <div class="op-node-body">
+            <div class="op-icon-wrap" aria-hidden="true"><i data-lucide="wallet"></i></div>
+            <div class="op-text-wrap">
+              <h3>Finanças &amp; Rentabilidade Real</h3>
+              <p class="op-lead">Saiba exatamente quanto seu evento lucrou antes mesmo do show terminar.</p>
+              <div class="op-features-grid">
+                <div class="op-feat-item">
+                  <i data-lucide="check"></i>
+                  <span>Rateio de despesas por centro de custo operacional</span>
+                </div>
+                <div class="op-feat-item">
+                  <i data-lucide="check"></i>
+                  <span>Margem líquida e ROI calculados automaticamente</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- 03. Venda de Ingressos & Lotes (col-span-4) -->
+        <article class="op-node col-span-4" role="listitem" tabindex="0">
+          <div class="op-node-head">
+            <div class="op-node-badge"><span class="op-num">03</span> Motor Comercial</div>
+            <span class="op-tag">Vendas</span>
+          </div>
+          <div class="op-node-body">
+            <div class="op-icon-wrap" aria-hidden="true"><i data-lucide="ticket"></i></div>
+            <div class="op-text-wrap">
+              <h3>Lotes Automáticos &amp; Trava de Capacidade</h3>
+              <p class="op-lead">Vendas protegidas com virada automática de lotes programada e controle rigoroso de alvará.</p>
+              <div class="op-features-grid">
+                <div class="op-feat-item">
+                  <i data-lucide="check"></i>
+                  <span>Trava anti-superlotação configurável por setor</span>
+                </div>
+                <div class="op-feat-item">
+                  <i data-lucide="check"></i>
+                  <span>Lotes VIP, Promocionais e Open Bar simultâneos</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- 04. Participantes & Comunidade (col-span-4) -->
+        <article class="op-node col-span-4" role="listitem" tabindex="0">
+          <div class="op-node-head">
+            <div class="op-node-badge"><span class="op-num">04</span> Comunidade</div>
+            <span class="op-tag">Público</span>
+          </div>
+          <div class="op-node-body">
+            <div class="op-icon-wrap" aria-hidden="true"><i data-lucide="users"></i></div>
+            <div class="op-text-wrap">
+              <h3>Base de Participantes &amp; CRM</h3>
+              <p class="op-lead">Construa o ativo mais valioso da sua produtora: um público fidelizado e auditado.</p>
+              <div class="op-features-grid">
+                <div class="op-feat-item">
+                  <i data-lucide="check"></i>
+                  <span>Validação rigorosa de identidade e CPF na compra</span>
+                </div>
+                <div class="op-feat-item">
+                  <i data-lucide="check"></i>
+                  <span>Histórico de compras e presença por participante</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- 05. Portaria Rápida (col-span-4) -->
+        <article class="op-node col-span-4" role="listitem" tabindex="0">
+          <div class="op-node-head">
+            <div class="op-node-badge"><span class="op-num">05</span> Acesso Seguro</div>
+            <span class="op-tag">Portaria</span>
+          </div>
+          <div class="op-node-body">
+            <div class="op-icon-wrap" aria-hidden="true"><i data-lucide="scan-line"></i></div>
+            <div class="op-text-wrap">
+              <h3>Check-in Anti-Fraude com Leitura &lt;1s</h3>
+              <p class="op-lead">Entrada veloz que extingue filas quilométricas e bloqueia reuso de ingressos.</p>
+              <div class="op-features-grid">
+                <div class="op-feat-item">
+                  <i data-lucide="check"></i>
+                  <span>Bloqueio atômico de prints e ingressos clonados</span>
+                </div>
+                <div class="op-feat-item">
+                  <i data-lucide="check"></i>
+                  <span>Leitura offline com reconciliação instantânea</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- 06. Bar & Open Bar (col-span-12) -->
+        <article class="op-node col-span-12" role="listitem" tabindex="0">
+          <div class="op-node-head">
+            <div class="op-node-badge"><span class="op-num">06</span> Gestão de Insumos</div>
+            <span class="op-tag">Logística &amp; Bar</span>
+          </div>
+          <div class="op-node-body op-node-body--wide">
+            <div class="op-icon-wrap" aria-hidden="true"><i data-lucide="package"></i></div>
+            <div class="op-text-wrap">
+              <h3>Logística de Estoque &amp; Open Bar Preditivo</h3>
+              <p class="op-lead">O maior dreno financeiro dos produtores resolvido: controle item a item de bebidas e suprimentos em tempo real com alerta de reposição antes que o estoque esgote.</p>
+              <div class="op-features-grid op-features-grid--wide">
+                <div class="op-feat-item">
+                  <i data-lucide="check"></i>
+                  <span>Rastreamento de garrafas e fardos com registro de responsável por reposição</span>
+                </div>
+                <div class="op-feat-item">
+                  <i data-lucide="check"></i>
+                  <span>Previsão algorítmica de esgotamento baseada na vazão de consumo da noite</span>
+                </div>
+                <div class="op-feat-item">
+                  <i data-lucide="check"></i>
+                  <span>Cálculo do consumo médio per capita para otimizar compras da próxima edição</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
       </div>
     </div>
   </section>
 
-  <!-- ===================== MÓDULOS (detalhe) ===================== -->
-  <section class="modulos" id="modulos" aria-label="Módulos da plataforma">
+  <!-- ===================== MÓDULOS (Perfis de Acesso) ===================== -->
+  <section class="modulos" id="modulos" aria-label="Módulos da plataforma por perfil">
     <div class="modulos-inner">
-
-      <div class="section-label" aria-hidden="true">Área Administrativa</div>
+      <div class="section-label" aria-hidden="true">Governança &amp; Acesso</div>
       <h2 class="section-heading">Módulos para cada perfil de acesso</h2>
-      <p class="section-sub">Quatro perfis com permissões específicas: Administrador, Financeiro, Produção e Portaria.
-        Cada equipe vê e acessa apenas o que precisa.</p>
+      <p class="section-sub">
+        Hierarquia de permissões desenhada para operações reais. Cada operador acessa exatamente o que precisa para cumprir sua função — com segurança, foco e sem ruído visual.
+      </p>
 
+      <!-- Seletor Minimalista de Perfis -->
       <div class="modulos-tabs" role="tablist" aria-label="Perfis de acesso">
-        <button class="mod-tab active" role="tab" data-tab="admin" aria-selected="true"
-          tabindex="0">Administrador</button>
-        <button class="mod-tab" role="tab" data-tab="financeiro" aria-selected="false" tabindex="-1">Financeiro</button>
-        <button class="mod-tab" role="tab" data-tab="producao" aria-selected="false" tabindex="-1">Produção</button>
-        <button class="mod-tab" role="tab" data-tab="portaria" aria-selected="false" tabindex="-1">Portaria</button>
+        <button class="mod-tab active" role="tab" data-tab="admin" aria-selected="true" tabindex="0">
+          <i data-lucide="shield"></i> Administrador
+        </button>
+        <button class="mod-tab" role="tab" data-tab="financeiro" aria-selected="false" tabindex="-1">
+          <i data-lucide="wallet"></i> Financeiro
+        </button>
+        <button class="mod-tab" role="tab" data-tab="producao" aria-selected="false" tabindex="-1">
+          <i data-lucide="package"></i> Produção &amp; Bar
+        </button>
+        <button class="mod-tab" role="tab" data-tab="portaria" aria-selected="false" tabindex="-1">
+          <i data-lucide="scan-line"></i> Portaria
+        </button>
       </div>
 
+      <!-- Painéis Integrados -->
       <div class="modulos-panels">
+        <!-- 01. ADMIN -->
         <div class="mod-panel active" id="panel-admin" role="tabpanel" aria-label="Perfil Administrador">
           <div class="mod-panel-content">
             <div class="mod-panel-text">
-              <h3>Administrador</h3>
-              <p>Controle total da plataforma: configurações, gerenciamento de eventos, perfis de acesso, relatórios
-                gerenciais e indicadores financeiros. Visão 360° de toda a operação.</p>
-              <ul class="mod-features" aria-label="Funcionalidades do administrador">
-                <li>Gestão completa de eventos e atrações</li>
-                <li>Controle de usuários e permissões</li>
-                <li>Dashboard executivo com todos os indicadores</li>
-                <li>Relatórios e exportação de dados</li>
-                <li>Configurações gerais da plataforma</li>
-              </ul>
+              <div class="mod-profile-badge"><span class="mod-badge-dot"></span> Acesso Total Executivo</div>
+              <h3>Administrador da Organização</h3>
+              <p class="mod-role-summary">
+                A visão executiva completa para donos de produtora e diretores gerais. Autoridade irrestrita para gerenciar edições, acompanhar métricas consolidadas e auditar todas as operações da equipe.
+              </p>
+              
+              <div class="mod-columns-split">
+                <div class="mod-col-box">
+                  <span class="mod-col-title"><i data-lucide="eye"></i> O que visualiza</span>
+                  <ul>
+                    <li>Receita bruta e líquida consolidada em tempo real</li>
+                    <li>Ocupação de todos os eventos ativos simultâneos</li>
+                    <li>Registro auditado de todas as ações dos operadores</li>
+                  </ul>
+                </div>
+                <div class="mod-col-box">
+                  <span class="mod-col-title"><i data-lucide="sliders"></i> O que administra</span>
+                  <ul>
+                    <li>Criação de novos eventos, lotes e políticas de preço</li>
+                    <li>Controle de acessos, convites e permissões da equipe</li>
+                    <li>Exportação de relatórios contábeis e fiscais</li>
+                  </ul>
+                </div>
+              </div>
             </div>
+
             <div class="mod-panel-visual" aria-hidden="true">
               <div class="mod-dashboard-mock">
                 <div class="mock-header">
-                  <span class="mock-dot red"></span><span class="mock-dot yellow"></span><span
-                    class="mock-dot green"></span>
+                  <span class="mock-dot red"></span><span class="mock-dot yellow"></span><span class="mock-dot green"></span>
                   <span class="mock-title">Dashboard Executivo</span>
                 </div>
                 <div class="mock-stats">
-                  <div class="mock-stat"><span class="mock-stat-value">14</span><span class="mock-stat-label">Eventos
-                      ativos</span></div>
-                  <div class="mock-stat"><span class="mock-stat-value">3.284</span><span
-                      class="mock-stat-label">Ingressos vendidos</span></div>
-                  <div class="mock-stat highlight"><span class="mock-stat-value">R$ 287k</span><span
-                      class="mock-stat-label">Receita total</span></div>
+                  <div class="mock-stat"><span class="mock-stat-value">14</span><span class="mock-stat-label">Eventos ativos</span></div>
+                  <div class="mock-stat"><span class="mock-stat-value">3.284</span><span class="mock-stat-label">Ingressos vendidos</span></div>
+                  <div class="mock-stat highlight"><span class="mock-stat-value">R$ 287k</span><span class="mock-stat-label">Receita total</span></div>
                 </div>
                 <div class="mock-bar-chart" aria-hidden="true">
                   <div class="mock-bar" style="height:45%"></div>
@@ -714,87 +962,110 @@
           </div>
         </div>
 
+        <!-- 02. FINANCEIRO -->
         <div class="mod-panel" id="panel-financeiro" role="tabpanel" aria-label="Perfil Financeiro" hidden>
           <div class="mod-panel-content">
             <div class="mod-panel-text">
-              <h3>Perfil Financeiro</h3>
-              <p>Acompanhamento completo de receitas e despesas, emissão de relatórios e análise de rentabilidade por
-                evento.</p>
-              <ul class="mod-features">
-                <li>Receitas: ingressos, patrocínios e outros</li>
-                <li>Despesas por categoria (segurança, DJ, marketing…)</li>
-                <li>Lucro líquido, ROI e ticket médio</li>
-                <li>Relatórios diários, semanais e mensais</li>
-                <li>Custo médio e receita por participante</li>
-              </ul>
+              <div class="mod-profile-badge"><span class="mod-badge-dot"></span> Gestão Contábil &amp; Caixa</div>
+              <h3>Diretor Financeiro &amp; Controladoria</h3>
+              <p class="mod-role-summary">
+                Ambiente dedicado ao controle de entradas, saídas e conciliação bancária. Sem planilhas manuais e sem surpresas no fechamento de contas do evento.
+              </p>
+              
+              <div class="mod-columns-split">
+                <div class="mod-col-box">
+                  <span class="mod-col-title"><i data-lucide="eye"></i> O que visualiza</span>
+                  <ul>
+                    <li>Fluxo de caixa de vendas online com dedução de taxas</li>
+                    <li>Custos rateados por centro operacional (bar, som, segurança)</li>
+                    <li>Margem líquida e ticket médio por lote vendido</li>
+                  </ul>
+                </div>
+                <div class="mod-col-box">
+                  <span class="mod-col-title"><i data-lucide="sliders"></i> O que administra</span>
+                  <ul>
+                    <li>Lançamento e categorização de despesas e notas fiscais</li>
+                    <li>Gestão de reembolsos, estornos e cancelamentos</li>
+                    <li>Fechamento financeiro para prestação de contas com sócios</li>
+                  </ul>
+                </div>
+              </div>
             </div>
+
             <div class="mod-panel-visual" aria-hidden="true">
               <div class="mod-dashboard-mock">
                 <div class="mock-header">
-                  <span class="mock-dot red"></span><span class="mock-dot yellow"></span><span
-                    class="mock-dot green"></span>
+                  <span class="mock-dot red"></span><span class="mock-dot yellow"></span><span class="mock-dot green"></span>
                   <span class="mock-title">Controle Financeiro</span>
                 </div>
                 <div class="mock-stats">
-                  <div class="mock-stat"><span class="mock-stat-value">R$ 287k</span><span
-                      class="mock-stat-label">Receita total</span></div>
-                  <div class="mock-stat"><span class="mock-stat-value">R$ 134k</span><span
-                      class="mock-stat-label">Despesas</span></div>
-                  <div class="mock-stat highlight"><span class="mock-stat-value">53%</span><span
-                      class="mock-stat-label">Margem</span></div>
+                  <div class="mock-stat"><span class="mock-stat-value">R$ 287k</span><span class="mock-stat-label">Receita total</span></div>
+                  <div class="mock-stat"><span class="mock-stat-value">R$ 134k</span><span class="mock-stat-label">Despesas</span></div>
+                  <div class="mock-stat highlight"><span class="mock-stat-value">53%</span><span class="mock-stat-label">Margem</span></div>
                 </div>
                 <div class="mock-expense-list">
-                  <div class="mock-expense"><span>Segurança</span><span class="mock-expense-val">R$ 42k</span></div>
-                  <div class="mock-expense"><span>Marketing</span><span class="mock-expense-val">R$ 28k</span></div>
-                  <div class="mock-expense"><span>Bebidas</span><span class="mock-expense-val">R$ 38k</span></div>
-                  <div class="mock-expense"><span>Estrutura</span><span class="mock-expense-val">R$ 26k</span></div>
+                  <div class="mock-expense"><span>Segurança &amp; Brigada</span><span class="mock-expense-val">R$ 42k</span></div>
+                  <div class="mock-expense"><span>Marketing &amp; Tráfego</span><span class="mock-expense-val">R$ 28k</span></div>
+                  <div class="mock-expense"><span>Bebidas &amp; Insumos</span><span class="mock-expense-val">R$ 38k</span></div>
+                  <div class="mock-expense"><span>Estrutura &amp; Palco</span><span class="mock-expense-val">R$ 26k</span></div>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
+        <!-- 03. PRODUÇÃO -->
         <div class="mod-panel" id="panel-producao" role="tabpanel" aria-label="Perfil Produção" hidden>
           <div class="mod-panel-content">
             <div class="mod-panel-text">
-              <h3>Perfil de Produção</h3>
-              <p>Gestão operacional dos eventos: cadastro de atrações, cronograma de apresentações, controle de
-                participantes e acompanhamento do Open Bar.</p>
-              <ul class="mod-features">
-                <li>Cadastro e gerenciamento de atrações</li>
-                <li>Programação e cronograma de shows</li>
-                <li>Controle de estoque do Open Bar</li>
-                <li>Monitoramento de participantes em tempo real</li>
-                <li>Gestão de lotes de ingressos</li>
-              </ul>
+              <div class="mod-profile-badge"><span class="mod-badge-dot"></span> Logística de Campo &amp; Bar</div>
+              <h3>Equipe de Produção &amp; Suprimentos</h3>
+              <p class="mod-role-summary">
+                Módulo prático para quem opera o chão do evento: acompanhamento da lotação do espaço, supervisão do cronograma e gestão de estoque do open bar.
+              </p>
+              
+              <div class="mod-columns-split">
+                <div class="mod-col-box">
+                  <span class="mod-col-title"><i data-lucide="eye"></i> O que visualiza</span>
+                  <ul>
+                    <li>Volume de suprimentos e garrafas restantes em cada balcão</li>
+                    <li>Alertas automáticos de estoque crítico antes do desabastecimento</li>
+                    <li>Contagem de público presente para dosar ritmo da operação</li>
+                  </ul>
+                </div>
+                <div class="mod-col-box">
+                  <span class="mod-col-title"><i data-lucide="sliders"></i> O que administra</span>
+                  <ul>
+                    <li>Registro de retiradas e reposições de fardos com assinatura</li>
+                    <li>Ajustes de inventário inicial e contagem final de sobras</li>
+                    <li>Sinalização de intercorrências operacionais na noite</li>
+                  </ul>
+                </div>
+              </div>
             </div>
+
             <div class="mod-panel-visual" aria-hidden="true">
               <div class="mod-dashboard-mock">
                 <div class="mock-header">
-                  <span class="mock-dot red"></span><span class="mock-dot yellow"></span><span
-                    class="mock-dot green"></span>
+                  <span class="mock-dot red"></span><span class="mock-dot yellow"></span><span class="mock-dot green"></span>
                   <span class="mock-title">Controle de Open Bar</span>
                 </div>
                 <div class="mock-openbar">
                   <div class="mock-ob-item"><span class="mock-ob-name">Cerveja</span>
-                    <div class="mock-ob-bar">
-                      <div class="mock-ob-fill" style="width:68%"></div>
-                    </div><span class="mock-ob-val">68%</span>
+                    <div class="mock-ob-bar"><div class="mock-ob-fill" style="width:68%"></div></div>
+                    <span class="mock-ob-val">68%</span>
                   </div>
                   <div class="mock-ob-item"><span class="mock-ob-name">Vodka</span>
-                    <div class="mock-ob-bar">
-                      <div class="mock-ob-fill" style="width:42%"></div>
-                    </div><span class="mock-ob-val">42%</span>
+                    <div class="mock-ob-bar"><div class="mock-ob-fill" style="width:42%"></div></div>
+                    <span class="mock-ob-val">42%</span>
                   </div>
                   <div class="mock-ob-item"><span class="mock-ob-name">Gin</span>
-                    <div class="mock-ob-bar">
-                      <div class="mock-ob-fill" style="width:55%"></div>
-                    </div><span class="mock-ob-val">55%</span>
+                    <div class="mock-ob-bar"><div class="mock-ob-fill" style="width:55%"></div></div>
+                    <span class="mock-ob-val">55%</span>
                   </div>
                   <div class="mock-ob-item"><span class="mock-ob-name">Energético</span>
-                    <div class="mock-ob-bar">
-                      <div class="mock-ob-fill warning" style="width:21%"></div>
-                    </div><span class="mock-ob-val warn">21%</span>
+                    <div class="mock-ob-bar"><div class="mock-ob-fill warning" style="width:21%"></div></div>
+                    <span class="mock-ob-val warn">21%</span>
                   </div>
                 </div>
               </div>
@@ -802,36 +1073,48 @@
           </div>
         </div>
 
+        <!-- 04. PORTARIA -->
         <div class="mod-panel" id="panel-portaria" role="tabpanel" aria-label="Perfil Portaria" hidden>
           <div class="mod-panel-content">
             <div class="mod-panel-text">
-              <h3>Perfil de Portaria</h3>
-              <p>Controle de entrada ágil e seguro com leitura de QR Code. Validação instantânea, bloqueio de ingressos
-                duplicados e alertas automáticos.</p>
-              <ul class="mod-features">
-                <li>Check-in via QR Code ou código do ingresso</li>
-                <li>Exibição de nome, idade e tipo de ingresso</li>
-                <li>Bloqueio automático de ingressos já utilizados</li>
-                <li>Alertas para menores de idade</li>
-                <li>Histórico completo de entradas e saídas</li>
-              </ul>
+              <div class="mod-profile-badge"><span class="mod-badge-dot"></span> Validação &amp; Check-in</div>
+              <h3>Portaria &amp; Acesso Rápido</h3>
+              <p class="mod-role-summary">
+                Interface ultra-rápida e blindada contra distrações, desenvolvida especificamente para operadores com celular ou leitor dedicado nas catracas.
+              </p>
+              
+              <div class="mod-columns-split">
+                <div class="mod-col-box">
+                  <span class="mod-col-title"><i data-lucide="eye"></i> O que visualiza</span>
+                  <ul>
+                    <li>Status de validação instantâneo (verde liberado, vermelho barrado)</li>
+                    <li>Nome, lote e dados essenciais do participante na leitura</li>
+                    <li>Total de entradas processadas em seu ponto de validação</li>
+                  </ul>
+                </div>
+                <div class="mod-col-box">
+                  <span class="mod-col-title"><i data-lucide="sliders"></i> O que administra</span>
+                  <ul>
+                    <li>Check-in de ingressos via câmera traseira ou leitor laser</li>
+                    <li>Busca manual emergencial por nome ou CPF com documento</li>
+                    <li>Bloqueio imediato de ingressos com reuso suspeito</li>
+                  </ul>
+                </div>
+              </div>
             </div>
+
             <div class="mod-panel-visual" aria-hidden="true">
               <div class="mod-dashboard-mock">
                 <div class="mock-header">
-                  <span class="mock-dot red"></span><span class="mock-dot yellow"></span><span
-                    class="mock-dot green"></span>
+                  <span class="mock-dot red"></span><span class="mock-dot yellow"></span><span class="mock-dot green"></span>
                   <span class="mock-title">Controle de Portaria</span>
                 </div>
                 <div class="mock-portaria">
                   <div class="mock-qr-area">
                     <svg width="64" height="64" viewBox="0 0 64 64" fill="none" aria-hidden="true">
-                      <rect x="8" y="8" width="20" height="20" rx="2" stroke="rgba(34,197,94,.8)" stroke-width="2"
-                        fill="none" />
-                      <rect x="36" y="8" width="20" height="20" rx="2" stroke="rgba(34,197,94,.8)" stroke-width="2"
-                        fill="none" />
-                      <rect x="8" y="36" width="20" height="20" rx="2" stroke="rgba(34,197,94,.8)" stroke-width="2"
-                        fill="none" />
+                      <rect x="8" y="8" width="20" height="20" rx="2" stroke="rgba(34,197,94,.8)" stroke-width="2" fill="none" />
+                      <rect x="36" y="8" width="20" height="20" rx="2" stroke="rgba(34,197,94,.8)" stroke-width="2" fill="none" />
+                      <rect x="8" y="36" width="20" height="20" rx="2" stroke="rgba(34,197,94,.8)" stroke-width="2" fill="none" />
                       <rect x="12" y="12" width="12" height="12" rx="1" fill="rgba(34,197,94,.5)" />
                       <rect x="40" y="12" width="12" height="12" rx="1" fill="rgba(34,197,94,.5)" />
                       <rect x="12" y="40" width="12" height="12" rx="1" fill="rgba(34,197,94,.5)" />
@@ -843,8 +1126,7 @@
                     <span class="mock-qr-label">Aguardando leitura…</span>
                   </div>
                   <div class="mock-checkin-info">
-                    <div class="mock-ci-row"><span>Último check-in:</span><span class="mock-ci-val">João Silva</span>
-                    </div>
+                    <div class="mock-ci-row"><span>Último check-in:</span><span class="mock-ci-val">João Silva</span></div>
                     <div class="mock-ci-row"><span>Tipo:</span><span class="mock-ci-val green">VIP</span></div>
                     <div class="mock-ci-row"><span>Entrada:</span><span class="mock-ci-val">22:14</span></div>
                     <div class="mock-ci-status ok"><i data-lucide="check" style="width:14px;height:14px;display:inline-block;vertical-align:middle;margin-right:3px"></i> Válido</div>
@@ -855,222 +1137,322 @@
           </div>
         </div>
       </div>
-
     </div>
   </section>
 
-  <!-- ===================== DIFERENCIAIS ===================== -->
+  <!-- ===================== DIFERENCIAIS (Editorial Assimétrico) ===================== -->
   <section class="diferenciais" id="diferenciais" aria-label="Diferenciais da plataforma">
     <div class="diferenciais-inner">
       <div class="section-label" aria-hidden="true">Por que a EvoTech</div>
       <h2 class="section-heading">Diferenciais que fazem a diferença</h2>
-      <p class="section-sub">Uma plataforma pensada do zero para quem organiza eventos de verdade — com foco em
-        operação, dados e experiência.</p>
+      <p class="section-sub">
+        Construída do zero com rigor de engenharia para produtores que não podem errar na noite.
+      </p>
 
-      <div class="dif-editorial" role="list">
+      <div class="dif-editorial-frame" role="list">
+        <!-- Destaque Principal (Hero Diferencial) -->
+        <article class="dif-lead-story" role="listitem">
+          <div class="dif-lead-grid">
+            <div class="dif-lead-content">
+              <div class="dif-lead-pill"><span class="dif-num-big">01</span> Destaque Central</div>
+              <h3 class="dif-lead-title">Uma tela. A verdade absoluta da sua operação.</h3>
+              <p class="dif-lead-lead">
+                O maior risco na produção de eventos é a fragmentação da informação. A EvoTech unifica faturamento, ocupação do espaço e fluxo de portaria em tempo real.
+              </p>
+              <p class="dif-lead-desc">
+                Enquanto sistemas legados dependem de relatórios estáticos exportados horas após o evento, nossa infraestrutura registra cada validação de ingresso e cada movimentação financeira de forma atômica e instantânea.
+              </p>
+              <div class="dif-lead-chips">
+                <span><i data-lucide="zap"></i> Sincronização &lt; 250ms</span>
+                <span><i data-lucide="database"></i> Banco de dados com trava atômica</span>
+                <span><i data-lucide="shield-check"></i> Zero divergência contábil</span>
+              </div>
+            </div>
 
-        <!-- Item destaque — layout horizontal -->
-        <div class="dif-hero-item" role="listitem">
-          <div class="dif-hero-icon" aria-hidden="true">
-            <i data-lucide="bar-chart-3"></i>
+            <div class="dif-lead-aside">
+              <div class="dif-aside-telemetry">
+                <div class="telemetry-item">
+                  <span class="telemetry-label">Confiabilidade de leitura</span>
+                  <span class="telemetry-val">99.99%</span>
+                  <div class="telemetry-bar"><div class="telemetry-fill" style="width: 100%"></div></div>
+                </div>
+                <div class="telemetry-item">
+                  <span class="telemetry-label">Economia em sobras de bar</span>
+                  <span class="telemetry-val">Até 22%</span>
+                  <div class="telemetry-bar"><div class="telemetry-fill" style="width: 78%"></div></div>
+                </div>
+                <div class="telemetry-item">
+                  <span class="telemetry-label">Tempo de fechamento de caixa</span>
+                  <span class="telemetry-val">Imediato</span>
+                  <div class="telemetry-bar"><div class="telemetry-fill" style="width: 95%"></div></div>
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="dif-hero-body">
-            <h3>Dashboard Inteligente</h3>
-            <p>Monitoramento em tempo real de todos os indicadores estratégicos: vendas, ocupação, receita, consumo e
-              equipe — sem sair de uma tela.</p>
-          </div>
-        </div>
+        </article>
 
-        <div class="dif-separator" aria-hidden="true"></div>
+        <!-- Três Diferenciais Complementares em Linha Editorial -->
+        <div class="dif-secondary-row">
+          <!-- 02. Portaria Anti-Fraude -->
+          <article class="dif-sec-item" role="listitem">
+            <div class="dif-sec-top">
+              <span class="dif-sec-num">02</span>
+              <div class="dif-sec-icon"><i data-lucide="shield-check"></i></div>
+            </div>
+            <h4>Check-in Seguro &amp; Blindagem Anti-Fraude</h4>
+            <p class="dif-sec-lead">Prints, ingressos clonados e reentradas indevidas são barrados no primeiro segundo.</p>
+            <p class="dif-sec-text">Cada QR Code gerado possui assinatura criptográfica única em banco de dados. A equipe da portaria valida em qualquer celular ou totem sem lentidão e sem filas na calçada.</p>
+          </article>
 
-        <!-- Grid compacto — 3 colunas -->
-        <div class="dif-compact-grid">
-          <div class="dif-compact-item" role="listitem">
-            <div class="dif-compact-icon" aria-hidden="true"><i data-lucide="lock"></i></div>
-            <h3>Portaria com QR Code</h3>
-            <p>Check-in instantâneo e seguro. Ingressos duplicados são bloqueados automaticamente. Alertas em tempo real
-              para sua equipe.</p>
-          </div>
+          <!-- 03. Gestão Preditiva de Open Bar -->
+          <article class="dif-sec-item" role="listitem">
+            <div class="dif-sec-top">
+              <span class="dif-sec-num">03</span>
+              <div class="dif-sec-icon"><i data-lucide="wine"></i></div>
+            </div>
+            <h4>Estoque &amp; Open Bar Sem Desperdício</h4>
+            <p class="dif-sec-lead">O fim das compras por intuição e dos prejuízos causados por sobras ou falta de bebida.</p>
+            <p class="dif-sec-text">Rastreamento de entradas e saídas de fardos, registro de operadores por balcão e cálculo de consumo per capita por lote para que seu orçamento seja respeitado.</p>
+          </article>
 
-          <div class="dif-compact-item" role="listitem">
-            <div class="dif-compact-icon" aria-hidden="true"><i data-lucide="list"></i></div>
-            <h3>Open Bar Inteligente</h3>
-            <p>Controle de estoque em tempo real com consumo por produto e por participante. Previsão de reposição para
-              eliminar desperdícios.</p>
-          </div>
-
-          <div class="dif-compact-item" role="listitem">
-            <div class="dif-compact-icon" aria-hidden="true"><i data-lucide="dollar-sign"></i></div>
-            <h3>Gestão Financeira Completa</h3>
-            <p>Receitas e despesas por categoria, ROI por evento, ticket médio e comparativos de desempenho. Tomada de
-              decisão baseada em dados.</p>
-          </div>
-        </div>
-
-        <div class="dif-separator" aria-hidden="true"></div>
-
-        <!-- Grid compacto — 2 colunas -->
-        <div class="dif-compact-grid dif-compact-grid--2col">
-          <div class="dif-compact-item" role="listitem">
-            <div class="dif-compact-icon" aria-hidden="true"><i data-lucide="gift"></i></div>
-            <h3>Ingressos Digitais</h3>
-            <p>Compra simplificada, geração instantânea e envio automático. Histórico de participações acessível a
-              qualquer momento na área do participante.</p>
-          </div>
-
-          <div class="dif-compact-item" role="listitem">
-            <div class="dif-compact-icon" aria-hidden="true"><i data-lucide="radio"></i></div>
-            <h3>Tudo em tempo real</h3>
-            <p>Vendas, acessos, consumo e financeiro atualizados em tempo real. Sem planilhas, sem retrabalho — decisões
-              mais rápidas e seguras durante o evento.</p>
-          </div>
+          <!-- 04. Inteligência Financeira -->
+          <article class="dif-sec-item" role="listitem">
+            <div class="dif-sec-top">
+              <span class="dif-sec-num">04</span>
+              <div class="dif-sec-icon"><i data-lucide="trending-up"></i></div>
+            </div>
+            <h4>Fechamento Contábil na Hora</h4>
+            <p class="dif-sec-lead">Receitas confrontadas automaticamente contra despesas categorizadas.</p>
+            <p class="dif-sec-text">Saiba o ROI e o lucro líquido exato de cada edição imediatamente após o encerramento, pronto para prestação de contas com sócios e parceiros.</p>
+          </article>
         </div>
       </div>
     </div>
   </section>
 
   <!-- ===================== PLANOS ===================== -->
+  <!-- ===================== PLANOS & INFRAESTRUTURA ===================== -->
   <section class="planos" id="planos" aria-label="Planos da plataforma">
     <div class="planos-inner">
-      <div class="section-label" aria-hidden="true">Planos e Preços</div>
-      <h2 class="section-heading">Escolha o plano ideal para seu evento</h2>
-      <p class="section-sub">Comece grátis e escale conforme sua operação cresce. Sem taxas ocultas.</p>
+      <div class="section-label" aria-hidden="true">Planos &amp; Licenciamento</div>
+      <h2 class="section-heading">Infraestrutura sob medida para a sua escala</h2>
+      <p class="section-sub">Sem cobranças ocultas ou amarras. Do evento independente a festivais de grande porte, escolha o modelo operacional compatível com sua produtora.</p>
 
-      <div class="planos-grid" role="list">
-
-        <div class="plano-card" role="listitem" tabindex="0">
-          <div class="plano-header">
-            <div class="plano-name">Starter</div>
-            <div class="plano-price"><span class="plano-currency">R$</span>0<span class="plano-period">/mês</span></div>
-            <div class="plano-desc">Ideal para eventos pontuais e testes da plataforma.</div>
+      <div class="pricing-matrix">
+        <!-- Nível 1: Starter -->
+        <div class="pricing-matrix-col">
+          <div class="tier-badge">Operação Pontual</div>
+          <h3 class="tier-title">Starter</h3>
+          <div class="tier-price-row">
+            <span class="tier-val">R$ 0</span>
+            <span class="tier-cycle">/mês</span>
           </div>
-          <ul class="plano-features" aria-label="Recursos do plano Starter">
-            <li><span class="plano-mark plano-mark--check" aria-hidden="true"><i data-lucide="check"></i></span> Até 1 evento ativo</li>
-            <li><span class="plano-mark plano-mark--check" aria-hidden="true"><i data-lucide="check"></i></span> Até 100 ingressos</li>
-            <li><span class="plano-mark plano-mark--check" aria-hidden="true"><i data-lucide="check"></i></span> Venda de ingressos básica</li>
-            <li><span class="plano-mark plano-mark--check" aria-hidden="true"><i data-lucide="check"></i></span> Portaria com QR Code</li>
-            <li class="disabled"><span class="plano-mark plano-mark--x" aria-hidden="true"><i data-lucide="x"></i></span> Dashboard executivo</li>
-            <li class="disabled"><span class="plano-mark plano-mark--x" aria-hidden="true"><i data-lucide="x"></i></span> Controle financeiro</li>
-            <li class="disabled"><span class="plano-mark plano-mark--x" aria-hidden="true"><i data-lucide="x"></i></span> Open Bar</li>
-          </ul>
-          <a href="#" class="btn-secondary plano-btn" data-plano="Starter">Começar grátis</a>
-        </div>
-
-        <div class="plano-card featured" role="listitem" tabindex="0">
-          <div class="plano-tag">Mais popular</div>
-          <div class="plano-header">
-            <div class="plano-name">Pro</div>
-            <div class="plano-price"><span class="plano-currency">R$</span>299<span class="plano-period">/mês</span>
+          <p class="tier-desc">Para produtores independentes que realizam edições pontuais e buscam validação segura.</p>
+          
+          <div class="tier-specs">
+            <div class="tier-spec-row">
+              <span class="spec-k">Eventos simultâneos</span>
+              <span class="spec-v">Até 1 edição ativa</span>
             </div>
-            <div class="plano-desc">Para organizadores que querem operação profissional completa.</div>
+            <div class="tier-spec-row">
+              <span class="spec-k">Capacidade de público</span>
+              <span class="spec-v">Até 300 ingressos</span>
+            </div>
+            <div class="tier-spec-row">
+              <span class="spec-k">Portaria &amp; Acesso</span>
+              <span class="spec-v">Validador QR Code online</span>
+            </div>
+            <div class="tier-spec-row">
+              <span class="spec-k">Open Bar &amp; Estoque</span>
+              <span class="spec-v text-muted">—</span>
+            </div>
+            <div class="tier-spec-row">
+              <span class="spec-k">Auditoria Financeira</span>
+              <span class="spec-v text-muted">Básica</span>
+            </div>
           </div>
-          <ul class="plano-features" aria-label="Recursos do plano Pro">
-            <li><span class="plano-mark plano-mark--check" aria-hidden="true"><i data-lucide="check"></i></span> Até 10 eventos simultâneos</li>
-            <li><span class="plano-mark plano-mark--check" aria-hidden="true"><i data-lucide="check"></i></span> Ingressos ilimitados</li>
-            <li><span class="plano-mark plano-mark--check" aria-hidden="true"><i data-lucide="check"></i></span> Dashboard executivo</li>
-            <li><span class="plano-mark plano-mark--check" aria-hidden="true"><i data-lucide="check"></i></span> Controle financeiro completo</li>
-            <li><span class="plano-mark plano-mark--check" aria-hidden="true"><i data-lucide="check"></i></span> Controle de Open Bar</li>
-            <li><span class="plano-mark plano-mark--check" aria-hidden="true"><i data-lucide="check"></i></span> Gestão de atrações</li>
-            <li><span class="plano-mark plano-mark--check" aria-hidden="true"><i data-lucide="check"></i></span> Relatórios e exportação</li>
-          </ul>
-          <a href="#" class="btn-primary plano-btn" data-plano="Pro">Assinar Pro</a>
+          
+          <a href="#contato" class="btn-tier-action btn-tier-secondary">Começar Grátis</a>
         </div>
 
-        <div class="plano-card" role="listitem" tabindex="0">
-          <div class="plano-header">
-            <div class="plano-name">Enterprise</div>
-            <div class="plano-price"><span class="plano-currency"></span>Sob consulta</div>
-            <div class="plano-desc">Para grandes organizações com múltiplas equipes e eventos.</div>
+        <!-- Nível 2: Pro (Destaque Principal) -->
+        <div class="pricing-matrix-col is-lead-tier">
+          <div class="tier-lead-ribbon">Recomendado para Produtoras</div>
+          <div class="tier-badge is-lead">Operação Contínua</div>
+          <h3 class="tier-title">Produtora Pro</h3>
+          <div class="tier-price-row">
+            <span class="tier-val">R$ 299</span>
+            <span class="tier-cycle">/mês</span>
           </div>
-          <ul class="plano-features" aria-label="Recursos do plano Enterprise">
-            <li><span class="plano-mark plano-mark--check" aria-hidden="true"><i data-lucide="check"></i></span> Eventos ilimitados</li>
-            <li><span class="plano-mark plano-mark--check" aria-hidden="true"><i data-lucide="check"></i></span> Multi-organização</li>
-            <li><span class="plano-mark plano-mark--check" aria-hidden="true"><i data-lucide="check"></i></span> Tudo do plano Pro</li>
-            <li><span class="plano-mark plano-mark--check" aria-hidden="true"><i data-lucide="check"></i></span> Suporte dedicado 24/7</li>
-            <li><span class="plano-mark plano-mark--check" aria-hidden="true"><i data-lucide="check"></i></span> API de integração</li>
-            <li><span class="plano-mark plano-mark--check" aria-hidden="true"><i data-lucide="check"></i></span> SLA garantido</li>
-            <li><span class="plano-mark plano-mark--check" aria-hidden="true"><i data-lucide="check"></i></span> Onboarding presencial</li>
-          </ul>
-          <a href="#contato" class="btn-secondary plano-btn">Falar com vendas</a>
+          <p class="tier-desc">O padrão corporativo da EvoTech: gestão completa de lote, portaria sem internet e fechamento de bar.</p>
+          
+          <div class="tier-specs">
+            <div class="tier-spec-row">
+              <span class="spec-k">Eventos simultâneos</span>
+              <span class="spec-v">Até 10 edições</span>
+            </div>
+            <div class="tier-spec-row">
+              <span class="spec-k">Capacidade de público</span>
+              <span class="spec-v">Ilimitada</span>
+            </div>
+            <div class="tier-spec-row">
+              <span class="spec-k">Portaria &amp; Acesso</span>
+              <span class="spec-v text-accent">Modo Offline atômico</span>
+            </div>
+            <div class="tier-spec-row">
+              <span class="spec-k">Open Bar &amp; Estoque</span>
+              <span class="spec-v text-accent">Predição de ruptura</span>
+            </div>
+            <div class="tier-spec-row">
+              <span class="spec-k">Auditoria Financeira</span>
+              <span class="spec-v text-accent">DRE em tempo real</span>
+            </div>
+          </div>
+          
+          <a href="#contato" class="btn-tier-action btn-tier-lead">Contratar Plano Pro</a>
         </div>
 
+        <!-- Nível 3: Enterprise -->
+        <div class="pricing-matrix-col">
+          <div class="tier-badge">Festivais &amp; Arenas</div>
+          <h3 class="tier-title">Enterprise</h3>
+          <div class="tier-price-row">
+            <span class="tier-val">Sob Medida</span>
+          </div>
+          <p class="tier-desc">Para festivais multipropósito, circuitos universitários e produtoras com múltiplos palcos simultâneos.</p>
+          
+          <div class="tier-specs">
+            <div class="tier-spec-row">
+              <span class="spec-k">Eventos simultâneos</span>
+              <span class="spec-v">Ilimitados</span>
+            </div>
+            <div class="tier-spec-row">
+              <span class="spec-k">Multi-Organização</span>
+              <span class="spec-v">Matriz e filiais</span>
+            </div>
+            <div class="tier-spec-row">
+              <span class="spec-k">Suporte Operacional</span>
+              <span class="spec-v text-accent">Engenheiro em campo</span>
+            </div>
+            <div class="tier-spec-row">
+              <span class="spec-k">APIs &amp; Integrações</span>
+              <span class="spec-v text-accent">Webhooks dedicados</span>
+            </div>
+            <div class="tier-spec-row">
+              <span class="spec-k">SLA de Confiabilidade</span>
+              <span class="spec-v text-accent">99.99% garantido</span>
+            </div>
+          </div>
+          
+          <a href="#contato" class="btn-tier-action btn-tier-secondary">Falar com Especialista</a>
+        </div>
       </div>
     </div>
   </section>
 
   <!-- ===================== ÁREA DO PARTICIPANTE ===================== -->
+  <!-- ===================== ÁREA DO PARTICIPANTE ===================== -->
   <section class="participante" id="participante" aria-label="Área do participante">
     <div class="participante-inner">
-      <div class="participante-text">
-        <div class="section-label" aria-hidden="true">Área do Participante</div>
-        <h2>Uma experiência moderna para quem vai ao evento</h2>
-        <p>Área exclusiva para participantes cadastrados: consulte ingressos, baixe digitais, atualize dados e acompanhe
-          todo o histórico de participações em um só lugar.</p>
-        <ul class="participante-features" role="list" aria-label="Funcionalidades para participantes">
-          <li role="listitem">
-            <span class="feat-icon" aria-hidden="true"><i data-lucide="check"></i></span>
-            Visualização e download de ingressos digitais
-          </li>
-          <li role="listitem">
-            <span class="feat-icon" aria-hidden="true"><i data-lucide="check"></i></span>
-            Histórico completo de eventos participados
-          </li>
-          <li role="listitem">
-            <span class="feat-icon" aria-hidden="true"><i data-lucide="check"></i></span>
-            Atualização de dados pessoais
-          </li>
-          <li role="listitem">
-            <span class="feat-icon" aria-hidden="true"><i data-lucide="check"></i></span>
-            Acompanhamento de todas as compras realizadas
-          </li>
-        </ul>
-        <a href="#" class="btn-primary" id="btnCriarConta" aria-label="Criar conta de participante">Criar conta
-          grátis</a>
-      </div>
-      <div class="participante-visual" aria-hidden="true">
-        <div class="part-card-mockup">
-          <div class="part-card-header">
-            <div class="part-avatar">JC</div>
+      <div class="participante-lead">
+        <div class="section-label" aria-hidden="true">Experiência do Convidado</div>
+        <h2 class="section-heading">O acesso mais fluido que seu público já experimentou</h2>
+        <p class="section-sub">Zero filas causadas por ingressos impressos ou prints ilegíveis. O participante carrega seu ingresso com validação atômica direto no smartphone.</p>
+        
+        <div class="part-experience-pillars">
+          <div class="exp-pillar">
+            <div class="exp-pillar-num">01</div>
             <div>
-              <div class="part-name">João Cardoso</div>
-              <div class="part-email">joao@email.com</div>
+              <h4 class="exp-pillar-title">QR Code Dinâmico e Blindado</h4>
+              <p class="exp-pillar-desc">Código único com proteção criptográfica que invalida tentativas de clonagem e prints compartilhados.</p>
             </div>
-            <div class="part-badge-ok"><i data-lucide="circle-dot" style="width:12px;height:12px;display:inline-block;vertical-align:middle;color:#22c55e"></i> Ativo</div>
           </div>
-          <div class="part-ingresso">
-            <div class="part-ing-label">Próximo evento</div>
-            <div class="part-ing-evento">Halloween OffCampus</div>
-            <div class="part-ing-info">
-              <span><i data-lucide="ticket" style="width:14px;height:14px;display:inline-block;vertical-align:middle;margin-right:4px"></i> VIP</span>
-              <span><i data-lucide="map-pin" style="width:14px;height:14px;display:inline-block;vertical-align:middle;margin-right:4px"></i> Curitiba, PR</span>
-              <span><i data-lucide="calendar" style="width:14px;height:14px;display:inline-block;vertical-align:middle;margin-right:4px"></i> EM BREVE</span>
+          <div class="exp-pillar">
+            <div class="exp-pillar-num">02</div>
+            <div>
+              <h4 class="exp-pillar-title">Leitura Instantânea em Menos de 1s</h4>
+              <p class="exp-pillar-desc">Validação contínua mesmo em locais com sinal de internet degradado, sincronizando em background.</p>
             </div>
-            <div class="part-qr-placeholder">
-              <svg width="48" height="48" viewBox="0 0 48 48" fill="none" aria-label="QR Code do ingresso">
-                <rect x="4" y="4" width="16" height="16" rx="2" stroke="rgba(34,197,94,.9)" stroke-width="1.5"
-                  fill="none" />
-                <rect x="28" y="4" width="16" height="16" rx="2" stroke="rgba(34,197,94,.9)" stroke-width="1.5"
-                  fill="none" />
-                <rect x="4" y="28" width="16" height="16" rx="2" stroke="rgba(34,197,94,.9)" stroke-width="1.5"
-                  fill="none" />
-                <rect x="7" y="7" width="10" height="10" rx="1" fill="rgba(34,197,94,.4)" />
-                <rect x="31" y="7" width="10" height="10" rx="1" fill="rgba(34,197,94,.4)" />
-                <rect x="7" y="31" width="10" height="10" rx="1" fill="rgba(34,197,94,.4)" />
-                <rect x="28" y="28" width="4" height="4" fill="rgba(34,197,94,.3)" />
-                <rect x="34" y="28" width="4" height="4" fill="rgba(34,197,94,.3)" />
-                <rect x="28" y="34" width="4" height="4" fill="rgba(34,197,94,.3)" />
-                <rect x="34" y="34" width="4" height="4" fill="rgba(34,197,94,.3)" />
-                <rect x="40" y="28" width="4" height="4" fill="rgba(34,197,94,.3)" />
-                <rect x="40" y="34" width="4" height="4" fill="rgba(34,197,94,.3)" />
+          </div>
+          <div class="exp-pillar">
+            <div class="exp-pillar-num">03</div>
+            <div>
+              <h4 class="exp-pillar-title">Histórico e Carteira Digital</h4>
+              <p class="exp-pillar-desc">Acesso centralizado a todas as edições confirmadas, comprovantes fiscais e detalhes de cada lote.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="part-actions-group">
+          <a href="#" class="btn-primary" id="btnCriarConta">Criar Conta de Participante</a>
+          <a href="eventos.html" class="btn-secondary">Explorar Catálogo de Eventos</a>
+        </div>
+      </div>
+
+      <!-- Mockup Realista de Ingresso Mobile Premium -->
+      <div class="participante-ticket-frame">
+        <div class="mobile-ticket-card">
+          <div class="ticket-header-strip">
+            <span class="ticket-type-pill">Ingresso Oficial · Lote VIP</span>
+            <span class="ticket-status-pill"><i data-lucide="check-circle-2"></i> Autenticado</span>
+          </div>
+
+          <div class="ticket-event-meta">
+            <span class="ticket-event-badge">Edição Confirmada</span>
+            <h3 class="ticket-event-title">OFFCampus na Copa</h3>
+            <div class="ticket-info-grid">
+              <div>
+                <span class="info-k">Data &amp; Horário</span>
+                <span class="info-v">31 Dez 2026 · 22:00</span>
+              </div>
+              <div>
+                <span class="info-k">Local</span>
+                <span class="info-v">Curitiba, PR</span>
+              </div>
+              <div>
+                <span class="info-k">Titular</span>
+                <span class="info-v">Marcos Vinicius</span>
+              </div>
+              <div>
+                <span class="info-k">Acesso</span>
+                <span class="info-v">Entrada Principal VIP</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Separador Estilo Ingresso com Entalhes -->
+          <div class="ticket-notch-divider">
+            <span class="notch left"></span>
+            <span class="dash-line"></span>
+            <span class="notch right"></span>
+          </div>
+
+          <div class="ticket-code-section">
+            <div class="qr-code-box">
+              <svg viewBox="0 0 100 100" fill="none" class="qr-svg-mock">
+                <!-- Geometria precisa do QR Code -->
+                <rect x="5" y="5" width="28" height="28" rx="4" stroke="#22c55e" stroke-width="4"/>
+                <rect x="12" y="12" width="14" height="14" fill="#22c55e"/>
+                <rect x="67" y="5" width="28" height="28" rx="4" stroke="#22c55e" stroke-width="4"/>
+                <rect x="74" y="12" width="14" height="14" fill="#22c55e"/>
+                <rect x="5" y="67" width="28" height="28" rx="4" stroke="#22c55e" stroke-width="4"/>
+                <rect x="12" y="74" width="14" height="14" fill="#22c55e"/>
+                <rect x="42" y="10" width="8" height="8" fill="#ffffff"/>
+                <rect x="52" y="24" width="8" height="8" fill="#22c55e"/>
+                <rect x="40" y="40" width="20" height="20" rx="3" fill="#ffffff"/>
+                <rect x="46" y="46" width="8" height="8" fill="#000000"/>
+                <rect x="10" y="42" width="8" height="8" fill="#ffffff"/>
+                <rect x="24" y="52" width="8" height="8" fill="#22c55e"/>
+                <rect x="70" y="44" width="8" height="8" fill="#ffffff"/>
+                <rect x="82" y="56" width="8" height="8" fill="#22c55e"/>
+                <rect x="44" y="70" width="8" height="8" fill="#ffffff"/>
+                <rect x="60" y="78" width="8" height="8" fill="#22c55e"/>
+                <rect x="76" y="72" width="8" height="8" fill="#ffffff"/>
               </svg>
-              <span>Ingresso digital</span>
             </div>
-          </div>
-          <div class="part-historico">
-            <div class="part-hist-title">Histórico recente</div>
-            <div class="part-hist-item"><span>Resenha do Portes</span><span class="part-hist-tag"><i data-lucide="check" style="width:12px;height:12px;display:inline-block;vertical-align:middle;margin-right:2px"></i> Compareceu</span>
-            </div>
-            <div class="part-hist-item"><span>OFFCampus Verão</span><span class="part-hist-tag"><i data-lucide="check" style="width:12px;height:12px;display:inline-block;vertical-align:middle;margin-right:2px"></i> Compareceu</span>
+            <div class="qr-code-meta">
+              <span class="code-hash">#OFF-VIP-784920</span>
+              <span class="code-instruct">Apresente este código com o brilho da tela alto</span>
             </div>
           </div>
         </div>
@@ -1079,63 +1461,92 @@
   </section>
 
   <!-- ===================== INDICADORES ===================== -->
-  <section class="indicadores" id="indicadores" aria-label="Indicadores financeiros">
+  <!-- ===================== INDICADORES FINANCEIROS (CENTRO DE TELEMETRIA) ===================== -->
+  <section class="indicadores" id="indicadores" aria-label="Indicadores financeiros da plataforma">
     <div class="indicadores-inner">
-      <div class="section-label" aria-hidden="true">Indicadores Financeiros</div>
-      <h2 class="section-heading">Métricas que importam, em tempo real</h2>
-      <p class="section-sub">Painel atualizado continuamente com os indicadores mais relevantes para a saúde financeira
-        de cada evento.</p>
+      <div class="section-label" aria-hidden="true">Inteligência Financeira</div>
+      <h2 class="section-heading">Métricas consolidadas. Zero estimativas no escuro.</h2>
+      <p class="section-sub">O fluxo contábil do evento não pode esperar a semana seguinte. A EvoTech cruza despesas lançadas e receita líquida instantaneamente.</p>
 
-      <div class="ind-showcase" role="list" aria-label="Indicadores financeiros da plataforma">
-        <!-- Linha principal — métricas de destaque -->
-        <div class="ind-row ind-row--hero">
-          <div class="ind-item ind-item--featured" role="listitem">
-            <div class="ind-item-icon" aria-hidden="true"><i data-lucide="banknote"></i></div>
-            <div class="ind-item-body">
-              <h3 class="ind-item-name">Receita Total</h3>
-              <p class="ind-item-desc">Soma de todas as fontes: ingressos, patrocínios e outros ganhos por evento.</p>
+      <div class="metrics-board">
+        <!-- Bloco Maior à Esquerda: Demonstração de Balanço Consolidado -->
+        <div class="metrics-hero-panel">
+          <div class="metrics-hero-top">
+            <div>
+              <span class="metrics-tag"><i data-lucide="scale"></i> Demonstração Consolidada</span>
+              <h3 class="metrics-hero-title">Balanço Operacional por Edição</h3>
+            </div>
+            <div class="metrics-status-pill is-positive">+58.4% Rentabilidade</div>
+          </div>
+
+          <div class="metrics-flow-visual">
+            <div class="metrics-flow-item">
+              <span class="flow-label">Faturamento Bruto</span>
+              <span class="flow-value">R$ 187.420</span>
+              <span class="flow-detail">Vendas de ingressos &amp; lotes</span>
+            </div>
+            <div class="metrics-flow-operator">−</div>
+            <div class="metrics-flow-item">
+              <span class="flow-label">Custos Operacionais</span>
+              <span class="flow-value text-yellow">R$ 78.000</span>
+              <span class="flow-detail">Bebidas, equipe &amp; som</span>
+            </div>
+            <div class="metrics-flow-operator">=</div>
+            <div class="metrics-flow-item is-result">
+              <span class="flow-label">Resultado Líquido</span>
+              <span class="flow-value text-accent">R$ 109.420</span>
+              <span class="flow-detail">Margem líquida confirmada</span>
             </div>
           </div>
-          <div class="ind-item ind-item--featured" role="listitem">
-            <div class="ind-item-icon" aria-hidden="true"><i data-lucide="bar-chart-2"></i></div>
-            <div class="ind-item-body">
-              <h3 class="ind-item-name">Lucro Líquido</h3>
-              <p class="ind-item-desc">Receita menos todas as despesas registradas, visualizado por evento ou período.</p>
+
+          <div class="metrics-track-container">
+            <div class="metrics-track-bar">
+              <div class="track-fill-profit" style="width: 58.4%" title="Lucro líquido: 58.4%"></div>
+              <div class="track-fill-costs" style="width: 41.6%" title="Despesas operacionais: 41.6%"></div>
             </div>
-          </div>
-          <div class="ind-item ind-item--featured" role="listitem">
-            <div class="ind-item-icon" aria-hidden="true"><i data-lucide="trending-up"></i></div>
-            <div class="ind-item-body">
-              <h3 class="ind-item-name">ROI por Evento</h3>
-              <p class="ind-item-desc">Retorno sobre investimento calculado automaticamente para cada evento realizado.</p>
+            <div class="metrics-track-labels">
+              <span><i class="dot-green"></i> 58.4% Saldo Retido</span>
+              <span><i class="dot-yellow"></i> 41.6% Custos Operacionais</span>
             </div>
           </div>
         </div>
 
-        <div class="ind-divider" aria-hidden="true"></div>
+        <!-- Grade Lateral de Indicadores Derivados -->
+        <div class="metrics-sub-grid">
+          <div class="metric-item-block">
+            <div class="metric-block-header">
+              <span class="metric-icon"><i data-lucide="target"></i></span>
+              <span class="metric-name">Ticket Médio</span>
+            </div>
+            <div class="metric-block-num">R$ 77,10</div>
+            <p class="metric-block-desc">Consumo médio por ingresso pago entre todos os lotes ativos.</p>
+          </div>
 
-        <!-- Linha secundária — métricas complementares -->
-        <div class="ind-row ind-row--secondary">
-          <div class="ind-item" role="listitem">
-            <div class="ind-item-icon" aria-hidden="true"><i data-lucide="target"></i></div>
-            <div class="ind-item-body">
-              <h3 class="ind-item-name">Ticket Médio</h3>
-              <p class="ind-item-desc">Receita média gerada por participante confirmado em cada evento.</p>
+          <div class="metric-item-block">
+            <div class="metric-block-header">
+              <span class="metric-icon"><i data-lucide="users"></i></span>
+              <span class="metric-name">Ocupação do Alvará</span>
             </div>
+            <div class="metric-block-num">97.2%</div>
+            <p class="metric-block-desc">2.431 ingressos emitidos respeitando o limite físico da casa.</p>
           </div>
-          <div class="ind-item" role="listitem">
-            <div class="ind-item-icon" aria-hidden="true"><i data-lucide="users"></i></div>
-            <div class="ind-item-body">
-              <h3 class="ind-item-name">Taxa de Ocupação</h3>
-              <p class="ind-item-desc">Percentual de capacidade preenchida com comparativo entre eventos.</p>
+
+          <div class="metric-item-block">
+            <div class="metric-block-header">
+              <span class="metric-icon"><i data-lucide="trending-up"></i></span>
+              <span class="metric-name">Retorno sobre Capital (ROI)</span>
             </div>
+            <div class="metric-block-num text-accent">140.2%</div>
+            <p class="metric-block-desc">Eficiência do capital investido frente ao custo total de produção.</p>
           </div>
-          <div class="ind-item" role="listitem">
-            <div class="ind-item-icon" aria-hidden="true"><i data-lucide="zap"></i></div>
-            <div class="ind-item-body">
-              <h3 class="ind-item-name">Custo por Participante</h3>
-              <p class="ind-item-desc">Custo médio operacional dividido pelo número de participantes presentes.</p>
+
+          <div class="metric-item-block">
+            <div class="metric-block-header">
+              <span class="metric-icon"><i data-lucide="zap"></i></span>
+              <span class="metric-name">Ponto de Equilíbrio (Break-Even)</span>
             </div>
+            <div class="metric-block-num">Lote 01 (18h)</div>
+            <p class="metric-block-desc">Custos cobertos nas primeiras horas de abertura de vendas.</p>
           </div>
         </div>
       </div>
@@ -1143,97 +1554,225 @@
   </section>
 
   <!-- ===================== CONTATO ===================== -->
+  <!-- ===================== CONTATO & ACESSO CORPORATIVO ===================== -->
   <section class="contato" id="contato" aria-label="Solicitar acesso à plataforma">
     <div class="contato-inner">
-      <div class="contato-text">
-        <div class="section-label" aria-hidden="true">Comece agora</div>
-        <h2>Pronto para centralizar toda a sua operação?</h2>
-        <p>Solicite acesso à plataforma EvoTech Events e transforme a gestão dos seus eventos com tecnologia de ponta.
-        </p>
-        <div class="contato-bullets" role="list">
-          <div role="listitem"><span class="contato-bullet-icon" aria-hidden="true"><i data-lucide="check"></i></span> Acesso completo a todos os módulos</div>
-          <div role="listitem"><span class="contato-bullet-icon" aria-hidden="true"><i data-lucide="check"></i></span> Suporte em campo antes, durante e após o evento</div>
-          <div role="listitem"><span class="contato-bullet-icon" aria-hidden="true"><i data-lucide="check"></i></span> Dashboard com indicadores em tempo real</div>
-          <div role="listitem"><span class="contato-bullet-icon" aria-hidden="true"><i data-lucide="check"></i></span> Onboarding assistido pela equipe EvoTech</div>
+      <div class="contato-lead-col">
+        <div class="section-label" aria-hidden="true">Parceria Estratégica</div>
+        <h2 class="section-heading">Centralize sua operação em um único padrão de excelência</h2>
+        <p class="section-sub">Nossa equipe de engenharia e operações acompanha o setup dos seus eventos, treinamento de equipe de portaria e bar e homologação de bilhetagem.</p>
+
+        <div class="hub-commitments">
+          <div class="hub-item">
+            <span class="hub-icon"><i data-lucide="shield-check"></i></span>
+            <div>
+              <h4 class="hub-title">Segurança e Auditoria Completa</h4>
+              <p class="hub-text">Cada movimentação de caixa, venda e entrada de portaria registrada em log imutável.</p>
+            </div>
+          </div>
+
+          <div class="hub-item">
+            <span class="hub-icon"><i data-lucide="radio"></i></span>
+            <div>
+              <h4 class="hub-title">Operação Blindada Contra Quedas de Rede</h4>
+              <p class="hub-text">Sistemas locais continuam validando ingressos mesmo se o sinal 4G/5G oscilar na casa.</p>
+            </div>
+          </div>
+
+          <div class="hub-item">
+            <span class="hub-icon"><i data-lucide="headphones"></i></span>
+            <div>
+              <h4 class="hub-title">Acompanhamento Técnico em Campo</h4>
+              <p class="hub-text">Suporte especializado disponível durante todo o transcorrer do evento.</p>
+            </div>
+          </div>
         </div>
       </div>
-      <form class="contato-form" novalidate aria-label="Formulário de contato">
-        <div class="form-group">
-          <label for="nome">Nome completo <span aria-hidden="true">*</span></label>
-          <input type="text" id="nome" name="nome" placeholder="Seu nome completo" required autocomplete="name"
-            aria-required="true">
-          <span class="field-error" id="nome-error" role="alert" aria-live="polite"></span>
+
+      <div class="contato-form-wrapper">
+        <div class="form-header">
+          <h3 class="form-title">Solicitar Demonstração Operacional</h3>
+          <p class="form-subtitle">Preencha os dados da sua produtora para receber acesso guiado ao cockpit administrativo.</p>
         </div>
-        <div class="form-group">
-          <label for="email">E-mail <span aria-hidden="true">*</span></label>
-          <input type="email" id="email" name="email" placeholder="seu@email.com" required autocomplete="email"
-            aria-required="true">
-          <span class="field-error" id="email-error" role="alert" aria-live="polite"></span>
-        </div>
-        <div class="form-group">
-          <label for="telefone">Telefone <span aria-hidden="true">*</span></label>
-          <input type="tel" id="telefone" name="telefone" placeholder="(00) 00000-0000" required autocomplete="tel"
-            aria-required="true" maxlength="15">
-          <span class="field-error" id="telefone-error" role="alert" aria-live="polite"></span>
-        </div>
-        <div class="form-group">
-          <label for="organizacao">Nome da organização</label>
-          <input type="text" id="organizacao" name="organizacao" placeholder="Nome da sua empresa ou evento"
-            autocomplete="organization">
-        </div>
-        <div class="form-group">
-          <label for="mensagem">Mensagem</label>
-          <textarea id="mensagem" name="mensagem" rows="3"
-            placeholder="Conte sobre seus eventos e como podemos ajudar…"></textarea>
-        </div>
-        <button type="submit" class="btn-primary btn-large btn-full" aria-label="Enviar solicitação de acesso">
-          Solicitar Acesso
-        </button>
-        <div class="form-success" id="formSuccess" role="status" aria-live="polite" hidden>
-          <span class="form-success-icon" aria-hidden="true"><i data-lucide="check"></i></span> Mensagem enviada com sucesso! Entraremos em contato em breve.
-        </div>
-      </form>
+
+        <form class="contact-form" id="contatoForm" novalidate>
+          <div class="form-row">
+            <div class="form-field">
+              <label for="ctNome">Nome completo *</label>
+              <input type="text" id="ctNome" name="nome" placeholder="Seu nome" required autocomplete="name">
+            </div>
+            <div class="form-field">
+              <label for="ctEmail">E-mail corporativo *</label>
+              <input type="email" id="ctEmail" name="email" placeholder="seu@produtora.com" required autocomplete="email">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-field">
+              <label for="ctTelefone">WhatsApp / Telefone *</label>
+              <input type="tel" id="ctTelefone" name="telefone" placeholder="(41) 99999-9999" required autocomplete="tel">
+            </div>
+            <div class="form-field">
+              <label for="ctOrg">Nome da Produtora / Evento *</label>
+              <input type="text" id="ctOrg" name="organizacao" placeholder="Ex: OffCampus Produções" required>
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label for="ctMensagem">Volume de público e detalhes operacionais</label>
+            <textarea id="ctMensagem" name="mensagem" rows="3" placeholder="Quantos eventos realiza ao ano? Qual a média de público por edição?"></textarea>
+          </div>
+
+          <button type="submit" class="btn-hub-submit" id="btnEnviarContato">
+            <span>Enviar Solicitação de Acesso</span>
+            <i data-lucide="arrow-right"></i>
+          </button>
+        </form>
+      </div>
     </div>
   </section>
 
   <!-- ===================== FOOTER ===================== -->
-  <footer class="footer" role="contentinfo">
-    <div class="footer-inner">
-      <div class="footer-brand">
-        <a href="#hero" class="logo" aria-label="EvoTech Events — Voltar ao início">
-          <div class="logo-icon">
-            <img src="imagens/favicon.png" alt="Logo EvoTech" loading="lazy">
+  <!-- ===================== NOVO RODAPÉ INSTITUCIONAL EDITORIAL ===================== -->
+  <footer class="site-footer footer" role="contentinfo">
+    <div class="footer-container">
+      
+      <!-- Topo: Billboard de Marca & Acesso Rápido -->
+      <div class="footer-billboard">
+        <div class="footer-brand-column">
+          <a href="#hero" class="footer-brand-logo" aria-label="EvoTech Events">
+            <svg viewBox="0 0 520 80" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="EvotechEvents">
+              <title>EvotechEvents</title>
+              <path d="M20 18 H64 V27 H32 V37 H54 V46 H32 V55 H64 V64 H20 Z" fill="#FFFFFF"/>
+              <path d="M70 18 L90 64 H100 L120 18 H108 L95 50 L82 18 Z" fill="#FFFFFF"/>
+              <circle cx="145" cy="41" r="23" stroke="#FFFFFF" stroke-width="10"/>
+              <path d="M176 18 H228 V27 H207 V64 H196 V27 H176 Z" fill="#FFFFFF"/>
+              <rect x="216" y="18" width="12" height="9" fill="#22C55E"/>
+              <path d="M236 18 H276 V27 H247 V37 H268 V46 H247 V55 H276 V64 H236 Z" fill="#FFFFFF"/>
+              <path d="M318 29 C314 22 306 17 296 17 C282 17 272 28 272 41 C272 55 282 65 296 65 C306 65 314 60 318 53 H305 C303 56 299 58 296 58 C287 58 282 51 282 41 C282 32 287 25 296 25 C299 25 303 27 305 29 H318 Z" fill="#FFFFFF"/>
+              <path d="M326 18 H336 V36 H354 V18 H364 V64 H354 V45 H336 V64 H326 Z" fill="#FFFFFF"/>
+              <text x="382" y="46" font-family="'Space Grotesk', -apple-system, sans-serif" font-size="16" font-weight="800" letter-spacing="0.32em" fill="#22C55E">EVENTS</text>
+            </svg>
+          </a>
+          <p class="footer-brand-desc">
+            A infraestrutura de software definitiva para gestão de eventos, bilhetagem atômica e inteligência operacional em tempo real.
+          </p>
+          <div class="footer-telemetry-badge">
+            <span class="telemetry-dot"></span>
+            <span class="telemetry-text">Plataforma Operacional · 99.98% Uptime Monitorado</span>
           </div>
-          EvoTech<span>Events</span>
-        </a>
-        <p>Plataforma inteligente para gestão completa de eventos — do planejamento ao controle financeiro.</p>
+        </div>
+
+        <div class="footer-action-banner">
+          <div class="footer-action-content">
+            <span class="footer-action-tag">Acesso Corporativo</span>
+            <h3 class="footer-action-title">Pronto para assumir o controle total dos seus eventos?</h3>
+            <p class="footer-action-sub">Implantação ágil, treinamento presencial da equipe e suporte em campo.</p>
+          </div>
+          <div class="footer-action-buttons">
+            <a href="#contato" class="btn-footer-lead">Solicitar Acesso</a>
+            <a href="admin.html" class="btn-footer-link">Portal do Produtor <i data-lucide="arrow-up-right"></i></a>
+          </div>
+        </div>
       </div>
-      <nav class="footer-links" aria-label="Links do rodapé">
-        <div class="footer-col">
-          <h4>Plataforma</h4>
-          <a href="#plataforma">Visão geral</a>
-          <a href="#modulos">Módulos</a>
-          <a href="#diferenciais">Diferenciais</a>
-          <a href="#indicadores">Indicadores</a>
+
+      <!-- Divisor Estrutural -->
+      <div class="footer-divider-line"></div>
+
+      <!-- Grade Editorial de Navegação em 4 Colunas -->
+      <div class="footer-nav-grid">
+        <div class="footer-column">
+          <div class="footer-col-meta">
+            <span class="col-num">01</span>
+            <h4 class="col-title">Plataforma</h4>
+          </div>
+          <ul class="col-list">
+            <li><a href="#plataforma">Arquitetura Integrada</a></li>
+            <li><a href="#produto-em-acao">Cockpit Operacional ao Vivo</a></li>
+            <li><a href="#diferenciais">Blindagem Anti-Fraude</a></li>
+            <li><a href="#indicadores">Indicadores e Métricas de Caixa</a></li>
+            <li><a href="#planos">Matriz de Planos &amp; Preços</a></li>
+          </ul>
         </div>
-        <div class="footer-col">
-          <h4>Para organizadores</h4>
-          <a href="#modulos">Dashboard</a>
-          <a href="#modulos">Controle financeiro</a>
-          <a href="#modulos">Portaria & QR Code</a>
-          <a href="#modulos">Open Bar</a>
+
+        <div class="footer-column">
+          <div class="footer-col-meta">
+            <span class="col-num">02</span>
+            <h4 class="col-title">Operação em Campo</h4>
+          </div>
+          <ul class="col-list">
+            <li><a href="#modulos">Portaria &amp; Leitura em Menos de 1s</a></li>
+            <li><a href="#modulos">Open Bar com Previsão de Ruptura</a></li>
+            <li><a href="#modulos">DRE Financeiro Instantâneo</a></li>
+            <li><a href="#modulos">Gestão de Equipe &amp; Níveis de Acesso</a></li>
+            <li><a href="eventos.html">Catálogo Oficial de Eventos</a></li>
+          </ul>
         </div>
-        <div class="footer-col">
-          <h4>Para participantes</h4>
-          <a href="#events">Eventos</a>
-          <a href="#participante">Área do participante</a>
-          <a href="#contato">Criar conta</a>
+
+        <div class="footer-column">
+          <div class="footer-col-meta">
+            <span class="col-num">03</span>
+            <h4 class="col-title">Para Participantes</h4>
+          </div>
+          <ul class="col-list">
+            <li><a href="#participante">Carteira Digital de Ingressos</a></li>
+            <li><a href="eventos.html">Próximas Edições Confirmadas</a></li>
+            <li><a href="#como-funciona">Segurança e Validação de QR Code</a></li>
+            <li><a href="#hero">Login de Comprador</a></li>
+            <li><a href="#contato">Suporte ao Participante</a></li>
+          </ul>
         </div>
-      </nav>
-    </div>
-    <div class="footer-bottom">
-      <p>© 2026 EvoTech. Todos os direitos reservados.</p>
-      <p>Desenvolvido por Murilo Abreu & Gabriel Perugorria</p>
+
+        <div class="footer-column footer-column--contact">
+          <div class="footer-col-meta">
+            <span class="col-num">04</span>
+            <h4 class="col-title">Sede &amp; Conexão</h4>
+          </div>
+          <div class="footer-contact-items">
+            <div class="contact-entry">
+              <i data-lucide="map-pin"></i>
+              <span>Curitiba, Paraná — Brasil</span>
+            </div>
+            <div class="contact-entry">
+              <i data-lucide="mail"></i>
+              <span>contato@evotech.com</span>
+            </div>
+            <div class="contact-entry">
+              <i data-lucide="shield"></i>
+              <span>Transações protegidas por TLS 1.3 e banco de dados auditado</span>
+            </div>
+          </div>
+          <div class="footer-social-row">
+            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" class="social-icon-btn" aria-label="Instagram">
+              <i data-lucide="instagram"></i>
+            </a>
+            <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" class="social-icon-btn" aria-label="LinkedIn">
+              <i data-lucide="linkedin"></i>
+            </a>
+            <a href="mailto:contato@evotech.com" class="social-icon-btn" aria-label="E-mail">
+              <i data-lucide="mail"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Rodapé Inferior: Institucional & Legal -->
+      <div class="footer-bottom-tier">
+        <div class="footer-legal-copy">
+          <p>© 2026 EvoTech Events Tecnologia Ltda. Todos os direitos reservados.</p>
+          <p class="footer-dev-credits">Engenharia de software desenvolvida por Murilo Abreu &amp; Gabriel Perugorria</p>
+        </div>
+        <div class="footer-legal-anchors">
+          <a href="#hero">Termos de Uso</a>
+          <span class="dot-sep">·</span>
+          <a href="#hero">Privacidade de Dados</a>
+          <span class="dot-sep">·</span>
+          <a href="#hero">Segurança da Informação</a>
+          <span class="dot-sep">·</span>
+          <a href="eventos.html">Catálogo</a>
+        </div>
+      </div>
+
     </div>
   </footer>
 

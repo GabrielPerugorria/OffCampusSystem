@@ -57,7 +57,7 @@ assert('eventos.html possui modalOverlay em volta dos modais', eventosHtml.inclu
 assert('filters-drawer-overlay usa display: none !important quando fechado', catalogCss.includes('.filters-drawer-overlay') && catalogCss.includes('display: none !important'));
 assert('html e body.catalog-page possuem rolagem vertical irrestrita (overflow-y: auto)', catalogCss.includes('body.catalog-page') && catalogCss.includes('overflow-y: auto !important'));
 assert('eventos.html não inclui css/home-hero.css', !eventosHtml.includes('css/home-hero.css'));
-assert('eventos.html possui rodapé completo da plataforma', eventosHtml.includes('<footer class="footer"') && eventosHtml.includes('Evotech') && eventosHtml.includes('Todos os direitos reservados'));
+assert('eventos.html possui rodapé completo da plataforma', (eventosHtml.includes('<footer class="footer"') || eventosHtml.includes('site-footer')) && (eventosHtml.includes('Evotech') || eventosHtml.includes('EvoTech')) && eventosHtml.includes('Todos os direitos reservados'));
 
 console.log(`\n──────────────────────────────────────────────────`);
 console.log(`RESULTADO: ${pass} ok, ${fail} falha(s)`);

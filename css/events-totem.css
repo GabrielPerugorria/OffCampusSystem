@@ -36,7 +36,7 @@
 }
 
 #events .premium-events-header h2 {
-  font-family: 'Manrope', 'Sora', sans-serif;
+  font-family: 'Space Grotesk', sans-serif;
   font-size: clamp(2.3rem, 4.2vw, 3.8rem);
   font-weight: 800;
   line-height: 1.15;
@@ -47,15 +47,12 @@
 }
 
 #events .premium-events-header .totem-title-gradient {
-  background: linear-gradient(135deg, #f8fafc 8%, #22c55e 36%, #15803d 68%, #0d5426 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #22c55e;
   display: inline-block;
 }
 
 #events .premium-events-header p {
-  font-family: 'Manrope', sans-serif;
+  font-family: 'Inter', sans-serif;
   color: rgba(255, 255, 255, 0.72);
   font-size: clamp(1rem, 1.2vw, 1.15rem);
   max-width: 560px;
@@ -170,7 +167,7 @@
   align-self: flex-start;
   padding: 5px 14px;
   border-radius: 999px;
-  font-family: 'Manrope', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.12em;
@@ -195,7 +192,7 @@
 }
 
 .cinema-category {
-  font-family: 'Manrope', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 0.76rem;
   font-weight: 700;
   letter-spacing: 0.14em;
@@ -205,7 +202,7 @@
 }
 
 .cinema-title {
-  font-family: 'Manrope', 'Sora', sans-serif;
+  font-family: 'Space Grotesk', sans-serif;
   font-size: clamp(1.4rem, 2.2vw, 1.85rem);
   font-weight: 800;
   line-height: 1.2;
@@ -216,7 +213,7 @@
 }
 
 .cinema-desc {
-  font-family: 'Manrope', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 0.88rem;
   line-height: 1.45;
   color: rgba(255, 255, 255, 0.80);
@@ -382,7 +379,7 @@
   justify-content: center;
   height: 50px;
   border-radius: 999px;
-  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 0.94rem;
   letter-spacing: -0.015em;
   text-decoration: none;

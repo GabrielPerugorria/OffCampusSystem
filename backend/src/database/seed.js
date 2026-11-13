@@ -1,13 +1,22 @@
 'use strict';
-// Popula o banco com os dados de demonstração que existiam no localStorage.
-// As senhas são geradas com bcrypt aqui — nunca ficam em texto no SQL.
-// Uso: npm run db:seed
+/**
+ * EvoTech Events — Seed e Inicialização do Sistema
+ * 
+ * PADRÃO DE PRODUÇÃO / TESTES REAIS (SEM DADOS FICTÍCIOS):
+ * Cria exclusivamente a conta do administrador e a organização principal vazia.
+ * NÃO cadastra eventos, lotes, vendas, ingressos, participantes fake, produtos ou despesas.
+ * 
+ * Para popular dados de demonstração explicitamente (apenas para desenvolvimento local se solicitado):
+ *   npm run db:seed -- --demo
+ *   ou SEED_DEMO=true npm run db:seed
+ */
+
 const bcrypt = require('bcryptjs');
 const db = require('../config/db');
 const env = require('../config/env');
 const { slugify } = require('../utils/slug');
 
-const EVENTS = [
+const DEMO_EVENTS = [
   {
     name: 'OFFCampus na Copa', type: 'Experiência Premium', date: '2026-12-31 22:00:00',
     venue: 'Curitiba, PR', capacity: 380, status: 'upcoming',
@@ -46,7 +55,7 @@ const EVENTS = [
   },
 ];
 
-const PRODUCTS = [
+const DEMO_PRODUCTS = [
   { name: 'Cerveja Long Neck', emoji: '🍺', category: 'Cerveja',     cost: 4.50, stock: 240, min: 40 },
   { name: 'Vodka 1L',          emoji: '🥃', category: 'Destilado',   cost: 28.00, stock: 42, min: 10 },
   { name: 'Gin Tônica Kit',    emoji: '🍹', category: 'Destilado',   cost: 22.00, stock: 55, min: 10 },
@@ -55,7 +64,7 @@ const PRODUCTS = [
   { name: 'Água 500ml',        emoji: '💧', category: 'Água',        cost: 1.50, stock: 200, min: 50 },
 ];
 
-const EXPENSES = [
+const DEMO_EXPENSES = [
   { category: 'Segurança',    icon: '🛡️', description: 'Equipe de segurança para 3 eventos', amount: 42000 },
   { category: 'Marketing',    icon: '📣', description: 'Redes sociais + panfletos',          amount: 28000 },
   { category: 'Bebidas',      icon: '🍺', description: 'Estoque para Open Bar',              amount: 38000 },
@@ -63,69 +72,19 @@ const EXPENSES = [
   { category: 'DJs/Atrações', icon: '🎤', description: 'Line-up confirmado',                 amount: 49000 },
 ];
 
-const CONTACTS = [
+const DEMO_CONTACTS = [
   { name: 'DJ KassiBeat', role: 'DJ Residente', email: 'dj@kassib.com', phone: '(41) 99111-2222', category: 'Artista / DJ', fee: 3500, notes: 'Disponível nas sextas.' },
   { name: 'Lucas Portaria', role: 'Coordenador de Segurança', email: 'lucas@sec.com', phone: '(41) 99333-4444', category: 'Segurança', fee: 1200, notes: 'Traz equipe de 10 pessoas.' },
   { name: 'BebidaTop Distribuidora', role: 'Fornecedor de Bebidas', email: 'vendas@bebidatop.com', phone: '(41) 3333-4444', category: 'Fornecedor', fee: 0, notes: 'Entrega 48h antes.' },
 ];
 
-const TEAM = [
-  { name: 'Carla Financeiro', email: 'carla@evotech.com', role: 'finance' },
-  { name: 'Diego Portaria',   email: 'diego@evotech.com', role: 'gate' },
-  { name: 'Bia Bar',          email: 'bia@evotech.com',   role: 'bar' },
-];
+async function seedDemoData(orgId, adminId, hash) {
+  console.log('\n[DEMO] Flag --demo detectada. Inserindo dados de demonstração...');
 
-async function run() {
-  const hash = pwd => bcrypt.hash(pwd, env.bcryptRounds);
-
-  const already = await db.queryOne('SELECT COUNT(*) AS n FROM users');
-  if (Number(already.n) > 0) {
-    console.log('O banco já contém dados. Seed abortado para não duplicar registros.');
-    console.log('Para recomeçar do zero: npm run db:setup && npm run db:seed');
-    process.exit(0);
-  }
-
-  // --- Admin e organização ---
-  const admin = await db.query(
-    `INSERT INTO users (name, email, password_hash, cpf, phone, birth_date, role)
-     VALUES (?,?,?,?,?,?, 'platform_admin')`,
-    ['Admin EvoTech', 'admin@evotech.com', await hash('admin123'),
-     '00000000000', '41999999999', '1990-01-01']
-  );
-  const org = await db.query(
-    'INSERT INTO organizations (name, slug, owner_user_id) VALUES (?,?,?)',
-    ['OffCampus Produções', 'offcampus', admin.insertId]
-  );
-  const orgId = org.insertId;
-  await db.query(
-    `INSERT INTO organization_members (organization_id, user_id, role) VALUES (?,?, 'owner')`,
-    [orgId, admin.insertId]
-  );
-
-  // --- Equipe ---
-  for (const member of TEAM) {
-    const u = await db.query(
-      'INSERT INTO users (name, email, password_hash) VALUES (?,?,?)',
-      [member.name, member.email, await hash('equipe123')]
-    );
-    await db.query(
-      'INSERT INTO organization_members (organization_id, user_id, role) VALUES (?,?,?)',
-      [orgId, u.insertId, member.role]
-    );
-  }
-
-  // --- Participante demo ---
-  const demo = await db.query(
-    `INSERT INTO users (name, email, password_hash, cpf, phone, birth_date)
-     VALUES (?,?,?,?,?,?)`,
-    ['João Cardoso', 'demo@evotech.com', await hash('demo123'),
-     '11111111111', '41988888888', '1998-05-12']
-  );
-
-  // --- Eventos e lotes ---
+  // Eventos e lotes
   const eventIds = {};
   const batchIds = {};
-  for (const ev of EVENTS) {
+  for (const ev of DEMO_EVENTS) {
     const r = await db.query(
       `INSERT INTO events
          (organization_id, name, slug, type, description, rules, venue, event_date,
@@ -147,21 +106,12 @@ async function run() {
     }
   }
 
-  // --- Vendas de demonstração ---
-  // Os "vendidos" do protótipo viram pedidos e ingressos REAIS, para que
-  // receita, participantes e portaria fechem entre si.
+  // Compradores demo sintéticos
   const { generateTicketCode } = require('../utils/ticketCode');
-  // Compradores fictícios de demonstração. São claramente sintéticos
-  // (dominío @exemplo.com) para não serem confundidos com clientes reais.
-  const FIRST = ['Ana', 'Pedro', 'Maria', 'Lucas', 'Julia', 'Rafael', 'Camila', 'Bruno',
-    'Larissa', 'Gustavo', 'Beatriz', 'Thiago', 'Fernanda', 'Matheus', 'Carolina'];
-  const LAST = ['Lima', 'Souza', 'Santos', 'Oliveira', 'Pereira', 'Costa', 'Almeida',
-    'Ribeiro', 'Martins', 'Rocha'];
-
-  const buyers = [
-    { name: 'João Cardoso', email: 'demo@evotech.com', cpf: '11111111111', userId: demo.insertId },
-  ];
-  for (let i = 0; i < 120; i += 1) {
+  const FIRST = ['Ana', 'Pedro', 'Maria', 'Lucas', 'Julia', 'Rafael', 'Camila', 'Bruno'];
+  const LAST = ['Lima', 'Souza', 'Santos', 'Oliveira', 'Pereira', 'Costa'];
+  const buyers = [];
+  for (let i = 0; i < 40; i += 1) {
     const name = `${FIRST[i % FIRST.length]} ${LAST[Math.floor(i / FIRST.length) % LAST.length]}`;
     buyers.push({
       name,
@@ -173,11 +123,12 @@ async function run() {
 
   let buyerIndex = 0;
   const createdTickets = [];
-  for (const ev of EVENTS) {
+  for (const ev of DEMO_EVENTS) {
     for (const b of ev.batches) {
       const batch = batchIds[`${ev.name}|${b.name}`];
       if (!batch.sold) continue;
-      for (let i = 0; i < batch.sold; i += 1) {
+      const count = Math.min(batch.sold, 5); // reduzido para demonstração leve
+      for (let i = 0; i < count; i += 1) {
         const buyer = buyers[buyerIndex % buyers.length];
         buyerIndex += 1;
         const order = await db.query(
@@ -194,22 +145,22 @@ async function run() {
         );
         createdTickets.push({ id: t.insertId, eventId: eventIds[ev.name], name: buyer.name });
       }
-      await db.query('UPDATE ticket_batches SET quantity_sold = ? WHERE id = ?', [batch.sold, batch.id]);
+      await db.query('UPDATE ticket_batches SET quantity_sold = ? WHERE id = ?', [count, batch.id]);
     }
   }
 
-  // --- Check-ins de demonstração (3 primeiros ingressos) ---
+  // Checkins
   for (const t of createdTickets.slice(0, 3)) {
     await db.query(
       `INSERT INTO checkins (event_id, ticket_id, guest_name, method, checked_by_user_id, checked_in_at)
        VALUES (?,?,?, 'code', ?, DATE_SUB(NOW(), INTERVAL ? HOUR))`,
-      [t.eventId, t.id, t.name, admin.insertId, 2]
+      [t.eventId, t.id, t.name, adminId, 2]
     );
     await db.query(`UPDATE tickets SET status = 'used' WHERE id = ?`, [t.id]);
   }
 
-  // --- Produtos e estoque ---
-  for (const p of PRODUCTS) {
+  // Produtos
+  for (const p of DEMO_PRODUCTS) {
     const r = await db.query(
       `INSERT INTO products (organization_id, name, emoji, category, unit_cost, stock_quantity, min_stock)
        VALUES (?,?,?,?,?,?,?)`,
@@ -217,26 +168,29 @@ async function run() {
     );
     await db.query(
       `INSERT INTO stock_movements (product_id, type, quantity, unit_value, reason, user_id)
-       VALUES (?, 'in', ?, ?, 'Estoque inicial', ?)`,
-      [r.insertId, p.stock, p.cost, admin.insertId]
+       VALUES (?, 'in', ?, ?, 'Estoque inicial demo', ?)`,
+      [r.insertId, p.stock, p.cost, adminId]
     );
   }
 
-  // --- Despesas ---
-  for (const x of EXPENSES) {
-    const c = await db.query(
-      'INSERT INTO expense_categories (organization_id, name, icon) VALUES (?,?,?)',
-      [orgId, x.category, x.icon]
-    );
+  // Despesas
+  for (const x of DEMO_EXPENSES) {
+    let cat = await db.queryOne('SELECT id FROM expense_categories WHERE organization_id = ? AND name = ?', [orgId, x.category]);
+    if (!cat) {
+      cat = await db.query(
+        'INSERT INTO expense_categories (organization_id, name, icon) VALUES (?,?,?)',
+        [orgId, x.category, x.icon]
+      );
+    }
     await db.query(
       `INSERT INTO expenses (organization_id, category_id, description, amount, expense_date, created_by)
        VALUES (?,?,?,?, CURDATE(), ?)`,
-      [orgId, c.insertId, x.description, x.amount, admin.insertId]
+      [orgId, cat.id || cat.insertId, x.description, x.amount, adminId]
     );
   }
 
-  // --- Contatos ---
-  for (const c of CONTACTS) {
+  // Contatos
+  for (const c of DEMO_CONTACTS) {
     await db.query(
       `INSERT INTO contacts (organization_id, name, role_title, email, phone, category, fee, notes)
        VALUES (?,?,?,?,?,?,?,?)`,
@@ -244,20 +198,116 @@ async function run() {
     );
   }
 
-  await db.query(
-    `INSERT INTO audit_logs (organization_id, user_id, user_name, action)
-     VALUES (?,?,?, 'Banco inicializado com os dados de demonstração')`,
-    [orgId, admin.insertId, 'Admin EvoTech']
+  console.log(`[DEMO] ${DEMO_EVENTS.length} eventos e dados de demonstração inseridos.`);
+}
+
+async function run() {
+  const hash = pwd => bcrypt.hash(pwd, env.bcryptRounds);
+  const isDemoRequested = process.argv.includes('--demo') || process.env.SEED_DEMO === 'true';
+
+  console.log('=== INICIALIZAÇÃO DA BASE DO EVOTECH EVENTS ===');
+  console.log(`Modo: ${isDemoRequested ? 'Demonstração (--demo)' : 'Produção / Testes Reais (Limpo)'}`);
+
+  // Verifica se o admin principal já existe
+  const existingAdmin = await db.queryOne(
+    `SELECT u.id, u.email, o.id as org_id, o.name as org_name
+     FROM users u
+     LEFT JOIN organizations o ON o.owner_user_id = u.id
+     WHERE u.email = 'admin@evotech.com'`
   );
 
-  console.log('Seed concluído.');
-  console.log('  admin@evotech.com / admin123   (owner do produtor)');
-  console.log('  carla@evotech.com / equipe123  (financeiro)');
-  console.log('  diego@evotech.com / equipe123  (portaria)');
-  console.log('  bia@evotech.com   / equipe123  (bar)');
-  console.log('  demo@evotech.com  / demo123    (participante)');
-  console.log(`  ${createdTickets.length} ingressos e 3 check-ins criados.`);
+  let adminId;
+  let orgId;
+
+  if (existingAdmin) {
+    console.log(`Usuário admin já cadastrado: ${existingAdmin.email} (ID: ${existingAdmin.id})`);
+    adminId = existingAdmin.id;
+    orgId = existingAdmin.org_id;
+  } else {
+    // 1. Criar administrador proprietário real
+    const adminResult = await db.query(
+      `INSERT INTO users (name, email, password_hash, cpf, phone, birth_date, role, status)
+       VALUES (?,?,?,?,?,?, 'platform_admin', 'active')`,
+      ['Admin EvoTech', 'admin@evotech.com', await hash('admin123'),
+       '00000000000', '41999999999', '1990-01-01']
+    );
+    adminId = adminResult.insertId;
+    console.log(`[OK] Administrador criado: admin@evotech.com (ID: ${adminId})`);
+  }
+
+  // 2. Garantir organização principal
+  let org = await db.queryOne(
+    `SELECT id, name, slug FROM organizations WHERE slug = 'offcampus' OR owner_user_id = ? LIMIT 1`,
+    [adminId]
+  );
+
+  if (!org) {
+    const orgResult = await db.query(
+      `INSERT INTO organizations (name, slug, owner_user_id) VALUES (?,?,?)`,
+      ['OffCampus Produções', 'offcampus', adminId]
+    );
+    orgId = orgResult.insertId;
+    console.log(`[OK] Organização criada: OffCampus Produções (ID: ${orgId})`);
+
+    // Vincular admin como owner da organização
+    await db.query(
+      `INSERT INTO organization_members (organization_id, user_id, role) VALUES (?,?, 'owner')`,
+      [orgId, adminId]
+    );
+    console.log(`[OK] Vínculo de membro proprietário estabelecido.`);
+  } else {
+    orgId = org.id;
+    console.log(`Organização existente: ${org.name} (ID: ${orgId})`);
+  }
+
+  // 3. Garantir categorias estruturais padrão de despesas
+  const standardCategories = [
+    { name: 'Segurança', icon: '🛡️' },
+    { name: 'Marketing', icon: '📣' },
+    { name: 'Bebidas', icon: '🍺' },
+    { name: 'Estrutura & Som', icon: '🏗️' },
+    { name: 'Atrações & Artistas', icon: '🎤' },
+    { name: 'Custos Operacionais', icon: '⚙️' },
+  ];
+
+  for (const cat of standardCategories) {
+    const exists = await db.queryOne(
+      `SELECT id FROM expense_categories WHERE organization_id = ? AND name = ?`,
+      [orgId, cat.name]
+    );
+    if (!exists) {
+      await db.query(
+        `INSERT INTO expense_categories (organization_id, name, icon) VALUES (?,?,?)`,
+        [orgId, cat.name, cat.icon]
+      );
+    }
+  }
+
+  // 4. Auditoria de inicialização limpa
+  await db.query(
+    `INSERT INTO audit_logs (organization_id, user_id, user_name, action)
+     VALUES (?,?,?, 'Inicialização estrutural da organização concluída')`,
+    [orgId, adminId, 'Admin EvoTech']
+  );
+
+  // 5. Dados demonstrativos (apenas se expressamente solicitado via flag)
+  if (isDemoRequested) {
+    await seedDemoData(orgId, adminId, hash);
+  } else {
+    console.log('\n[TESTES REAIS] Organização limpa e pronta:');
+    console.log(' - Eventos cadastrados: 0 (vazio)');
+    console.log(' - Lotes e ingressos: 0 (vazio)');
+    console.log(' - Pedidos e vendas: 0 (vazio)');
+    console.log(' - Produtos de bar: 0 (vazio)');
+    console.log(' - Despesas: 0 (vazio)');
+    console.log(' - Credencial administrativa: admin@evotech.com / admin123');
+  }
+
+  console.log('\nSeed finalizado com sucesso.');
   process.exit(0);
 }
 
-run().catch(err => { console.error('Falha no seed:', err); process.exit(1); });
+run().catch((err) => {
+  console.error('Falha na inicialização:', err);
+  process.exit(1);
+});

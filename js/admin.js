@@ -380,6 +380,81 @@ function renderDashboard() {
   renderFunilDashboard();
   renderProjecaoDashboard();
 
+  // === EMPTY STATE: organização sem eventos ===
+  if (STATE.eventos.length === 0) {
+    document.getElementById('kpi-grid').innerHTML = `
+      <div class="kpi-cockpit">
+        <div class="kpi-hero-billboard" style="text-align:center; padding:48px 24px;">
+          <div style="margin-bottom:16px;"><i data-lucide="calendar-plus" style="width:48px;height:48px;color:var(--accent);opacity:.7"></i></div>
+          <div style="font-size:20px; font-weight:700; color:var(--text1); margin-bottom:8px;">Você ainda não possui eventos cadastrados</div>
+          <div style="font-size:14px; color:var(--text2); margin-bottom:20px; max-width:400px; margin-left:auto; margin-right:auto;">Crie seu primeiro evento para começar a acompanhar vendas, receita, portaria e todos os indicadores operacionais.</div>
+          <button class="btn btn-primary" onclick="openModalEvento()" style="font-size:14px; padding:10px 28px;">
+            <i data-lucide="plus" style="width:16px;height:16px;margin-right:6px"></i> Criar primeiro evento
+          </button>
+        </div>
+        <div class="kpi-pulse-column">
+          <div class="kpi-pulse-card">
+            <div class="kpi-pulse-header">
+              <div class="kpi-pulse-icon"><i data-lucide="ticket"></i></div>
+              <div><span class="kpi-pulse-label">Ingressos Emitidos</span><div class="kpi-pulse-number">—</div></div>
+            </div>
+            <div class="kpi-pulse-footer"><span>Sem dados</span></div>
+          </div>
+          <div class="kpi-pulse-card">
+            <div class="kpi-pulse-header">
+              <div class="kpi-pulse-icon"><i data-lucide="scan-line"></i></div>
+              <div><span class="kpi-pulse-label">Portaria &amp; Acesso</span><div class="kpi-pulse-number">—</div></div>
+            </div>
+            <div class="kpi-pulse-footer"><span>Sem dados</span></div>
+          </div>
+          <div class="kpi-pulse-card">
+            <div class="kpi-pulse-header">
+              <div class="kpi-pulse-icon"><i data-lucide="calendar"></i></div>
+              <div><span class="kpi-pulse-label">Eventos Ativos</span><div class="kpi-pulse-number">0</div></div>
+            </div>
+            <div class="kpi-pulse-footer"><span>Nenhum evento cadastrado</span></div>
+          </div>
+        </div>
+      </div>
+    `;
+    document.getElementById('dash-events-bars').innerHTML = '<div style="color:var(--text3);font-size:12px;padding:10px">Nenhum evento para exibir ocupação.</div>';
+    document.getElementById('dash-bar-levels').innerHTML = STATE.bar.length === 0
+      ? '<div style="color:var(--text3);font-size:12px;padding:10px">Nenhum produto de bar cadastrado.</div>'
+      : '';
+    document.getElementById('dash-entries-label').textContent = '0 pessoa(s) registrada(s)';
+    document.getElementById('dash-entry-log').innerHTML = '<div class="empty"><p style="color:var(--text2)">Nenhuma entrada registrada</p></div>';
+    document.getElementById('dash-expenses').innerHTML = STATE.despesas.length === 0
+      ? '<div style="color:var(--text3);font-size:12px;padding:10px">Nenhuma despesa registrada.</div>'
+      : '';
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+    // Still render bar levels and expenses if they exist (org-level, not event-level)
+    if (STATE.bar.length > 0) {
+      document.getElementById('dash-bar-levels').innerHTML = STATE.bar.map(item => {
+        const pct = item.minimo > 0 ? Math.round((item.estoque / (item.minimo * 4)) * 100) : 100;
+        const pctClamped = Math.min(Math.max(pct, 5), 100);
+        const col = item.estoque < item.minimo ? 'red' : item.estoque < item.minimo * 2 ? 'yellow' : 'green';
+        return `<div class="progress-row">
+          <div class="progress-label">${escapeHTML(item.nome.substring(0, 20))} <span style="font-size:10px; color:var(--text3)">[${escapeHTML(item.cat)}]</span></div>
+          <div class="progress-track"><div class="progress-fill ${col}" style="width:${pctClamped}%"></div></div>
+          <div class="progress-val">${item.estoque} un</div>
+        </div>`;
+      }).join('');
+    }
+    if (STATE.despesas.length > 0) {
+      const max = Math.max(...STATE.despesas.map(x => x.valor), 1);
+      document.getElementById('dash-expenses').innerHTML = STATE.despesas.map(d => {
+        const pct = Math.round((d.valor / max) * 100);
+        const catName = d.cat.replace(/[^\w\s\u00C0-\u00FF/]/g, '').trim();
+        return `<div class="progress-row">
+          <div class="progress-label">${escapeHTML(catName.substring(0, 20))}</div>
+          <div class="progress-track"><div class="progress-fill purple" style="width:${pct}%"></div></div>
+          <div class="progress-val">${fmt_brl(d.valor)}</div>
+        </div>`;
+      }).join('');
+    }
+    return;
+  }
+
   // Dados reais consolidados da API
   const totalVendidos = STATE.eventos.reduce((acc, ev) => acc + (ev.sold !== undefined ? ev.sold : ev.lotes.reduce((a, l) => a + (l.sold || 0), 0)), 0);
   const totalReceita = STATE.eventos.reduce((acc, ev) => acc + (ev.revenue !== undefined ? ev.revenue : 0), 0);
@@ -394,51 +469,123 @@ function renderDashboard() {
   const totalEventosAtivos = STATE.eventos.filter(e => e.status === 'ativo').length;
   const totalEventosCadastrados = STATE.eventos.length;
 
+  const taxaCheckin = totalVendidos > 0 ? Math.round((totalEntradas / totalVendidos) * 100) : 0;
+  const saldoClass = saldoOperacional >= 0 ? 'text-accent' : 'text-red';
+  const saldoSinal = saldoOperacional >= 0 ? '+' : '';
+  const custoPct = totalReceita > 0 ? Math.min(Math.round((totalDespesas / totalReceita) * 100), 100) : 0;
+  const lucroPct = Math.max(0, 100 - custoPct);
+
   document.getElementById('kpi-grid').innerHTML = `
-    <div class="kpi-card">
-      <div class="kpi-label">Eventos Ativos</div>
-      <div class="kpi-val">${totalEventosAtivos}</div>
-      <div class="kpi-sub">${totalEventosCadastrados} cadastrados</div>
-    </div>
-    <div class="kpi-card green">
-      <div class="kpi-label">Ingressos Emitidos</div>
-      <div class="kpi-val">${totalVendidos.toLocaleString('pt-BR')}</div>
-      <div class="kpi-sub">Vendas confirmadas</div>
-    </div>
-    <div class="kpi-card blue">
-      <div class="kpi-label">Receita Confirmada</div>
-      <div class="kpi-val">${fmt_brl(totalReceita)}</div>
-      <div class="kpi-sub">Faturamento reconhecido</div>
-    </div>
-    <div class="kpi-card yellow">
-      <div class="kpi-label">Despesas Totais</div>
-      <div class="kpi-val">${fmt_brl(totalDespesas)}</div>
-      <div class="kpi-sub">Custos diretos e gerais</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-label">Saldo Operacional</div>
-      <div class="kpi-val" style="color:${saldoOperacional >= 0 ? 'var(--green)' : 'var(--red)'}">${fmt_brl(saldoOperacional)}</div>
-      <div class="kpi-sub">Receita líquida - Custos</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-label">Ticket Médio</div>
-      <div class="kpi-val">${fmt_brl(ticketMedioGeral)}</div>
-      <div class="kpi-sub">Receita / Ingressos</div>
-    </div>
-    <div class="kpi-card ${roiGeral >= 0 ? 'green' : ''}">
-      <div class="kpi-label">ROI Operacional</div>
-      <div class="kpi-val" style="color:${roiGeral >= 0 ? 'var(--green)' : 'var(--red)'}">${roiGeral.toFixed(1)}%</div>
-      <div class="kpi-sub">Margem: ${margemGeral.toFixed(1)}%</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-label">Portaria (Check-ins)</div>
-      <div class="kpi-val">${totalEntradas}</div>
-      <div class="kpi-sub">Presenças registradas</div>
+    <div class="kpi-cockpit">
+      <!-- Bloco Primário: Faturamento & Performance Financeira -->
+      <div class="kpi-hero-billboard">
+        <div class="kpi-hero-header">
+          <div class="kpi-hero-meta">
+            <span class="kpi-badge-live"><i data-lucide="circle-dot"></i> Caixa Central</span>
+            <span class="kpi-hero-title">Faturamento &amp; Resultado Líquido</span>
+          </div>
+          <div class="kpi-hero-status ${saldoOperacional >= 0 ? 'is-positive' : 'is-negative'}">
+            ${saldoSinal}${margemGeral.toFixed(1)}% Margem
+          </div>
+        </div>
+        
+        <div class="kpi-hero-metrics">
+          <div class="kpi-hero-main">
+            <span class="kpi-metric-label">Receita Confirmada</span>
+            <div class="kpi-metric-number">${fmt_brl(totalReceita)}</div>
+            <span class="kpi-metric-sub">Vendas de ingressos e lotes integrados</span>
+          </div>
+          
+          <div class="kpi-hero-subgrid">
+            <div class="kpi-subitem">
+              <span class="kpi-subitem-label">Saldo Operacional</span>
+              <div class="kpi-subitem-val ${saldoClass}">${fmt_brl(saldoOperacional)}</div>
+              <span class="kpi-subitem-desc">Receita líquida após deduções</span>
+            </div>
+            <div class="kpi-subitem">
+              <span class="kpi-subitem-label">Despesas Totais</span>
+              <div class="kpi-subitem-val text-yellow">${fmt_brl(totalDespesas)}</div>
+              <span class="kpi-subitem-desc">Custos diretos, equipe e bar</span>
+            </div>
+            <div class="kpi-subitem">
+              <span class="kpi-subitem-label">Retorno Operacional (ROI)</span>
+              <div class="kpi-subitem-val ${roiGeral >= 0 ? 'text-accent' : 'text-red'}">${roiGeral.toFixed(1)}%</div>
+              <span class="kpi-subitem-desc">Eficiência do capital investido</span>
+            </div>
+            <div class="kpi-subitem">
+              <span class="kpi-subitem-label">Ticket Médio</span>
+              <div class="kpi-subitem-val">${fmt_brl(ticketMedioGeral)}</div>
+              <span class="kpi-subitem-desc">Consumo médio por ingresso</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="kpi-composition-bar">
+          <div class="kpi-comp-track">
+            <div class="kpi-comp-fill is-revenue" style="width:${lucroPct}%" title="Lucro líquido: ${lucroPct}%"></div>
+            <div class="kpi-comp-fill is-cost" style="width:${custoPct}%" title="Despesas: ${custoPct}%"></div>
+          </div>
+          <div class="kpi-comp-legend">
+            <span><i class="dot is-green"></i> Lucro Líquido (${lucroPct}%)</span>
+            <span><i class="dot is-yellow"></i> Despesas Operacionais (${custoPct}%)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bloco Secundário: Pulso Operacional & Campo -->
+      <div class="kpi-pulse-column">
+        <div class="kpi-pulse-card">
+          <div class="kpi-pulse-header">
+            <div class="kpi-pulse-icon"><i data-lucide="ticket"></i></div>
+            <div>
+              <span class="kpi-pulse-label">Ingressos Emitidos</span>
+              <div class="kpi-pulse-number">${totalVendidos.toLocaleString('pt-BR')}</div>
+            </div>
+          </div>
+          <div class="kpi-pulse-footer">
+            <span>Vendas confirmadas</span>
+            <span class="kpi-pill-accent">${totalEventosAtivos} ativo(s)</span>
+          </div>
+        </div>
+
+        <div class="kpi-pulse-card">
+          <div class="kpi-pulse-header">
+            <div class="kpi-pulse-icon"><i data-lucide="scan-line"></i></div>
+            <div>
+              <span class="kpi-pulse-label">Portaria &amp; Acesso</span>
+              <div class="kpi-pulse-number">${totalEntradas}</div>
+            </div>
+          </div>
+          <div class="kpi-pulse-footer">
+            <span>Taxa de entrada: ${taxaCheckin}%</span>
+            <span class="kpi-pill-sub">${totalEntradas}/${totalVendidos} no local</span>
+          </div>
+        </div>
+
+        <div class="kpi-pulse-card">
+          <div class="kpi-pulse-header">
+            <div class="kpi-pulse-icon"><i data-lucide="calendar"></i></div>
+            <div>
+              <span class="kpi-pulse-label">Eventos Ativos</span>
+              <div class="kpi-pulse-number">${totalEventosAtivos}</div>
+            </div>
+          </div>
+          <div class="kpi-pulse-footer">
+            <span>${totalEventosCadastrados} edições no total</span>
+            <span class="kpi-pill-sub">Status: Em operação</span>
+          </div>
+        </div>
+      </div>
     </div>
   `;
+  if (typeof lucide !== 'undefined') lucide.createIcons();
 
   // Ocupação percentual por evento
-  document.getElementById('dash-events-bars').innerHTML = STATE.eventos.map(ev => {
+  const evBars = document.getElementById('dash-events-bars');
+  if (STATE.eventos.length === 0) {
+    evBars.innerHTML = '<div style="color:var(--text3);font-size:12px;padding:10px">Nenhum evento para exibir ocupação.</div>';
+  } else {
+    evBars.innerHTML = STATE.eventos.map(ev => {
     const vendidos = ev.sold !== undefined ? ev.sold : ev.lotes.reduce((a, l) => a + (l.sold || 0), 0);
     const pct = ev.capacidade > 0 ? Math.round((vendidos / ev.capacidade) * 100) : 0;
     const col = pct >= 90 ? 'red' : pct >= 50 ? 'yellow' : 'green';
@@ -448,6 +595,7 @@ function renderDashboard() {
       <div class="progress-val">${pct}% (${vendidos}/${ev.capacidade})</div>
     </div>`;
   }).join('');
+  }
 
   // Nível de estoque do Bar (sem emojis)
   document.getElementById('dash-bar-levels').innerHTML = STATE.bar.map(item => {
@@ -491,9 +639,14 @@ function renderDashboard() {
 /* ===== EVENTOS ===== */
 function renderEventos(search='') {
   const q = search.toLowerCase();
-  const filtered = STATE.eventos.filter(e => !q || e.nome.toLowerCase().includes(q) || e.local.toLowerCase().includes(q));
   const tbody = document.getElementById('eventos-tbody');
-  if(filtered.length===0) { tbody.innerHTML=`<tr><td colspan="8"><div class="empty"><div class="empty-icon"><i data-lucide="calendar-days"></i></div><p>Nenhum evento encontrado</p></div></td></tr>`; if (typeof lucide !== 'undefined') lucide.createIcons(); return; }
+  if (STATE.eventos.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="8"><div class="empty"><div class="empty-icon"><i data-lucide="calendar-days"></i></div><p>Você ainda não possui eventos cadastrados.</p><button class="btn btn-primary btn-sm" onclick="openModalEvento()" style="margin-top:12px"><i data-lucide="plus" style="width:14px;height:14px;margin-right:4px"></i> Cadastrar primeiro evento</button></div></td></tr>`;
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+    return;
+  }
+  const filtered = STATE.eventos.filter(e => !q || e.nome.toLowerCase().includes(q) || e.local.toLowerCase().includes(q));
+  if(filtered.length===0) { tbody.innerHTML=`<tr><td colspan="8"><div class="empty"><div class="empty-icon"><i data-lucide="search-x"></i></div><p>Nenhum evento encontrado para a busca</p></div></td></tr>`; if (typeof lucide !== 'undefined') lucide.createIcons(); return; }
 
   tbody.innerHTML = filtered.map((ev,i) => {
     const vendidos = ev.lotes.reduce((a,l)=>a+(l.total-l.disponivel),0);
@@ -699,6 +852,15 @@ async function delLote(idx) {
 /* ===== BAR ===== */
 function renderBar(search='') {
   const q = search.toLowerCase();
+
+  if (STATE.bar.length === 0) {
+    document.getElementById('bar-alerts').innerHTML = '';
+    document.getElementById('bar-stock-list').innerHTML = '<div style="color:var(--text3);font-size:12px;padding:12px">Nenhum produto cadastrado no estoque do bar.</div>';
+    document.getElementById('bar-tbody').innerHTML = `<tr><td colspan="6"><div class="empty"><div class="empty-icon"><i data-lucide="wine"></i></div><p>Nenhum produto cadastrado no estoque do bar.</p><button class="btn btn-primary btn-sm" onclick="openModalBarItem()" style="margin-top:12px"><i data-lucide="plus" style="width:14px;height:14px;margin-right:4px"></i> Adicionar Primeiro Produto</button></div></td></tr>`;
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+    return;
+  }
+
   const filtered = STATE.bar.filter(b => !q || b.nome.toLowerCase().includes(q) || b.cat.toLowerCase().includes(q));
 
   // Alerts
@@ -808,6 +970,17 @@ async function delBarItem(idx) {
 
 /* ===== PORTARIA ===== */
 function renderPortaria() {
+  // Empty state when no events exist
+  if (STATE.eventos.length === 0) {
+    const sel = document.getElementById('manual-evento');
+    sel.replaceChildren();
+    document.getElementById('portaria-total').textContent = '0 pessoa(s) registrada(s)';
+    document.getElementById('entry-log').innerHTML = '<div class="empty"><div class="empty-icon"><i data-lucide="scan-line"></i></div><p>Cadastre um evento para utilizar a portaria.</p><button class="btn btn-primary btn-sm" onclick="openModalEvento()" style="margin-top:12px"><i data-lucide="plus" style="width:14px;height:14px;margin-right:4px"></i> Criar evento</button></div>';
+    document.getElementById('portaria-count').innerHTML = '';
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+    return;
+  }
+
   // Populate evento select
   const sel = document.getElementById('manual-evento');
   sel.replaceChildren();
@@ -895,17 +1068,23 @@ document.getElementById('scan-input')?.addEventListener('keydown', e => {
 
 /* ===== FINANCEIRO ===== */
 function renderFinanceiro() {
-  const totalVendidos = STATE.eventos.reduce((acc,ev) =>
-    acc + ev.lotes.reduce((a,l)=>a+(l.total-l.disponivel),0), 0);
-  const totalReceita = STATE.eventos.reduce((acc,ev) =>
-    acc + ev.lotes.reduce((a,l)=>a+(l.total-l.disponivel)*l.preco,0), 0);
+  // Show dash (—) for revenue metrics when no events exist
+  const hasEvents = STATE.eventos.length > 0;
+  const totalVendidos = hasEvents ? STATE.eventos.reduce((acc,ev) =>
+    acc + ev.lotes.reduce((a,l)=>a+(l.total-l.disponivel),0), 0) : 0;
+  const totalReceita = hasEvents ? STATE.eventos.reduce((acc,ev) =>
+    acc + ev.lotes.reduce((a,l)=>a+(l.total-l.disponivel)*l.preco,0), 0) : 0;
   const totalDespesas = STATE.despesas.reduce((a,d)=>a+d.valor,0);
 
+  const receitaDisplay = hasEvents ? fmt_brl(totalReceita) : '—';
+  const saldoDisplay = hasEvents ? fmt_brl(totalReceita - totalDespesas) : '—';
+  const margemDisplay = hasEvents && totalReceita > 0 ? Math.round(((totalReceita-totalDespesas)/totalReceita)*100) + '%' : '—';
+
   document.getElementById('fin-kpis').innerHTML = `
-    <div class="kpi-card blue"><div class="kpi-label">Receita Total</div><div class="kpi-val">${fmt_brl(totalReceita)}</div><div class="kpi-sub">Ingressos vendidos</div></div>
+    <div class="kpi-card blue"><div class="kpi-label">Receita Total</div><div class="kpi-val">${receitaDisplay}</div><div class="kpi-sub">${hasEvents ? 'Ingressos vendidos' : 'Sem eventos cadastrados'}</div></div>
     <div class="kpi-card red"><div class="kpi-label">Total Despesas</div><div class="kpi-val">${fmt_brl(totalDespesas)}</div></div>
-    <div class="kpi-card ${totalReceita-totalDespesas>=0?'green':''}"><div class="kpi-label">Saldo</div><div class="kpi-val" style="color:${totalReceita-totalDespesas>=0?'var(--green)':'var(--red)'}">${fmt_brl(totalReceita-totalDespesas)}</div></div>
-    <div class="kpi-card"><div class="kpi-label">Margem</div><div class="kpi-val">${totalReceita>0?Math.round(((totalReceita-totalDespesas)/totalReceita)*100):0}%</div></div>
+    <div class="kpi-card ${hasEvents && totalReceita-totalDespesas>=0?'green':''}"><div class="kpi-label">Saldo</div><div class="kpi-val" style="color:${!hasEvents ? 'var(--text2)' : totalReceita-totalDespesas>=0?'var(--green)':'var(--red)'}">${saldoDisplay}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Margem</div><div class="kpi-val">${margemDisplay}</div></div>
   `;
 
   const tbody = document.getElementById('fin-tbody');
@@ -980,12 +1159,20 @@ async function delDespesa(idx) {
 /* ===== PARTICIPANTES ===== */
 function renderParticipantes(search='') {
   const q = search.toLowerCase();
+  const tbody = document.getElementById('part-tbody');
+
+  if (STATE.participantes.length === 0) {
+    document.getElementById('part-count').textContent = '0 participante(s)';
+    tbody.innerHTML = `<tr><td colspan="7"><div class="empty"><div class="empty-icon"><i data-lucide="users"></i></div><p>Nenhum participante registrado. As compras de ingressos alimentarão esta lista.</p></div></td></tr>`;
+    refreshIcons();
+    return;
+  }
+
   const filtered = STATE.participantes.filter(p => !q ||
     p.nome.toLowerCase().includes(q) || p.email.toLowerCase().includes(q) || p.cpf.includes(q));
 
   document.getElementById('part-count').textContent = `${filtered.length} participante(s)`;
-  const tbody = document.getElementById('part-tbody');
-  if(!filtered.length) { tbody.innerHTML=`<tr><td colspan="7"><div class="empty"><div class="empty-icon"><i data-lucide="users"></i></div><p>Nenhum participante encontrado</p></div></td></tr>`; refreshIcons(); return; }
+  if(!filtered.length) { tbody.innerHTML=`<tr><td colspan="7"><div class="empty"><div class="empty-icon"><i data-lucide="search-x"></i></div><p>Nenhum participante encontrado para a busca informada.</p></div></td></tr>`; refreshIcons(); return; }
 
   tbody.innerHTML = filtered.map((p)=>{
     const idx = STATE.participantes.indexOf(p);
@@ -1021,9 +1208,16 @@ async function togglePart(idx) {
 /* ===== CONTATOS ===== */
 function renderContatos(search='') {
   const q = search.toLowerCase();
-  const filtered = STATE.contatos.filter(c=>!q||c.nome.toLowerCase().includes(q)||c.cargo.toLowerCase().includes(q)||c.cat.toLowerCase().includes(q));
   const grid = document.getElementById('contatos-grid');
-  if(!filtered.length) { grid.innerHTML=`<div class="empty"><div class="empty-icon"><i data-lucide="book-user"></i></div><p>Nenhum contato encontrado</p></div>`; refreshIcons(); return; }
+
+  if (STATE.contatos.length === 0) {
+    grid.innerHTML = `<div class="empty"><div class="empty-icon"><i data-lucide="book-user"></i></div><p>Nenhum contato ou fornecedor cadastrado.</p><button class="btn btn-primary btn-sm" onclick="openModalContato()" style="margin-top:12px"><i data-lucide="plus" style="width:14px;height:14px;margin-right:4px"></i> Novo Contato</button></div>`;
+    refreshIcons();
+    return;
+  }
+
+  const filtered = STATE.contatos.filter(c=>!q||c.nome.toLowerCase().includes(q)||c.cargo.toLowerCase().includes(q)||c.cat.toLowerCase().includes(q));
+  if(!filtered.length) { grid.innerHTML=`<div class="empty"><div class="empty-icon"><i data-lucide="search-x"></i></div><p>Nenhum contato encontrado para a busca</p></div>`; refreshIcons(); return; }
 
   const catColor = {
     'Artista / DJ':'badge-purple','Segurança':'badge-blue','Fornecedor':'badge-green',
@@ -1201,6 +1395,10 @@ function renderAlertasCentral() {
 function renderFunilDashboard() {
   const el = document.getElementById('dash-funnel');
   if (!el) return;
+  if (STATE.eventos.length === 0) {
+    el.innerHTML = '<div style="color:var(--text3);font-size:12px;padding:10px">Cadastre um evento para visualizar o funil de conversão.</div>';
+    return;
+  }
   const totalCapacidade = STATE.eventos.reduce((a,ev)=>a+ev.capacidade,0);
   const totalVendidos = STATE.eventos.reduce((a,ev)=>a+eventoStats(ev).vendidos,0);
   // Estimativa: descoberta ~ 3.2x da capacidade total; carrinho ~ 1.35x dos vendidos
@@ -1253,6 +1451,19 @@ function renderMetas() {
   const cardsEl = document.getElementById('metas-cards');
   if (!kpiEl || !cardsEl) return;
 
+  // Empty state when no events exist
+  if (STATE.eventos.length === 0) {
+    kpiEl.innerHTML = `
+      <div class="kpi-card"><div class="kpi-label">Meta de Público</div><div class="kpi-val">—</div><div class="kpi-sub">Sem eventos cadastrados</div></div>
+      <div class="kpi-card"><div class="kpi-label">Meta de Faturamento</div><div class="kpi-val">—</div><div class="kpi-sub">Sem eventos cadastrados</div></div>
+      <div class="kpi-card"><div class="kpi-label">ROI Geral</div><div class="kpi-val">—</div><div class="kpi-sub">Sem dados suficientes</div></div>
+      <div class="kpi-card"><div class="kpi-label">Break-even</div><div class="kpi-val">—</div><div class="kpi-sub">Sem dados suficientes</div></div>
+    `;
+    cardsEl.innerHTML = '<div class="empty"><div class="empty-icon"><i data-lucide="target"></i></div><p>Cadastre um evento para definir metas de público e faturamento.</p><button class="btn btn-primary btn-sm" onclick="openModalEvento()" style="margin-top:12px"><i data-lucide="plus" style="width:14px;height:14px;margin-right:4px"></i> Criar evento</button></div>';
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+    return;
+  }
+
   const totalDespesas = STATE.despesas.reduce((a,d)=>a+d.valor,0);
   let somaMetaPublico=0, somaPublico=0, somaMetaFat=0, somaFat=0;
   STATE.eventos.forEach(ev => { const st=eventoStats(ev); somaMetaPublico+=ev.metaPublico||0; somaPublico+=st.vendidos; somaMetaFat+=ev.metaFaturamento||0; somaFat+=st.receita; });
@@ -1304,6 +1515,15 @@ function renderComparativo() {
   const insightsEl = document.getElementById('comparativo-insights');
   const heatEl = document.getElementById('heatmap-grid');
   if (!tbody) return;
+
+  // Empty state when no events
+  if (STATE.eventos.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="8"><div class="empty"><div class="empty-icon"><i data-lucide="bar-chart-3"></i></div><p>Cadastre eventos para visualizar o comparativo de performance.</p></div></td></tr>`;
+    if (insightsEl) insightsEl.innerHTML = '<div style="color:var(--text3);font-size:12px;padding:10px">Sem dados para gerar insights.</div>';
+    if (heatEl) heatEl.innerHTML = '<div style="color:var(--text3);font-size:12px;padding:10px">Sem entradas para exibir heatmap.</div>';
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+    return;
+  }
 
   const totalDespesas = STATE.despesas.reduce((a,d)=>a+d.valor,0);
   const rows = STATE.eventos.map(ev => {
@@ -1373,6 +1593,20 @@ function atualizarUnitEcon() {
 function renderUnitEconomics(resetInputs=true) {
   const kpiEl = document.getElementById('ue-kpis');
   if (!kpiEl) return;
+
+  // Empty state when no events
+  if (STATE.eventos.length === 0) {
+    kpiEl.innerHTML = `
+      <div class="kpi-card"><div class="kpi-label">GMV</div><div class="kpi-val">—</div><div class="kpi-sub">Sem transações</div></div>
+      <div class="kpi-card"><div class="kpi-label">ARPU</div><div class="kpi-val">—</div><div class="kpi-sub">Sem dados</div></div>
+      <div class="kpi-card"><div class="kpi-label">Take Rate</div><div class="kpi-val">—</div><div class="kpi-sub">Sem dados</div></div>
+      <div class="kpi-card"><div class="kpi-label">LTV estimado</div><div class="kpi-val">—</div><div class="kpi-sub">Sem dados</div></div>
+      <div class="kpi-card"><div class="kpi-label">Payback do CAC</div><div class="kpi-val">—</div><div class="kpi-sub">Sem dados</div></div>
+      <div class="kpi-card"><div class="kpi-label">LTV / CAC</div><div class="kpi-val">—</div><div class="kpi-sub">Sem dados</div></div>
+    `;
+    return;
+  }
+
   const ue = sanitizeUnitEcon(STATE.unitEcon);
   if (resetInputs) {
     const cacEl = document.getElementById('ue-cac'), churnEl = document.getElementById('ue-churn'), takeEl = document.getElementById('ue-take');

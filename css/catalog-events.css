@@ -22,10 +22,12 @@
   left: 50%;
   transform: translateX(-50%);
   width: 900px;
+  max-width: 100vw;
   height: 500px;
   background: radial-gradient(circle, rgba(34, 197, 94, 0.12) 0%, rgba(21, 128, 61, 0.03) 50%, transparent 75%);
   filter: blur(90px);
   pointer-events: none;
+  overflow: hidden;
   z-index: 0;
 }
 
@@ -51,7 +53,7 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-family: 'Manrope', sans-serif;
+  font-family: 'Space Grotesk', sans-serif;
   font-size: 0.88rem;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.65);
@@ -86,7 +88,7 @@
   background: rgba(34, 197, 94, 0.08);
   border: 1px solid rgba(34, 197, 94, 0.28);
   color: #4ade80;
-  font-family: 'Manrope', sans-serif;
+  font-family: 'Space Grotesk', sans-serif;
   font-size: 0.74rem;
   font-weight: 700;
   letter-spacing: 0.14em;
@@ -95,7 +97,7 @@
 }
 
 .catalog-header h1 {
-  font-family: 'Manrope', 'Sora', sans-serif;
+  font-family: 'Space Grotesk', sans-serif;
   font-size: clamp(2.3rem, 4.4vw, 3.8rem);
   font-weight: 800;
   line-height: 1.15;
@@ -112,7 +114,7 @@
 }
 
 .catalog-header p {
-  font-family: 'Manrope', sans-serif;
+  font-family: 'Space Grotesk', sans-serif;
   color: rgba(255, 255, 255, 0.72);
   font-size: clamp(1rem, 1.2vw, 1.15rem);
   line-height: 1.65;
@@ -195,7 +197,7 @@
   border: none;
   outline: none;
   color: #ffffff;
-  font-family: 'Manrope', sans-serif;
+  font-family: 'Space Grotesk', sans-serif;
   font-size: 0.92rem;
   font-weight: 500;
   padding: 10px 0;
@@ -264,7 +266,7 @@
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.14);
   color: #f1f5f9;
-  font-family: 'Manrope', sans-serif;
+  font-family: 'Space Grotesk', sans-serif;
   font-size: 0.88rem;
   font-weight: 600;
   cursor: pointer;
@@ -299,7 +301,7 @@
   border-radius: 999px;
   background: linear-gradient(135deg, rgba(34, 197, 94, 0.35) 0%, rgba(4, 17, 10, 0.85) 100%);
   color: #ffffff;
-  font-family: 'Manrope', sans-serif;
+  font-family: 'Space Grotesk', sans-serif;
   font-size: 0.92rem;
   font-weight: 700;
   border: 1px solid rgba(74, 222, 128, 0.55);
@@ -347,7 +349,7 @@
   background: rgba(34, 197, 94, 0.12);
   border: 1px solid rgba(34, 197, 94, 0.35);
   color: #86efac;
-  font-family: 'Manrope', sans-serif;
+  font-family: 'Space Grotesk', sans-serif;
   font-size: 0.80rem;
   font-weight: 600;
   animation: chipIn 0.25s ease-out;
@@ -378,7 +380,7 @@
   background: transparent;
   border: none;
   color: rgba(255, 255, 255, 0.55);
-  font-family: 'Manrope', sans-serif;
+  font-family: 'Space Grotesk', sans-serif;
   font-size: 0.82rem;
   font-weight: 600;
   text-decoration: underline;
@@ -399,7 +401,7 @@
 }
 
 .catalog-results-count {
-  font-family: 'Manrope', sans-serif;
+  font-family: 'Space Grotesk', sans-serif;
   font-size: 0.88rem;
   color: rgba(255, 255, 255, 0.65);
 }
@@ -410,7 +412,7 @@
   border-radius: 999px;
   padding: 8px 30px 8px 16px;
   color: #ffffff;
-  font-family: 'Manrope', sans-serif;
+  font-family: 'Space Grotesk', sans-serif;
   font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
@@ -499,7 +501,7 @@
   backdrop-filter: blur(8px);
   border: 1px solid rgba(34, 197, 94, 0.45);
   color: #86efac;
-  font-family: 'Manrope', sans-serif;
+  font-family: 'Space Grotesk', sans-serif;
   font-size: 0.72rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -513,7 +515,7 @@
   backdrop-filter: blur(8px);
   border: 1px solid rgba(255, 255, 255, 0.2);
   color: #ffffff;
-  font-family: 'Manrope', sans-serif;
+  font-family: 'Space Grotesk', sans-serif;
   font-size: 0.72rem;
   font-weight: 800;
 }
@@ -530,7 +532,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-family: 'Manrope', sans-serif;
+  font-family: 'Space Grotesk', sans-serif;
   font-size: 0.78rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -540,7 +542,7 @@
 }
 
 .catalog-card-title {
-  font-family: 'Manrope', 'Sora', sans-serif;
+  font-family: 'Space Grotesk', sans-serif;
   font-size: 1.35rem;
   font-weight: 800;
   line-height: 1.25;
@@ -554,7 +556,7 @@
   flex-direction: column;
   gap: 6px;
   margin-bottom: 18px;
-  font-family: 'Manrope', sans-serif;
+  font-family: 'Space Grotesk', sans-serif;
   font-size: 0.85rem;
   color: rgba(255, 255, 255, 0.7);
 }
@@ -594,7 +596,7 @@
 }
 
 .catalog-price-val {
-  font-family: 'Manrope', sans-serif;
+  font-family: 'Space Grotesk', sans-serif;
   font-size: 1.18rem;
   font-weight: 800;
   color: #ffffff;
@@ -609,7 +611,7 @@
   background: linear-gradient(135deg, rgba(34, 197, 94, 0.25) 0%, rgba(4, 17, 10, 0.75) 100%);
   border: 1px solid rgba(34, 197, 94, 0.45);
   color: #ffffff;
-  font-family: 'Manrope', sans-serif;
+  font-family: 'Space Grotesk', sans-serif;
   font-size: 0.86rem;
   font-weight: 700;
   cursor: pointer;
@@ -644,7 +646,7 @@
 }
 
 .catalog-state-title {
-  font-family: 'Manrope', 'Sora', sans-serif;
+  font-family: 'Space Grotesk', sans-serif;
   font-size: 1.5rem;
   font-weight: 800;
   color: #ffffff;
@@ -652,7 +654,7 @@
 }
 
 .catalog-state-desc {
-  font-family: 'Manrope', sans-serif;
+  font-family: 'Space Grotesk', sans-serif;
   font-size: 0.95rem;
   color: rgba(255, 255, 255, 0.65);
   max-width: 480px;
@@ -668,7 +670,7 @@
   border-radius: 999px;
   background: #22c55e;
   color: #041008;
-  font-family: 'Manrope', sans-serif;
+  font-family: 'Space Grotesk', sans-serif;
   font-size: 0.92rem;
   font-weight: 700;
   border: none;
@@ -756,7 +758,7 @@ body.catalog-page {
 }
 
 .filters-drawer-title {
-  font-family: 'Manrope', 'Sora', sans-serif;
+  font-family: 'Space Grotesk', sans-serif;
   font-size: 1.35rem;
   font-weight: 800;
   color: #ffffff;
@@ -787,7 +789,7 @@ body.catalog-page {
 
 /* Grupo de Filtros no Drawer */
 .filter-group-title {
-  font-family: 'Manrope', sans-serif;
+  font-family: 'Space Grotesk', sans-serif;
   font-size: 0.82rem;
   font-weight: 800;
   letter-spacing: 0.12em;
@@ -821,7 +823,7 @@ body.catalog-page {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.10);
   color: rgba(255, 255, 255, 0.8);
-  font-family: 'Manrope', sans-serif;
+  font-family: 'Space Grotesk', sans-serif;
   font-size: 0.82rem;
   font-weight: 600;
   transition: all 0.22s ease;
@@ -847,7 +849,7 @@ body.catalog-page {
 }
 
 .price-range-val {
-  font-family: 'Manrope', sans-serif;
+  font-family: 'Space Grotesk', sans-serif;
   font-size: 0.95rem;
   font-weight: 700;
   color: #ffffff;
@@ -875,7 +877,7 @@ body.catalog-page {
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.12);
   color: rgba(255, 255, 255, 0.85);
-  font-family: 'Manrope', sans-serif;
+  font-family: 'Space Grotesk', sans-serif;
   font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
@@ -895,7 +897,7 @@ body.catalog-page {
   background: #22c55e;
   border: none;
   color: #041008;
-  font-family: 'Manrope', sans-serif;
+  font-family: 'Space Grotesk', sans-serif;
   font-size: 0.92rem;
   font-weight: 800;
   cursor: pointer;
@@ -974,4 +976,139 @@ body.catalog-page {
     width: 100%;
     justify-content: space-between;
   }
+}
+
+/* Prevenção de transbordo horizontal para telas mobile estreitas (320px a 430px) */
+@media (max-width: 480px) {
+  .catalog-main {
+    width: 100%;
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+  .catalog-search-capsule {
+    border-radius: 20px;
+    padding: 12px;
+    width: 100%;
+  }
+  .search-field input,
+  .search-field select {
+    min-width: 0;
+    width: 100%;
+    font-size: 13px;
+  }
+  .catalog-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .catalog-card {
+    border-radius: 16px;
+  }
+  .catalog-header h1 {
+    font-size: 1.85rem;
+  }
+}
+
+
+/* ============================================================
+   CORREÇÃO DA CÁPSULA DE BUSCA & FILTROS (SEM TEXTO CORTADO)
+   ============================================================ */
+.catalog-title-accent {
+  color: #86efac !important;
+  text-shadow: none !important;
+}
+
+.catalog-search-capsule {
+  display: flex !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;
+  background: rgba(10, 15, 10, 0.9) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 16px !important;
+  padding: 8px !important;
+  gap: 8px !important;
+  max-width: 1100px !important;
+  margin: 0 auto 36px !important;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5) !important;
+}
+
+.catalog-search-input-wrap {
+  flex: 2 !important;
+  min-width: 220px !important;
+  display: flex !important;
+  align-items: center !important;
+  padding: 0 12px !important;
+}
+
+.catalog-select-wrap {
+  flex: 1.2 !important;
+  min-width: 170px !important;
+  border-left: 1px solid rgba(255, 255, 255, 0.08) !important;
+  padding: 0 10px !important;
+  position: relative !important;
+}
+
+.catalog-select {
+  width: 100% !important;
+  background: transparent !important;
+  border: none !important;
+  color: #e5e5e5 !important;
+  font-size: 0.88rem !important;
+  font-weight: 500 !important;
+  padding: 10px 24px 10px 8px !important;
+  cursor: pointer !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.catalog-select-wrap::after {
+  content: '▾' !important;
+  position: absolute !important;
+  right: 12px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  font-size: 11px !important;
+  color: #a3a3a3 !important;
+  pointer-events: none !important;
+}
+
+.catalog-filter-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 10px 18px !important;
+  border-radius: 10px !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  color: #ffffff !important;
+  font-size: 0.88rem !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.2s !important;
+}
+
+.catalog-filter-btn:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
+}
+
+.catalog-submit-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 10px 22px !important;
+  border-radius: 10px !important;
+  background: #22c55e !important;
+  border: none !important;
+  color: #000000 !important;
+  font-size: 0.88rem !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  transition: all 0.2s !important;
+}
+
+.catalog-submit-btn:hover {
+  background: #4ade80 !important;
 }

@@ -803,6 +803,8 @@ const modals = {
 
 let activeModal = null;
 let modalTrigger = null; // element to return focus to on close
+let pendingCloseTimer = null;
+let pendingSwitchTimer = null;
 const FOCUSABLE_SEL = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 function trapFocus(e) {
@@ -865,6 +867,15 @@ const ModalScrollLock = {
 function openModal(name) {
     if (!modals[name]) return;
     
+    if (pendingCloseTimer) {
+        clearTimeout(pendingCloseTimer);
+        pendingCloseTimer = null;
+    }
+    if (pendingSwitchTimer) {
+        clearTimeout(pendingSwitchTimer);
+        pendingSwitchTimer = null;
+    }
+
     const prevActive = activeModal;
 
     // Remember what had focus so we can restore it when the modal closes.
@@ -889,8 +900,6 @@ function openModal(name) {
             }
         });
 
-        // aria-hidden is only safe to remove once the overlay is actually in
-        // the accessibility tree — do it before moving focus in.
         overlay.removeAttribute('aria-hidden');
         overlay.classList.add('open');
         activeModal = name;
@@ -909,12 +918,14 @@ function openModal(name) {
     };
 
     if (prevActive && prevActive !== name) {
-        // Switch between modals: fade out prev first
         const prevM = modals[prevActive];
         if (prevM) {
             prevM.classList.remove('visible');
         }
-        window.setTimeout(showNewModal, 150); // wait for fade out
+        pendingSwitchTimer = window.setTimeout(() => {
+            pendingSwitchTimer = null;
+            showNewModal();
+        }, 120);
     } else {
         showNewModal();
     }
@@ -922,13 +933,13 @@ function openModal(name) {
 
 function closeModal() {
     if (!activeModal) return;
+    if (pendingSwitchTimer) {
+        clearTimeout(pendingSwitchTimer);
+        pendingSwitchTimer = null;
+    }
+
     const modal = modals[activeModal];
 
-    // Move focus OUT of the modal before hiding it — setting aria-hidden
-    // on an ancestor of the focused element is invalid and triggers the
-    // "Blocked aria-hidden on an element because its descendant retained
-    // focus" console warning. Restoring focus to the trigger also keeps
-    // keyboard/screen-reader users oriented.
     if (modal && modal.contains(document.activeElement)) {
         document.activeElement.blur();
     }
@@ -944,7 +955,17 @@ function closeModal() {
         inp.disabled = true;
     });
 
+    let finished = false;
     const finishClose = () => {
+        if (finished) return;
+        finished = true;
+        if (pendingCloseTimer) {
+            clearTimeout(pendingCloseTimer);
+            pendingCloseTimer = null;
+        }
+        // Se outro modal foi aberto nesse meio tempo, aborta o fechamento definitivo
+        if (activeModal !== null) return;
+
         overlay.setAttribute('aria-hidden', 'true');
         Object.values(modals).forEach(m => {
             if (m) {
@@ -958,14 +979,12 @@ function closeModal() {
         finishClose();
     } else {
         overlay.addEventListener('transitionend', finishClose, { once: true });
-        // Safety net in case transitionend doesn't fire (e.g. tab backgrounded)
-        window.setTimeout(finishClose, 400);
+        pendingCloseTimer = window.setTimeout(finishClose, 300);
     }
 
     activeModal = null;
     document.body.style.overflow = '';
 
-    // Defere a restauração do foco para depois de possíveis re-renderizações do DOM
     const trigger = modalTrigger;
     window.setTimeout(() => {
         if (trigger && document.body.contains(trigger)) {
