@@ -438,7 +438,7 @@ if (brazilContainer && brazilSvg && brazilOverlay) {
       }
       @keyframes bcp${idx} {
         0%, 100% { r: 3; opacity: .7; }
-        50%       { r: 4.5; opacity: 1; filter: drop-shadow(0 0 10px rgba(34,197,94,.8)); }
+        50%       { r: 4.5; opacity: 1; filter: drop-shadow(0 0 8px rgba(32,217,107,.45)); }
       }
     `;
 
@@ -553,7 +553,7 @@ if (pCanvas && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
             if (p.x > pCanvas.width) p.x = 0;
             if (p.y < 0) p.y = pCanvas.height;
             if (p.y > pCanvas.height) p.y = 0;
-            pCtx.fillStyle = `rgba(34,197,94,${p.a})`;
+            pCtx.fillStyle = `rgba(32,217,107,${p.a * 0.55})`;
             pCtx.beginPath();
             pCtx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
             pCtx.fill();
@@ -600,6 +600,51 @@ modTabs.forEach((tab, i) => {
             modTabs[nextIdx].focus();
         }
     });
+});
+
+/* ============================================================
+   DEMONSTRAÇÃO — TELAS OPERACIONAIS
+   ============================================================ */
+const liveDemoTabs = Array.from(document.querySelectorAll('.live-demo-tab'));
+const liveDemoPanels = Array.from(document.querySelectorAll('.live-demo-panel'));
+const liveDemoTabList = document.querySelector('.live-demo-tabs');
+
+const activateLiveDemoTab = (tab) => {
+    const activePanel = document.getElementById(tab.getAttribute('aria-controls'));
+    if (!activePanel) return;
+
+    liveDemoTabs.forEach((item) => {
+        const active = item === tab;
+        item.classList.toggle('is-active', active);
+        item.setAttribute('aria-selected', String(active));
+        item.tabIndex = active ? 0 : -1;
+    });
+
+    liveDemoPanels.forEach((panel) => {
+        const active = panel === activePanel;
+        panel.classList.toggle('is-active', active);
+        panel.hidden = !active;
+    });
+};
+
+liveDemoTabs.forEach((tab) => {
+    tab.addEventListener('click', () => activateLiveDemoTab(tab));
+});
+
+liveDemoTabList?.addEventListener('keydown', (event) => {
+    const currentIndex = liveDemoTabs.indexOf(event.target.closest('.live-demo-tab'));
+    if (currentIndex < 0) return;
+
+    let nextIndex = currentIndex;
+    if (event.key === 'ArrowRight') nextIndex = (currentIndex + 1) % liveDemoTabs.length;
+    if (event.key === 'ArrowLeft') nextIndex = (currentIndex - 1 + liveDemoTabs.length) % liveDemoTabs.length;
+    if (event.key === 'Home') nextIndex = 0;
+    if (event.key === 'End') nextIndex = liveDemoTabs.length - 1;
+    if (nextIndex === currentIndex) return;
+
+    event.preventDefault();
+    liveDemoTabs[nextIndex].click();
+    liveDemoTabs[nextIndex].focus();
 });
 
 

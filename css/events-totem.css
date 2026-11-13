@@ -10,9 +10,9 @@
   position: relative;
   overflow: hidden;
   padding: 100px 3% 90px;
-  background: #000000;
-  border-top: 1px solid rgba(34, 197, 94, 0.12);
-  border-bottom: 1px solid rgba(34, 197, 94, 0.08);
+  background: var(--background, #101214);
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   min-height: 900px;
   box-sizing: border-box;
 }
@@ -43,11 +43,11 @@
   letter-spacing: -0.035em;
   color: #ffffff;
   margin: 0 0 16px 0;
-  filter: drop-shadow(0 4px 16px rgba(0, 0, 0, 0.9));
+  filter: drop-shadow(0 4px 16px rgba(16, 18, 20, 0.9));
 }
 
 #events .premium-events-header .totem-title-gradient {
-  color: #22c55e;
+  color: #20d96b;
   display: inline-block;
 }
 
@@ -106,7 +106,7 @@
   inset: 0;
   clip-path: url(#cinemaScreenClip);
   -webkit-clip-path: url(#cinemaScreenClip);
-  background: #040d07;
+  background: #191c20;
   overflow: hidden;
 }
 
@@ -131,11 +131,11 @@
   inset: 0;
   background: linear-gradient(
     180deg,
-    rgba(0, 0, 0, 0.20) 0%,
-    rgba(0, 0, 0, 0.00) 35%,
-    rgba(0, 0, 0, 0.45) 68%,
-    rgba(0, 0, 0, 0.90) 95%,
-    #000000 100%
+    rgba(16, 18, 20, 0.20) 0%,
+    rgba(16, 18, 20, 0.00) 35%,
+    rgba(16, 18, 20, 0.45) 68%,
+    rgba(16, 18, 20, 0.90) 95%,
+    #101214 100%
   );
   pointer-events: none;
 }
@@ -172,11 +172,11 @@
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #86efac;
-  background: rgba(4, 17, 10, 0.75);
-  border: 1px solid rgba(34, 197, 94, 0.45);
+  color: #83f2a7;
+  background: rgba(25, 28, 32, 0.75);
+  border: 1px solid rgba(32, 217, 107, 0.45);
   backdrop-filter: blur(10px);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 4px 14px rgba(16, 18, 20, 0.6);
 }
 
 .cinema-top-badge.is-highlight {
@@ -197,7 +197,7 @@
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #4ade80;
+  color: #55e98c;
   margin: 0;
 }
 
@@ -209,7 +209,7 @@
   color: #ffffff;
   margin: 0;
   letter-spacing: -0.025em;
-  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.95);
+  text-shadow: 0 2px 12px rgba(16, 18, 20, 0.95);
 }
 
 .cinema-desc {
@@ -233,8 +233,8 @@
   transform: translate(-50%, -50%) scale(1);
   opacity: 1;
   z-index: 10;
-  filter: drop-shadow(0 24px 55px rgba(0, 0, 0, 0.95))
-          drop-shadow(0 0 35px rgba(34, 197, 94, 0.22));
+  filter: drop-shadow(0 24px 55px rgba(16, 18, 20, 0.95))
+          drop-shadow(0 0 35px rgba(32, 217, 107, 0.22));
   pointer-events: auto;
   cursor: default;
 }
@@ -289,10 +289,10 @@
   width: 54px;
   height: 54px;
   border-radius: 50%;
-  background: rgba(4, 17, 10, 0.75);
+  background: rgba(25, 28, 32, 0.75);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(34, 197, 94, 0.35);
+  border: 1px solid rgba(32, 217, 107, 0.35);
   color: #f8fafc;
   display: flex;
   align-items: center;
@@ -303,15 +303,15 @@
               background 0.28s ease,
               border-color 0.28s ease,
               box-shadow 0.28s ease;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+  box-shadow: 0 8px 30px rgba(16, 18, 20, 0.7);
 }
 
 .cinema-nav-btn:hover {
-  background: rgba(6, 26, 15, 0.92);
-  border-color: #4ade80;
+  background: rgba(37, 41, 45, 0.92);
+  border-color: #55e98c;
   color: #ffffff;
   transform: translateY(-50%) scale(1.1);
-  box-shadow: 0 0 25px rgba(34, 197, 94, 0.5), 0 10px 30px rgba(0, 0, 0, 0.8);
+  box-shadow: 0 10px 30px rgba(16, 18, 20, 0.8);
 }
 
 .cinema-nav-btn:active {
@@ -351,8 +351,8 @@
 
 .cinema-dot.is-active {
   width: 42px;
-  background: #22c55e;
-  box-shadow: 0 0 12px rgba(34, 197, 94, 0.7);
+  background: #20d96b;
+  box-shadow: none;
 }
 
 /* ============================================================
@@ -397,68 +397,27 @@
   cursor: pointer;
 }
 
-/* Efeito de Gota Líquida (Droplet Ripple) Idêntico ao Home */
-.cinema-actions .cinema-btn-primary::before,
-.cinema-actions .cinema-btn-secondary::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 160px;
-  height: 160px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.32) 0%, rgba(34, 197, 94, 0.2) 40%, transparent 70%);
-  transform: translate(-50%, -50%) scale(0);
-  opacity: 0;
-  pointer-events: none;
-  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.5s ease;
-}
-
-.cinema-actions .cinema-btn-primary:hover::before,
-.cinema-actions .cinema-btn-secondary:hover::before {
-  transform: translate(-50%, -50%) scale(1.6);
-  opacity: 1;
-  animation: cinemaDropletWave 1.8s infinite ease-out;
-}
-
-@keyframes cinemaDropletWave {
-  0% {
-    transform: translate(-50%, -50%) scale(0.2);
-    opacity: 0.85;
-  }
-  50% {
-    transform: translate(-50%, -50%) scale(1.2);
-    opacity: 0.35;
-  }
-  100% {
-    transform: translate(-50%, -50%) scale(1.8);
-    opacity: 0;
-  }
-}
-
-/* ── Botão "Saber mais" (CTA de Ação com Nuance Verde do Home) ── */
+/* ── Botão "Saber mais" — ação em verde sólido, sem brilho decorativo ── */
 .cinema-actions .cinema-btn-primary {
   padding: 0 32px;
-  background: linear-gradient(135deg, rgba(34, 197, 94, 0.20) 0%, rgba(4, 17, 10, 0.65) 100%);
-  color: #ffffff;
+  background: #20d96b;
+  color: #101214;
   font-weight: 600;
-  border: 1px solid rgba(34, 197, 94, 0.38);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3),
-              0 0 20px rgba(34, 197, 94, 0.12),
-              inset 0 1px 0 rgba(255, 255, 255, 0.20);
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+  border: 1px solid #20d96b;
+  box-shadow: 0 8px 24px rgba(16, 18, 20, 0.32);
+  text-shadow: none;
 }
 
 /* ── Botão "Ver todos os eventos" (CTA Secundário Idêntico ao Home) ── */
 .cinema-actions .cinema-btn-secondary {
   padding: 0 30px;
-  background: rgba(4, 17, 10, 0.55);
+  background: rgba(25, 28, 32, 0.55);
   color: rgba(255, 255, 255, 0.9);
   font-weight: 550;
   border: 1px solid rgba(255, 255, 255, 0.10);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25),
+  box-shadow: 0 8px 32px rgba(16, 18, 20, 0.25),
               inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+  text-shadow: 0 1px 4px rgba(16, 18, 20, 0.6);
 }
 
 /* ── Interação Idêntica ao Home: Salto do Botão Ativo + Desfoque Suave do Irmão ── */
@@ -478,20 +437,17 @@
 }
 
 .cinema-actions .cinema-btn-primary:hover {
-  background: linear-gradient(135deg, rgba(34, 197, 94, 0.32) 0%, rgba(4, 17, 10, 0.8) 100%);
-  border-color: rgba(74, 222, 128, 0.7);
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.5),
-              0 0 28px rgba(34, 197, 94, 0.35),
-              inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  background: #55e98c;
+  border-color: #55e98c;
+  color: #101214;
+  box-shadow: 0 12px 30px rgba(16, 18, 20, 0.4);
 }
 
 .cinema-actions .cinema-btn-secondary:hover {
-  background: rgba(6, 22, 14, 0.75);
-  border-color: rgba(34, 197, 94, 0.35);
+  background: rgba(37, 41, 45, 0.75);
+  border-color: rgba(255, 255, 255, 0.3);
   color: #ffffff;
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.5),
-              0 0 20px rgba(34, 197, 94, 0.16),
-              inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  box-shadow: 0 12px 36px rgba(16, 18, 20, 0.5);
 }
 
 .cinema-actions .cinema-btn-primary:active,

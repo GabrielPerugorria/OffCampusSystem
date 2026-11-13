@@ -24,7 +24,7 @@ const newCss = `/* ------------------------------------------------------------
   content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse 70% 50% at 50% 25%, rgba(34, 197, 94, 0.13), transparent 70%);
+  background: radial-gradient(ellipse 70% 50% at 50% 25%, rgba(32, 217, 107, 0.13), transparent 70%);
   pointer-events: none;
 }
 
@@ -76,7 +76,7 @@ const newCss = `/* ------------------------------------------------------------
   top: 25%;
   left: 50%;
   transform: translateX(-50%);
-  background: radial-gradient(ellipse at center, rgba(34, 197, 94, 0.22) 0%, rgba(34, 197, 94, 0.05) 55%, transparent 75%);
+  background: radial-gradient(ellipse at center, rgba(32, 217, 107, 0.22) 0%, rgba(32, 217, 107, 0.05) 55%, transparent 75%);
   filter: blur(45px);
   pointer-events: none;
   z-index: 1;
@@ -98,7 +98,7 @@ const newCss = `/* ------------------------------------------------------------
   left: 50%;
   transform: translateX(-50%);
   z-index: 2;
-  filter: drop-shadow(0 32px 60px rgba(0, 0, 0, 0.95)) drop-shadow(0 0 25px rgba(34, 197, 94, 0.07));
+  filter: drop-shadow(0 32px 60px rgba(0, 0, 0, 0.95)) drop-shadow(0 0 25px rgba(32, 217, 107, 0.07));
 }
 
 .hiw-laptop-lid {
@@ -201,10 +201,10 @@ const newCss = `/* ------------------------------------------------------------
   gap: 6px;
   color: var(--secondary);
   font-size: 0.68rem;
-  background: rgba(34, 197, 94, 0.12);
+  background: rgba(32, 217, 107, 0.12);
   padding: 3px 9px;
   border-radius: 999px;
-  border: 1px solid rgba(34, 197, 94, 0.28);
+  border: 1px solid rgba(32, 217, 107, 0.28);
 }
 
 .hiw-live-pulse {
@@ -249,9 +249,9 @@ const newCss = `/* ------------------------------------------------------------
 }
 
 .hiw-side-btn.active {
-  background: rgba(34, 197, 94, 0.18);
+  background: rgba(32, 217, 107, 0.18);
   color: var(--primary);
-  border: 1px solid rgba(34, 197, 94, 0.35);
+  border: 1px solid rgba(32, 217, 107, 0.35);
 }
 
 .hiw-laptop-main {
@@ -329,7 +329,7 @@ const newCss = `/* ------------------------------------------------------------
 .hiw-chart-badge {
   font-size: 0.58rem;
   color: var(--primary);
-  background: rgba(34, 197, 94, 0.14);
+  background: rgba(32, 217, 107, 0.14);
   padding: 2px 6px;
   border-radius: 4px;
   font-weight: 600;
@@ -377,7 +377,7 @@ const newCss = `/* ------------------------------------------------------------
   z-index: 3;
   transform: rotate(-3.5deg);
   transform-origin: center bottom;
-  filter: drop-shadow(0 26px 50px rgba(0, 0, 0, 0.9)) drop-shadow(0 0 20px rgba(34, 197, 94, 0.06));
+  filter: drop-shadow(0 26px 50px rgba(0, 0, 0, 0.9)) drop-shadow(0 0 20px rgba(32, 217, 107, 0.06));
 }
 
 .hiw-tablet-frame {
@@ -434,8 +434,8 @@ const newCss = `/* ------------------------------------------------------------
 .hiw-tablet-status {
   font-size: 0.58rem;
   color: var(--secondary);
-  background: rgba(34, 197, 94, 0.14);
-  border: 1px solid rgba(34, 197, 94, 0.26);
+  background: rgba(32, 217, 107, 0.14);
+  border: 1px solid rgba(32, 217, 107, 0.26);
   padding: 2px 6px;
   border-radius: 999px;
   font-weight: 600;
@@ -480,18 +480,18 @@ const newCss = `/* ------------------------------------------------------------
 
 .hiw-prog-fill {
   height: 100%;
-  background: linear-gradient(90deg, #15803d, #22c55e);
+  background: linear-gradient(90deg, #16964e, #20d96b);
   border-radius: 999px;
 }
 
 .hiw-prog-fill.is-full {
-  background: #22c55e;
+  background: #20d96b;
 }
 
 .hiw-tablet-stock {
   margin-top: auto;
-  background: rgba(34, 197, 94, 0.06);
-  border: 1px dashed rgba(34, 197, 94, 0.3);
+  background: rgba(32, 217, 107, 0.06);
+  border: 1px dashed rgba(32, 217, 107, 0.3);
   border-radius: 8px;
   padding: 7px 9px;
   display: flex;
@@ -521,13 +521,13 @@ const newCss = `/* ------------------------------------------------------------
   z-index: 4;
   transform: rotate(2.5deg);
   transform-origin: center bottom;
-  filter: drop-shadow(0 30px 60px rgba(0, 0, 0, 0.95)) drop-shadow(0 0 20px rgba(34, 197, 94, 0.08));
+  filter: drop-shadow(0 30px 60px rgba(0, 0, 0, 0.95)) drop-shadow(0 0 20px rgba(32, 217, 107, 0.08));
 }
 
 .hiw-phone-frame {
   width: 100%;
   height: 100%;
-  background: linear-gradient(160deg, #212e24 0%, #0d1510 100%);
+  background: linear-gradient(160deg, #292d31 0%, #191c20 100%);
   border: 1.5px solid rgba(255, 255, 255, 0.2);
   border-radius: 32px;
   padding: 7px;
@@ -540,7 +540,7 @@ const newCss = `/* ------------------------------------------------------------
 .hiw-phone-island {
   width: 52px;
   height: 12px;
-  background: #000000;
+  background: #191c20;
   border-radius: 999px;
   margin: 1px auto 5px;
   z-index: 12;
@@ -548,7 +548,7 @@ const newCss = `/* ------------------------------------------------------------
 }
 
 .hiw-screen-phone {
-  background: #040905;
+  background: #191c20;
   border-radius: 25px;
   flex: 1;
   border: 1px solid rgba(255, 255, 255, 0.07);
@@ -595,9 +595,9 @@ const newCss = `/* ------------------------------------------------------------
 
 .hiw-app-live {
   font-size: 0.52rem;
-  background: rgba(34, 197, 94, 0.15);
+  background: rgba(32, 217, 107, 0.15);
   color: var(--secondary);
-  border: 1px solid rgba(34, 197, 94, 0.28);
+  border: 1px solid rgba(32, 217, 107, 0.28);
   padding: 1px 5px;
   border-radius: 999px;
   font-weight: 700;
@@ -605,7 +605,7 @@ const newCss = `/* ------------------------------------------------------------
 
 .hiw-phone-card {
   background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(34, 197, 94, 0.24);
+  border: 1px solid rgba(32, 217, 107, 0.24);
   border-radius: 10px;
   padding: 8px 9px;
   display: flex;
@@ -711,10 +711,10 @@ const newCss = `/* ------------------------------------------------------------
   background: rgba(8, 18, 12, 0.96);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(34, 197, 94, 0.4);
+  border: 1px solid rgba(32, 217, 107, 0.4);
   border-radius: 12px;
   padding: 8px 12px;
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.85), 0 0 20px rgba(34, 197, 94, 0.2);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.85), 0 0 20px rgba(32, 217, 107, 0.2);
   pointer-events: none;
   white-space: nowrap;
   opacity: 0;
@@ -725,8 +725,8 @@ const newCss = `/* ------------------------------------------------------------
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: rgba(34, 197, 94, 0.16);
-  border: 1px solid rgba(34, 197, 94, 0.45);
+  background: rgba(32, 217, 107, 0.16);
+  border: 1px solid rgba(32, 217, 107, 0.45);
   color: var(--primary);
   display: flex;
   align-items: center;
@@ -757,8 +757,8 @@ const newCss = `/* ------------------------------------------------------------
   font-size: 0.58rem;
   font-weight: 600;
   color: var(--secondary);
-  background: rgba(34, 197, 94, 0.12);
-  border: 1px solid rgba(34, 197, 94, 0.3);
+  background: rgba(32, 217, 107, 0.12);
+  border: 1px solid rgba(32, 217, 107, 0.3);
   padding: 2px 6px;
   border-radius: 999px;
   margin-left: 3px;

@@ -69,19 +69,51 @@ test('Badges decorativos cinema-top-badge removidos do index.html', () => {
 
 // 4. Padronização de Títulos com Gradiente
 const mainCss = fs.readFileSync('css/main.css', 'utf8');
-test('Classe de gradiente oficial definida no main.css', () => {
+test('Paleta grafite e verde vivo definidos nas áreas pública e administrativa', () => {
   assert(mainCss.includes('.evo-title-gradient') || mainCss.includes('.section-heading'), 'Falta gradiente de título no main.css');
-  assert(mainCss.includes('linear-gradient(135deg, #ffffff 60%, #22c55e 100%)'), 'Gradiente não utiliza o padrão branco→verde oficial');
+  assert(mainCss.includes('--background: #101214'), 'Falta o fundo grafite da identidade visual');
+  assert(mainCss.includes('--surface: #191c20'), 'Falta a superfície grafite da identidade visual');
+  assert(mainCss.includes('--primary: #20d96b'), 'Falta o verde vivo da área pública');
+  assert(/body::before\s*\{[^}]*position:\s*absolute;/.test(mainCss), 'O halo branco deve acompanhar toda a página pública');
+  assert(mainCss.includes('ellipse 28% 7% at 22% 0%'), 'A iluminação global deve ser estreita e discreta');
+  assert(mainCss.includes('rgba(244, 247, 249, .042)'), 'Falta a iluminação branca sutil da página pública');
+  const adminCss = fs.readFileSync('css/admin.css', 'utf8');
+  assert(adminCss.includes('--accent: #20d96b'), 'Falta o verde vivo do painel administrativo');
+  assert(/body::before\s*\{[^}]*position:\s*absolute;/.test(adminCss), 'O halo branco deve acompanhar toda a página administrativa');
+  assert(adminCss.includes('ellipse 78% 135% at 100% 0%'), 'O halo administrativo deve se estender por toda a altura da página');
+  assert(adminCss.includes('rgba(255, 255, 255, .045)'), 'Falta o halo branco sutil do painel administrativo');
+  assert(!/background(?:-color)?\s*:\s*#(?:000|000000)\b/i.test(mainCss), 'Há seção com fundo preto na página pública');
+  assert(!/background(?:-color)?\s*:\s*#(?:000|000000)\b/i.test(adminCss), 'Há seção com fundo preto no painel administrativo');
+  assert(!/background(?:-color)?\s*:\s*#(?:000|000000)\b/i.test(fs.readFileSync('css/brand-story.css', 'utf8')), 'Há seção com fundo preto na história da marca');
+  assert(!mainCss.includes('linear-gradient(135deg, #ffffff 60%, #22c55e 100%)'), 'O gradiente antigo branco→verde ainda está presente');
+  const publicCss = ['main.css', 'brand-story.css', 'home-hero.css', 'events-totem.css', 'catalog-events.css', 'intro-splash.css']
+    .map(file => fs.readFileSync(`css/${file}`, 'utf8')).join('\n');
+  assert(!/(?:linear|radial|conic)-gradient\([^;]{0,300}(?:#20d96b|#55e98c|rgba\(\s*32,\s*217,\s*107)/i.test(publicCss), 'Ainda há gradiente decorativo verde no site público');
 });
 
-// 5. Redesign da Seção Plataforma (Layout Assimétrico)
+// 5. Demonstração operacional com três telas acessíveis
+test('Demonstração possui três áreas alternáveis e identificadas como ilustrativas', () => {
+  const tabs = ['sales', 'access', 'stock'];
+  tabs.forEach(area => {
+    assert(indexHtml.includes(`data-live-demo-tab="${area}"`), `Seletor ausente: ${area}`);
+    assert(indexHtml.includes(`data-live-demo-panel="${area}"`), `Tela ausente: ${area}`);
+  });
+  assert(indexHtml.includes('Demonstração ilustrativa'), 'Os valores de exemplo devem ser identificados como ilustrativos');
+  assert(indexHtml.includes('aria-selected="true"'), 'A aba inicial deve estar identificada como selecionada');
+  assert(indexHtml.includes('class="live-demo-panel" id="live-demo-panel-access"') && indexHtml.includes('hidden>'), 'As telas inativas devem iniciar ocultas');
+  const mainJs = fs.readFileSync('js/main.js', 'utf8');
+  assert(mainJs.includes("event.key === 'ArrowRight'") && mainJs.includes("event.key === 'Home'") && mainJs.includes("event.key === 'End'"), 'A navegação por teclado das telas está incompleta');
+  assert(fs.readFileSync('css/brand-story.css', 'utf8').includes('.live-demo-panel[hidden] { display: none; }'), 'Os painéis inativos precisam permanecer ocultos');
+});
+
+// 6. Redesign da Seção Plataforma (Layout Assimétrico)
 test('Seção plataforma utiliza layout de grid assimétrico (col-span)', () => {
   assert(indexHtml.includes('col-span-8'), 'Falta classe assimétrica col-span-8');
   assert(indexHtml.includes('col-span-4'), 'Falta classe assimétrica col-span-4');
   assert(indexHtml.includes('col-span-12'), 'Falta classe assimétrica col-span-12');
 });
 
-// 6. Redesign dos Modais de Auth (Login e Registro)
+// 7. Redesign dos Modais de Auth (Login e Registro)
 test('Modal de login possui estrutura auth-panel assimétrica', () => {
   assert(indexHtml.includes('class="modal auth-panel-modal" id="modalLogin"'), 'Falta modalLogin redesenhado');
   assert(indexHtml.includes('class="auth-brand"'), 'Falta painel de identidade auth-brand');
@@ -102,7 +134,7 @@ test('Preservação rigorosa de todos os IDs interativos de Auth', () => {
   });
 });
 
-// 7. Lucide Icons no DOM
+// 8. Lucide Icons no DOM
 test('Elementos Lucide com data-lucide presentes no admin.html', () => {
   assert(adminHtml.includes('data-lucide="layout-dashboard"'), 'Falta ícone Lucide dashboard no admin.html');
   assert(adminHtml.includes('data-lucide="calendar-days"'), 'Falta ícone Lucide calendar no admin.html');
@@ -115,7 +147,7 @@ test('Elementos Lucide com data-lucide presentes no index.html', () => {
   assert(indexHtml.includes('data-lucide="shield-check"'), 'Falta ícone Lucide no index.html');
 });
 
-// 8. Scrollbar e Scroll Lock
+// 9. Scrollbar e Scroll Lock
 test('Scrollbars personalizadas configuradas no css/main.css e css/admin.css', () => {
   const adminCss = fs.readFileSync('css/admin.css', 'utf8');
   assert(mainCss.includes('*::-webkit-scrollbar-thumb'), 'Falta scrollbar personalizada no main.css');

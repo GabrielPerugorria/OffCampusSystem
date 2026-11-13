@@ -158,7 +158,7 @@ suite('0. Arquivos/URLs referenciados pelo index.html existem (case-sensitive)')
   });
   check('todos os ' + refs.length + ' caminhos locais existem com a caixa exata', missing.length === 0, 'faltando: ' + missing.join(', '));
   check('JS da intro referenciado é js/intro-splash.js?v=…', /<script src="js\/intro-splash\.js\?v=\d+"><\/script>/.test(HTML));
-  check('CSS da intro referenciado é css/intro-splash.css?v=…', /href="css\/intro-splash\.css\?v=\d+"/.test(HTML));
+  check('CSS da intro referenciado é css/intro-splash.css?v=…', /href="css\/intro-splash\.css\?v=\d+(?:-[\w-]+)?"/.test(HTML));
   check('não restam cópias órfãs (raiz / mnt)', !fs.existsSync(path.join(ROOT, 'intro-splash.js')) && !fs.existsSync(path.join(ROOT, 'intro-splash.css')) && !fs.existsSync(path.join(ROOT, 'mnt')));
 }
 

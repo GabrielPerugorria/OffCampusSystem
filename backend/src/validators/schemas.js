@@ -99,7 +99,7 @@ const checkinSchema = z.object({
   { message: 'Informe um código ou (eventId + guestName) para entrada manual.' });
 
 /* ---------- FINANCEIRO ---------- */
-const expenseSchema = z.object({
+const expenseFields = {
   categoryId: id.optional(),
   categoryName: str(2, 80).optional(),
   categoryIcon: z.string().trim().max(8).optional(),
@@ -108,9 +108,10 @@ const expenseSchema = z.object({
   amount: money,
   expenseDate: z.string().trim().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
   status: z.enum(['pending', 'paid']).default('paid'),
-}).refine(d => d.categoryId || d.categoryName,
+};
+const expenseSchema = z.object(expenseFields).refine(d => d.categoryId || d.categoryName,
   { message: 'Informe a categoria da despesa.', path: ['categoryId'] });
-const expenseUpdateSchema = expenseSchema.innerType().partial();
+const expenseUpdateSchema = z.object(expenseFields).partial();
 
 /* ---------- ESTOQUE ---------- */
 const productSchema = z.object({

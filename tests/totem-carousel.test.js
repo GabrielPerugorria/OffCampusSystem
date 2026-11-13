@@ -47,14 +47,14 @@ assert('JS NÃO possui listener de clique nos cards para navegação', !js.inclu
 
 // 5. Indicadores discretos de navegação
 assert('Indicadores (dots) presentes no HTML', html.includes('class="cinema-dots"'));
-assert('Dot ativo estilizado com verde EvoTech (#22c55e)', css.includes('.cinema-dot.is-active') && css.includes('#22c55e'));
+assert('Dot ativo estilizado com o acento verde vivo', css.includes('.cinema-dot.is-active') && css.includes('#20d96b'));
 
 // 6. Botões Padronizados com o Home
 assert('Botão "Saber mais" utiliza classes e estilos idênticos ao Home', html.includes('cinema-btn-primary') && html.includes('hero-btn-primary'));
 assert('Botão "Ver todos os eventos" utiliza classes e estilos idênticos ao Home', html.includes('cinema-btn-secondary') && html.includes('hero-btn-secondary'));
 assert('Container dos botões utiliza hero-actions', html.includes('cinema-actions hero-actions'));
 assert('Botões possuem altura de 50px e border-radius: 999px', css.includes('height: 50px;') && css.includes('border-radius: 999px;'));
-assert('Efeito de gota líquida (Droplet Wave) presente nos botões', css.includes('cinemaDropletWave'));
+assert('Efeito de gota decorativo removido dos botões', !css.includes('cinemaDropletWave'));
 assert('Interação de salto (-7px) e desfoque suave no botão irmão presente', css.includes('transform: translateY(-7px) scale(1.04);'));
 
 // 7. Funcionalidade dos botões

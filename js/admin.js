@@ -323,6 +323,8 @@ const panels = {
 };
 
 function goPanel(id) {
+  const navWasOpen = document.querySelector('.sidebar.is-open') !== null;
+  closeAdminNav();
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.getElementById('panel-'+id)?.classList.add('active');
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -331,6 +333,9 @@ function goPanel(id) {
   const cfg = panels[id] || {};
   document.getElementById('topbar-title').textContent = cfg.title || id;
   document.getElementById('topbar-sub').textContent = cfg.sub || '';
+  if (navWasOpen && window.matchMedia('(max-width: 1024px)').matches) {
+    document.querySelector('.hamburger-btn')?.focus({ preventScroll: true });
+  }
   const btn = document.getElementById('topbar-action');
   if(cfg.action) { btn.textContent = cfg.action; btn.classList.remove('is-hidden'); btn.onclick = window[cfg.fn] || null; }
   else btn.classList.add('is-hidden');
@@ -341,6 +346,36 @@ function goPanel(id) {
     atualizar();
   }
 }
+
+function setAdminNav(open) {
+  const isMobile = window.matchMedia('(max-width: 1024px)').matches;
+  const shouldOpen = isMobile && open;
+  const sidebar = document.getElementById('admin-sidebar');
+  const backdrop = document.querySelector('.mobile-backdrop');
+  const toggle = document.querySelector('.hamburger-btn');
+  if (!sidebar || !backdrop || !toggle) return;
+
+  sidebar.classList.toggle('is-open', shouldOpen);
+  backdrop.classList.toggle('is-visible', shouldOpen);
+  document.body.classList.toggle('nav-open', shouldOpen);
+  toggle.setAttribute('aria-expanded', String(shouldOpen));
+  toggle.setAttribute('aria-label', shouldOpen ? 'Fechar menu de navegação' : 'Abrir menu de navegação');
+}
+
+function toggleAdminNav() {
+  const isOpen = document.querySelector('.sidebar')?.classList.contains('is-open') || false;
+  setAdminNav(!isOpen);
+}
+
+function closeAdminNav(restoreFocus = false) {
+  const wasOpen = document.querySelector('.sidebar.is-open') !== null;
+  setAdminNav(false);
+  if (restoreFocus && wasOpen) document.querySelector('.hamburger-btn')?.focus();
+}
+
+window.addEventListener('resize', () => {
+  if (window.innerWidth > 1024) closeAdminNav();
+});
 
 function openPrimaryAction() { /* handled per-panel */ }
 
@@ -1438,7 +1473,7 @@ function renderProjecaoDashboard() {
     const projecao = st.receita + (ritmoDiario * diasRestantes * 1.18);
     const pctMeta = ev.metaFaturamento ? Math.min(999, Math.round(projecao/ev.metaFaturamento*100)) : null;
     return `<div class="progress-row" style="margin-bottom:14px">
-      <div class="progress-label" style="width:150px" title="${escapeHTML(ev.nome)}">${escapeHTML(ev.nome.substring(0,20))}</div>
+      <div class="progress-label" title="${escapeHTML(ev.nome)}">${escapeHTML(ev.nome.substring(0,20))}</div>
       <div class="progress-track"><div class="progress-fill ${pctMeta>=100?'green':pctMeta>=70?'yellow':'red'}" style="width:${Math.min(100,pctMeta||0)}%"></div></div>
       <div class="progress-val" style="width:auto;font-size:11px">${fmt_brl(projecao)}${pctMeta!=null?` <span style="color:var(--text3)">(${pctMeta}% da meta)</span>`:''}</div>
     </div>`;
@@ -1875,6 +1910,7 @@ document.addEventListener('keydown',e=>{
     document.querySelectorAll('.modal-overlay:not(.hidden)').forEach(m=>{
       closeModal(m.id);
     });
+    closeAdminNav(true);
   }
 });
 
@@ -1960,7 +1996,7 @@ function filtrarPedidosAdmin() {
   }
 
   const badgeMap = {
-    paid: { label: 'Confirmado', bg: 'rgba(34,197,94,.15)', color: '#22c55e', border: 'rgba(34,197,94,.3)' },
+    paid: { label: 'Confirmado', bg: 'rgba(32,217,107,.15)', color: '#20d96b', border: 'rgba(32,217,107,.3)' },
     pending: { label: 'Pendente', bg: 'rgba(234,179,8,.15)', color: '#eab308', border: 'rgba(234,179,8,.3)' },
     cancelled: { label: 'Cancelado', bg: 'rgba(156,163,175,.15)', color: '#9ca3af', border: 'rgba(156,163,175,.3)' },
     refunded: { label: 'Estornado', bg: 'rgba(239,68,68,.15)', color: '#ef4444', border: 'rgba(239,68,68,.3)' },
@@ -2082,7 +2118,7 @@ async function verDetalhesPedidoAdmin(orderId) {
                   <td style="font-family:monospace; font-weight:700; color:var(--accent)">#${escapeHTML(t.code)}</td>
                   <td>${escapeHTML(t.holder_name)}</td>
                   <td>${escapeHTML(t.batch_name)}</td>
-                  <td><span style="font-size:11px; padding:2px 6px; border-radius:10px; background:${t.status==='used'?'rgba(59,130,246,.2)':'rgba(34,197,94,.2)'}; color:${t.status==='used'?'#60a5fa':'#4ade80'}">${t.status==='used'?'Utilizado':'Válido'}</span></td>
+                  <td><span style="font-size:11px; padding:2px 6px; border-radius:10px; background:${t.status==='used'?'rgba(59,130,246,.2)':'rgba(32,217,107,.2)'}; color:${t.status==='used'?'#60a5fa':'#55e98c'}">${t.status==='used'?'Utilizado':'Válido'}</span></td>
                   <td>${t.checked_in_at ? new Date(t.checked_in_at).toLocaleString('pt-BR') : 'Ainda não realizado'}</td>
                 </tr>
               `).join('')}

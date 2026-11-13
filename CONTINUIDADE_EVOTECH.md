@@ -84,16 +84,17 @@ O script `backend/src/database/runMigrations.js` gerencia versões através da t
 - Substituição total de emojis antigos em botões de ação (`pencil`, `trash-2`), empty states (`calendar-days`, `users`, `book-user`, `scan-line`), sidebar, topbar e modais (`x`).
 
 ### 3.2 Paleta Oficial e Tokens Globais
-- **Preto puro:** `#000000`
-- **Fundo secundário:** `#060f0a`
-- **Superfícies:** `#0a1c12`
-- **Verde principal:** `#22c55e`
-- **Texto:** `#ffffff`
-- **Scrollbars personalizadas:** Fundo `#060f0a` com indicador verde translúcido (`rgba(34, 197, 94, 0.35)`).
+- **Fundo grafite:** `#101214`
+- **Superfície principal:** `#191c20`
+- **Superfície elevada:** `#23272b`
+- **Verde principal:** `#20d96b`
+- **Verde escuro:** `#16964e`
+- **Texto:** `#f2f4f5`
+- **Scrollbars personalizadas:** Fundo `#191c20` com indicador verde translúcido (`rgba(32, 217, 107, 0.28)`).
 
 ### 3.3 Títulos com Gradiente
 Classe unificada `.section-heading`, `.evo-title-gradient`, `.topbar-title`, `.auth-title`:
-`linear-gradient(135deg, #ffffff 60%, #22c55e 100%)`.
+`linear-gradient(135deg, #f2f4f5 60%, #c9ced1 100%)`.
 
 ### 3.4 Modais de Login e Cadastro (`.auth-panel`)
 - Fundo translúcido com `backdrop-filter: blur(20px)` e borda sutil.

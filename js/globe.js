@@ -13,10 +13,10 @@
   const statsList = document.getElementById('globeStatsList');
 
   /* ---- Colors ---- */
-  const PRIMARY = '#22c55e'; // Green
-  const PRIMARY_A = (a) => `rgba(34,197,94,${a})`;
-  const ACCENT = '#4ade80'; // Bright electric green
-  const WORLD_DOT_COLOR = 'rgba(34, 197, 94, 0.16)'; // Subtle green for rest of the world
+  const PRIMARY = '#20d96b';
+  const PRIMARY_A = (a) => `rgba(32,217,107,${a})`;
+  const ACCENT = '#55e98c';
+  const WORLD_DOT_COLOR = 'rgba(131, 242, 167, 0.12)';
   
   /* ---- All 27 Brazilian States (26 states + DF) ---- */
   const states = [
@@ -391,7 +391,7 @@
       
       ctx.beginPath();
       ctx.arc(p.x, p.y, sig.radius, 0, Math.PI * 2);
-      ctx.strokeStyle = `rgba(74, 222, 128, ${sig.opacity})`;
+      ctx.strokeStyle = `rgba(85, 233, 140, ${sig.opacity * 0.75})`;
       ctx.lineWidth = 1;
       ctx.stroke();
     }

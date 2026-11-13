@@ -18,7 +18,7 @@
   justify-content: center;
   overflow: hidden;
   box-sizing: border-box;
-  background: #000000;
+  background: var(--background, #101214);
 }
 
 #hero #particlesCanvas {
@@ -34,11 +34,11 @@
   right: 2%;
   top: 50%;
   transform: translateY(-50%);
-  width: 860px;
-  height: 860px;
+  width: 420px;
+  height: 420px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(34, 197, 94, 0.14) 0%, rgba(21, 128, 61, 0.04) 45%, transparent 70%);
-  filter: blur(75px);
+  background: radial-gradient(circle, rgba(235, 240, 244, 0.035) 0%, rgba(235, 240, 244, 0.012) 42%, transparent 70%);
+  filter: blur(54px);
   pointer-events: none;
   z-index: 0;
 }
@@ -85,9 +85,9 @@
   padding-bottom: 0.25em; /* Espaço amplo para o descendente da letra g em lugar nunca ser cortado */
   text-wrap: balance;
   /* Sombra preta profunda idêntica ao planeta para efeito tridimensional marcante */
-  filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.98))
-          drop-shadow(0 16px 36px rgba(0, 0, 0, 0.96))
-          drop-shadow(0 32px 64px rgba(0, 0, 0, 0.92));
+  filter: drop-shadow(0 6px 16px rgba(16, 18, 20, 0.98))
+          drop-shadow(0 16px 36px rgba(16, 18, 20, 0.96))
+          drop-shadow(0 32px 64px rgba(16, 18, 20, 0.92));
 }
 
 #hero .hero-headline-lead {
@@ -98,7 +98,7 @@
 #hero .hero-headline-highlight {
   display: block;
   padding-bottom: 0.2em; /* Garante que o g de lugar fique 100% visível e não seja cortado */
-  color: #22c55e;
+  color: #20d96b;
 }
 
 /* ── Descrição Curta e Sofisticada com Sombra de Profundidade ── */
@@ -111,9 +111,9 @@
   margin: 0 0 38px 0;
   font-weight: 400;
   /* Sombra preta profunda em harmonia com a headline e o planeta */
-  filter: drop-shadow(0 4px 14px rgba(0, 0, 0, 0.98))
-          drop-shadow(0 10px 28px rgba(0, 0, 0, 0.92))
-          drop-shadow(0 20px 48px rgba(0, 0, 0, 0.85));
+  filter: drop-shadow(0 4px 14px rgba(16, 18, 20, 0.98))
+          drop-shadow(0 10px 28px rgba(16, 18, 20, 0.92))
+          drop-shadow(0 20px 48px rgba(16, 18, 20, 0.85));
 }
 
 /* ── Ações e CTAs (Estilo Bolha Semi-Transparente do Cabeçalho) ── */
@@ -151,68 +151,27 @@
   white-space: nowrap;
 }
 
-/* ── Efeito de Gota Líquida (Droplet Ripple) ── */
-#hero .hero-btn-primary::before,
-#hero .hero-btn-secondary::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 160px;
-  height: 160px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.32) 0%, rgba(34, 197, 94, 0.2) 40%, transparent 70%);
-  transform: translate(-50%, -50%) scale(0);
-  opacity: 0;
-  pointer-events: none;
-  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.5s ease;
-}
-
-#hero .hero-btn-primary:hover::before,
-#hero .hero-btn-secondary:hover::before {
-  transform: translate(-50%, -50%) scale(1.6);
-  opacity: 1;
-  animation: dropletWave 1.8s infinite ease-out;
-}
-
-@keyframes dropletWave {
-  0% {
-    transform: translate(-50%, -50%) scale(0.2);
-    opacity: 0.85;
-  }
-  50% {
-    transform: translate(-50%, -50%) scale(1.2);
-    opacity: 0.35;
-  }
-  100% {
-    transform: translate(-50%, -50%) scale(1.8);
-    opacity: 0;
-  }
-}
-
-/* ── CTA Principal — Comprar Ingressos (Bolha Semi-Transparente com Nuance Verde) ── */
+/* ── CTA Principal — ação em verde sólido, sem brilho decorativo ── */
 #hero .hero-btn-primary {
   padding: 0 32px;
-  background: linear-gradient(135deg, rgba(34, 197, 94, 0.20) 0%, rgba(4, 17, 10, 0.65) 100%);
-  color: #ffffff;
+  background: #20d96b;
+  color: #101214;
   font-weight: 600;
-  border: 1px solid rgba(34, 197, 94, 0.38);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3),
-              0 0 20px rgba(34, 197, 94, 0.12),
-              inset 0 1px 0 rgba(255, 255, 255, 0.20);
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+  border: 1px solid #20d96b;
+  box-shadow: 0 8px 24px rgba(16, 18, 20, 0.32);
+  text-shadow: none;
 }
 
 /* ── CTA Secundário — Administre seu evento (Bolha Semi-Transparente Idêntica à Navbar) ── */
 #hero .hero-btn-secondary {
   padding: 0 30px;
-  background: rgba(4, 17, 10, 0.55);
+  background: rgba(25, 28, 32, 0.55);
   color: rgba(255, 255, 255, 0.9);
   font-weight: 550;
   border: 1px solid rgba(255, 255, 255, 0.10);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25),
+  box-shadow: 0 8px 32px rgba(16, 18, 20, 0.25),
               inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+  text-shadow: 0 1px 4px rgba(16, 18, 20, 0.6);
 }
 
 /* ── Interação: Pulo pra Cima no Botão Ativo + Desfoque no Outro ── */
@@ -232,20 +191,17 @@
 }
 
 #hero .hero-actions .hero-btn-primary:hover {
-  background: linear-gradient(135deg, rgba(34, 197, 94, 0.32) 0%, rgba(4, 17, 10, 0.8) 100%);
-  border-color: rgba(74, 222, 128, 0.7);
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.5),
-              0 0 28px rgba(34, 197, 94, 0.35),
-              inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  background: #55e98c;
+  border-color: #55e98c;
+  color: #101214;
+  box-shadow: 0 12px 30px rgba(16, 18, 20, 0.4);
 }
 
 #hero .hero-actions .hero-btn-secondary:hover {
-  background: rgba(6, 22, 14, 0.75);
-  border-color: rgba(34, 197, 94, 0.35);
+  background: rgba(37, 41, 45, 0.75);
+  border-color: rgba(255, 255, 255, 0.3);
   color: #ffffff;
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.5),
-              0 0 20px rgba(34, 197, 94, 0.16),
-              inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  box-shadow: 0 12px 36px rgba(16, 18, 20, 0.5);
 }
 
 #hero .hero-btn-primary:active,
@@ -267,9 +223,9 @@
   justify-content: center;
   overflow: visible;
   /* Sombra preta profunda volumétrica idêntica ao título */
-  filter: drop-shadow(0 12px 30px rgba(0, 0, 0, 0.98))
-          drop-shadow(0 30px 70px rgba(0, 0, 0, 0.95))
-          drop-shadow(0 0 80px rgba(0, 0, 0, 0.90));
+  filter: drop-shadow(0 12px 30px rgba(16, 18, 20, 0.98))
+          drop-shadow(0 30px 70px rgba(16, 18, 20, 0.95))
+          drop-shadow(0 0 80px rgba(16, 18, 20, 0.90));
 }
 
 #hero #globeContainer.globe-container {
@@ -299,28 +255,21 @@
 
 #hero .globe-glow {
   position: absolute;
-  width: 760px;
-  height: 760px;
+  width: 420px;
+  height: 420px;
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
   border-radius: 50%;
   background: radial-gradient(
     circle,
-    rgba(34, 197, 94, 0.09) 0%,
-    rgba(34, 197, 94, 0.035) 45%,
-    rgba(34, 197, 94, 0.01) 70%,
-    transparent 85%
+    rgba(238, 242, 245, 0.045) 0%,
+    rgba(238, 242, 245, 0.018) 40%,
+    transparent 74%
   );
   pointer-events: none;
   z-index: 0;
-  animation: globe-glow-pulse 4s ease-in-out infinite;
-  filter: blur(10px);
-}
-
-@keyframes globe-glow-pulse {
-  0%, 100% { opacity: .5; transform: scale(1); }
-  50% { opacity: .8; transform: scale(1.03); }
+  filter: blur(8px);
 }
 
 /* ── Ajustes da Barra de Navegação com Texto EvotechEvents ── */
@@ -481,7 +430,7 @@ html, body {
     position: relative;
     z-index: 3;
     /* Sombra/vinheta radial suave que não oculta o planeta mas destaca o texto */
-    background: radial-gradient(ellipse at center, rgba(3, 7, 5, 0.85) 0%, rgba(3, 7, 5, 0.55) 55%, transparent 80%);
+    background: radial-gradient(ellipse at center, rgba(16, 18, 20, 0.85) 0%, rgba(16, 18, 20, 0.55) 55%, transparent 80%);
     padding: 16px 20px 24px;
     border-radius: 28px;
     backdrop-filter: blur(2px);
@@ -489,13 +438,13 @@ html, body {
   }
 
   #hero .hero-headline {
-    text-shadow: 0 2px 18px rgba(0, 0, 0, 0.98), 0 0 35px rgba(0, 0, 0, 0.9);
+    text-shadow: 0 2px 18px rgba(16, 18, 20, 0.98), 0 0 35px rgba(16, 18, 20, 0.9);
   }
 
   #hero .hero-description {
     margin-left: auto;
     margin-right: auto;
-    text-shadow: 0 1px 14px rgba(0, 0, 0, 0.98);
+    text-shadow: 0 1px 14px rgba(16, 18, 20, 0.98);
   }
 
   /* 3. Ações CTA na parte inferior */

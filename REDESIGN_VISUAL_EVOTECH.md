@@ -1,8 +1,8 @@
 # EVO TECH EVENTS — DOCUMENTO OFICIAL DE REDESIGN VISUAL & IDENTIDADE
 
 **Data:** Novembro de 2026  
-**Status:** Implementado e Validado  
-**Padrão:** SaaS Corporativo, Editorial & Tecnológico (Design System EvoTech)  
+**Status:** Identidade visual atualizada
+**Padrão:** SaaS Corporativo, Editorial & Tecnológico (Design System EvoTech)
 
 ---
 
@@ -12,8 +12,8 @@ O projeto **EvoTech Events** passou por uma reformulação visual completa e est
 
 As intervenções contemplaram:
 1. Adoção integral da biblioteca **Lucide Icons** como biblioteca vetorial oficial em substituição definitiva a emojis em botões, tabelas, modais, alertas e cards.
-2. Unificação da paleta cromática oficial e eliminação de tons verdes ou brancos conflitantes.
-3. Padronização dos títulos com **gradiente elegante branco→verde** (`linear-gradient(135deg, #ffffff 60%, #22c55e 100%)`).
+2. Padronização global em grafite, cinza-cimento e preto, com verde moderado reservado a ações, indicadores e estados.
+3. Títulos em branco/cinza, sem o gradiente verde anterior.
 4. Remoção rigorosa de badges, tags e balões decorativos vazios (`.mod-badge`, `.evo-chip`, `.cinema-top-badge`, `.dif-tag`).
 5. Redesign da Home com composição assimétrica editorial, eliminando grids uniformes de "cards de IA".
 6. Novo design dos modais de **Login** e **Registro** com painel flutuante, divisão assimétrica e integração nativa com o tema escuro.
@@ -53,37 +53,36 @@ As intervenções contemplaram:
 
 ## 3. PALETA DE CORES GLOBAL & DESIGN TOKENS
 
-Consistência estrita em `css/main.css`, `style.css` e `css/admin.css`:
+Consistência em `css/main.css`, `style.css` e `css/admin.css`:
 
 ```css
 :root {
-  --bg-base: #000000;         /* Preto puro de fundo */
-  --bg-secondary: #060f0a;    /* Fundo secundário e trilhas de rolagem */
-  --surface: #060f0a;          /* Superfície de cartões de apoio */
-  --surface-2: #0a1c12;        /* Superfícies destacadas e gradientes */
-  --green: #22c55e;           /* Verde principal da marca (ações e destaques) */
-  --green-dark: #15803d;      /* Verde escuro para hover e contrastes */
-  --green-glow: rgba(34, 197, 94, 0.15); /* Halos e iluminações */
-  --text: #ffffff;            /* Texto principal em branco total */
-  --text-muted: #9ca3af;      /* Texto de apoio */
-  --text-dim: #6b8576;        /* Detalhes de baixa prioridade */
-  --border: rgba(255, 255, 255, 0.08); /* Linhas divisórias sutis */
-  --border-green: rgba(34, 197, 94, 0.25); /* Bordas ativas */
+  --background: #101214;      /* Fundo grafite escuro */
+  --surface: #191c20;         /* Superfícies principais */
+  --surface-2: #23272b;       /* Superfícies elevadas */
+  --primary: #20d96b;         /* Verde vivo para ações e estados */
+  --primary-dark: #16964e;    /* Hover e contraste */
+  --secondary: #83f2a7;       /* Realce claro */
+  --text: #f2f4f5;            /* Texto principal */
+  --muted: #b0b6bb;           /* Texto de apoio */
+  --border: rgba(220, 226, 230, 0.11); /* Divisórias neutras */
 }
 ```
 
+O `body::before` aplica um halo branco radial de baixa opacidade no canto superior direito, em uma camada absoluta que acompanha toda a altura da página, sem restringir o efeito a uma seção.
+
 ### Scrollbars Personalizadas
 Padronizadas em todos os navegadores Chromium e Firefox:
-- Trilho escuro (`#060f0a`)
-- Indicador fino (7px) com verde translúcido (`rgba(34, 197, 94, 0.35)`)
-- Hover iluminado (`#22c55e`)
+- Trilho grafite (`#191c20`)
+- Indicador fino (7px) com verde translúcido
+- Hover discreto em verde
 - Preservação da posição de rolagem via `ModalScrollLock` sem pulos ou redefinições indesejadas de scroll.
 
 ---
 
-## 4. PADRONIZAÇÃO DOS TÍTULOS (GRADIENTE BRANCO→VERDE)
+## 4. PADRONIZAÇÃO DOS TÍTULOS
 
-Componente e classe global reutilizável:
+Componente e classe global reutilizável, usando branco/cinza:
 ```css
 .section-heading,
 .evo-title-gradient,
@@ -91,7 +90,7 @@ Componente e classe global reutilizável:
 .auth-title {
   font-family: 'Sora', sans-serif;
   font-weight: 800;
-  background: linear-gradient(135deg, #ffffff 60%, #22c55e 100%);
+  background: linear-gradient(135deg, #f2f4f5 60%, #c9ced1 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -136,7 +135,7 @@ A seção **Plataforma** foi reestruturada para romper a repetição de cartões
 ## 7. NOVO LAYOUT DE LOGIN E REGISTRO (`.auth-panel`)
 
 Substituição da estrutura de caixa genérica flutuante por uma experiência corporativa dedicada:
-- **Painel Flutuante Translúcido:** Backdrop filter (`blur(20px)`), fundo `#060f0a` e borda sutil com realce verde.
+- **Painel Flutuante Translúcido:** Backdrop filter (`blur(20px)`), fundo grafite e borda sutil com realce verde.
 - **Divisão Assimétrica:**
   - **Lado Esquerdo (`auth-brand`):** Logotipo vetorial em alta definição, slogan tipográfico e destaques de segurança e operação em tempo real com ícones Lucide.
   - **Lado Direito (`auth-form-side`):** Título com gradiente oficial, campos com foco verde estilizado, validação em linha e ícones embutidos.
@@ -146,16 +145,20 @@ Substituição da estrutura de caixa genérica flutuante por uma experiência co
 
 ## 8. TESTES EXECUTADOS E RESULTADOS
 
-Todas as suítes de validação automatizadas foram executadas:
+Suítes executadas após a atualização visual e de dependências:
 
 | Suíte de Testes | Objetivo | Status |
 |---|---|---|
-| `tests/visual-redesign-lucide.test.js` | Validação de CDN Lucide, zero emojis, gradientes, layout assimétrico e integridade de IDs de auth | **18/18 PASSOU** |
+| `tests/visual-redesign-lucide.test.js` | Validação de CDN Lucide, zero emojis, paleta grafite, layout assimétrico e integridade de IDs de auth | **18/18 PASSOU** |
 | `tests/concurrency-and-security.test.js` | Sanitização de logs, prevenção de overbooking com reservas e travas de perfil | **4/4 PASSOU** |
 | `tests/backend-integrity.test.js` | Schemas Zod, cálculos de ROI/margem/take-rate e travas de produção | **5/5 PASSOU** |
 | `tests/xss-verification.js` | Testes de escape HTML, injeções XSS e higienização de URLs | **71/71 PASSOU** |
 | `tests/catalog-page.test.js` | Funcionalidade e componentes da página independente de catálogo | **37/37 PASSOU** |
 | `tests/mobile-fixes.test.js` | Comportamentos mobile, viewport e travas de inputs | **24/24 PASSOU** |
 | `tests/totem-carousel.test.js` | Funcionamento do carrossel de eventos | **30/30 PASSOU** |
+| `tests/intro-splash.test.js` | Inicialização, saída, falhas e ausência de cópias órfãs do splash | **19/19 PASSOU** |
 | `tests/responsive-check.js` | Responsividade e integridade do header | **25/25 PASSOU** |
-| **Total de Testes Automatizados** | **Cobertura Abrangente do Sistema** | **214/214 PASSOU** |
+| `npm audit --prefix backend` | Dependências do backend | **0 vulnerabilidades** |
+| **Total de verificações automatizadas** | **9 suítes funcionais** | **233/233 PASSOU** |
+
+`tests/empty-org-lifecycle.test.js` depende de `DB_HOST` e de uma base de dados configurada; não foi possível executá-lo neste ambiente.

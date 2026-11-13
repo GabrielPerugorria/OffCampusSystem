@@ -438,7 +438,7 @@ if (brazilContainer && brazilSvg && brazilOverlay) {
       }
       @keyframes bcp${idx} {
         0%, 100% { r: 3; opacity: .7; }
-        50%       { r: 4.5; opacity: 1; filter: drop-shadow(0 0 10px rgba(34,197,94,.8)); }
+        50%       { r: 4.5; opacity: 1; filter: drop-shadow(0 0 8px rgba(32,217,107,.45)); }
       }
     `;
 
@@ -553,7 +553,7 @@ if (pCanvas && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
             if (p.x > pCanvas.width) p.x = 0;
             if (p.y < 0) p.y = pCanvas.height;
             if (p.y > pCanvas.height) p.y = 0;
-            pCtx.fillStyle = `rgba(34,197,94,${p.a})`;
+            pCtx.fillStyle = `rgba(32,217,107,${p.a * 0.55})`;
             pCtx.beginPath();
             pCtx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
             pCtx.fill();

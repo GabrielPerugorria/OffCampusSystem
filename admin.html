@@ -9,17 +9,16 @@
   <script src="js/api.js?v=20261024"></script>
   <script src="js/admin-guard.js?v=20261024"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/admin.css">
+  <link rel="stylesheet" href="css/admin.css?v=20261113">
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 </head>
 <body>
 
-<!-- Controle (somente CSS) do menu mobile em formato gaveta -->
-<input type="checkbox" id="nav-toggle" class="nav-toggle-checkbox">
-<label for="nav-toggle" class="mobile-backdrop" aria-hidden="true"></label>
+<!-- Backdrop do menu mobile em formato gaveta -->
+<button type="button" class="mobile-backdrop" aria-label="Fechar menu de navegação" onclick="closeAdminNav(true)"></button>
 
 <!-- SIDEBAR -->
-<aside class="sidebar">
+<aside class="sidebar" id="admin-sidebar" aria-label="Navegação administrativa">
   <div class="sidebar-header-row">
     <a href="index.html" class="sidebar-logo" style="text-decoration:none; color:inherit" aria-label="Voltar ao site EvoTech Events" title="Voltar ao site EvoTech Events">
       <div class="sidebar-logo-icon">
@@ -27,7 +26,7 @@
       </div>
       <div class="sidebar-logo-text">Evo<span>Tech</span></div>
     </a>
-    <button class="mobile-drawer-close" onclick="document.getElementById('nav-toggle').checked = false;" aria-label="Fechar menu">
+    <button type="button" class="mobile-drawer-close" onclick="closeAdminNav(true)" aria-label="Fechar menu">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
     </button>
   </div>
@@ -125,11 +124,11 @@
 
   <!-- TOP BAR -->
   <div class="topbar" id="topbar">
-    <label for="nav-toggle" class="hamburger-btn" aria-label="Abrir menu de navegação">
+    <button type="button" class="hamburger-btn" aria-label="Abrir menu de navegação" aria-controls="admin-sidebar" aria-expanded="false" onclick="toggleAdminNav()">
       <i data-lucide="menu"></i>
-    </label>
+    </button>
     <div style="flex:1; min-width:0">
-      <div class="topbar-title" id="topbar-title">Dashboard</div>
+      <div class="topbar-title" id="topbar-title" aria-live="polite">Dashboard</div>
       <span class="topbar-sub" id="topbar-sub">Visão geral em tempo real</span>
     </div>
     <div class="topbar-actions">
@@ -763,7 +762,7 @@
   </div>
 </div>
 
-<script src="js/admin.js?v=20261024"></script>
+<script src="js/admin.js?v=20261113"></script>
 <script>lucide.createIcons();</script>
 </body>
 </html>

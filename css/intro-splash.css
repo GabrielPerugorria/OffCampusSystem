@@ -9,9 +9,9 @@
    ============================================================ */
 
 :root {
-  --intro-green: #22c55e;
-  --intro-green-bright: #4ade80;
-  --intro-green-soft: #86efac;
+  --intro-green: #20d96b;
+  --intro-green-bright: #55e98c;
+  --intro-green-soft: #83f2a7;
   --intro-orb: clamp(150px, min(46vw, 40vh), 380px);
 }
 
@@ -20,7 +20,7 @@
   position: fixed;
   inset: 0;
   z-index: 99999;
-  background: #000;
+  background: #101214;
   color: #fff;
   overflow: hidden;
   opacity: 1;
@@ -39,7 +39,7 @@ html.intro-on, html.intro-on body { overflow: hidden; }
   content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(48% 42% at 50% 46%, rgba(34, 197, 94, .16) 0%, rgba(34, 197, 94, 0) 70%);
+  background: radial-gradient(ellipse 24% 12% at 50% 44%, rgba(238, 242, 245, .035) 0%, transparent 100%);
   pointer-events: none;
 }
 
@@ -83,7 +83,7 @@ html.intro-on, html.intro-on body { overflow: hidden; }
   padding-left: .3em; /* compensa o espa�amento do �ltimo caractere */
   line-height: 1.1;
   color: #fff;
-  text-shadow: 0 0 22px rgba(34, 197, 94, .45);
+  text-shadow: 0 0 16px rgba(238, 242, 245, .08);
 }
 .intro-title b { color: var(--intro-green-bright); font-weight: 800; }
 
@@ -115,7 +115,7 @@ html.intro-on, html.intro-on body { overflow: hidden; }
   width: min(320px, 70vw);
   height: 3px;
   transform: translateX(-50%);
-  background: rgba(34, 197, 94, .18);
+  background: rgba(32, 217, 107, .18);
   border-radius: 3px;
   overflow: hidden;
 }
@@ -123,8 +123,8 @@ html.intro-on, html.intro-on body { overflow: hidden; }
   display: block;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, var(--intro-green), var(--intro-green-bright));
-  box-shadow: 0 0 10px rgba(74, 222, 128, .7);
+  background: var(--intro-green);
+  box-shadow: 0 0 10px rgba(85, 233, 140, .7);
   transform: scaleX(0);
   transform-origin: left center;
   will-change: transform;
@@ -143,19 +143,19 @@ html.intro-on, html.intro-on body { overflow: hidden; }
   letter-spacing: .12em;
   text-transform: uppercase;
   color: var(--intro-green-soft);
-  background: rgba(0, 0, 0, .55);
-  border: 1px solid rgba(74, 222, 128, .45);
+  background: rgba(16, 18, 20, .55);
+  border: 1px solid rgba(85, 233, 140, .45);
   border-radius: 999px;
   cursor: pointer;
   transition: background 200ms ease, color 200ms ease, border-color 200ms ease;
 }
 .intro-skip:hover, .intro-skip:focus-visible {
-  background: rgba(34, 197, 94, .18);
+  background: rgba(32, 217, 107, .18);
   color: #fff;
   border-color: var(--intro-green-bright);
   outline: none;
 }
-.intro-skip:focus-visible { box-shadow: 0 0 0 3px rgba(74, 222, 128, .35); }
+.intro-skip:focus-visible { box-shadow: 0 0 0 3px rgba(85, 233, 140, .35); }
 
 /* telas baixas (celular na horizontal) */
 @media (max-height: 460px) {

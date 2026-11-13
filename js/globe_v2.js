@@ -27,11 +27,11 @@
   const BRAZIL_ISO_NUMERIC = '076';
 
   const COLORS = {
-    brandDark: 0x04110a,
-    brandPrimary: 0x22c55e,
-    brandBright: 0x4ade80,
-    brandSoft: 0x86efac,
-    brandDim: 0x15803d,
+    brandDark: 0x17191b,
+    brandPrimary: 0x20d96b,
+    brandBright: 0x55e98c,
+    brandSoft: 0x83f2a7,
+    brandDim: 0x16964e,
     white: 0xffffff
   };
 
@@ -142,8 +142,8 @@
     c.width = 2048; c.height = 1024;
     const g = c.getContext('2d');
 
-    // Oceanos - azul escuro profundo
-    g.fillStyle = '#050d1a';
+    // Oceanos e continentes em grafite, com destaque verde discreto no Brasil.
+    g.fillStyle = '#17191b';
     g.fillRect(0, 0, c.width, c.height);
 
     function xy(lat, lon) {
@@ -186,8 +186,7 @@
       [[30,35],[28,36],[25,37],[20,40],[15,43],[12,44],[14,48],[16,52],[20,56],[22,59],[25,56],[28,50],[30,48],[30,35]]
     ];
 
-    // Desenhar continentes em verde-esmeralda escuro elegante
-    g.fillStyle = '#1b4332';
+    g.fillStyle = '#34393d';
     continents.forEach(poly => {
       g.beginPath();
       poly.forEach((pt, i) => {
@@ -199,7 +198,7 @@
     });
 
     // Bordas costeiras em tom mais claro para dar definição
-    g.strokeStyle = 'rgba(27, 67, 50, 0.5)';
+    g.strokeStyle = 'rgba(146, 155, 161, 0.42)';
     g.lineWidth = 1;
     continents.forEach(poly => {
       g.beginPath();
@@ -212,7 +211,7 @@
     });
 
     // Brasil com destaque neon sutil
-    g.fillStyle = 'rgba(34, 197, 94, 0.25)';
+    g.fillStyle = 'rgba(32, 217, 107, 0.2)';
     g.beginPath();
     BRAZIL_GEO.forEach((pt, i) => {
       const p = xy(pt[0], pt[1]);
@@ -221,9 +220,9 @@
     g.closePath();
     g.fill();
 
-    g.shadowColor = '#4ade80';
-    g.shadowBlur = 12;
-    g.strokeStyle = 'rgba(34, 197, 94, 0.8)';
+    g.shadowColor = '#55e98c';
+    g.shadowBlur = 8;
+    g.strokeStyle = 'rgba(32, 217, 107, 0.68)';
     g.lineWidth = 2.5;
     g.stroke();
     g.shadowBlur = 0;
@@ -241,7 +240,7 @@
   // usando sempre o contorno mais preciso disponível no momento (BRAZIL_GEO).
   function paintBrazilHighlight(g, c) {
     g.save();
-    g.fillStyle = 'rgba(34, 197, 94, 0.22)';
+    g.fillStyle = 'rgba(32, 217, 107, 0.18)';
     g.beginPath();
     BRAZIL_GEO.forEach((pt, i) => {
       const p = xyOnCanvas(c, pt[0], pt[1]);
@@ -250,9 +249,9 @@
     g.closePath();
     g.fill();
 
-    g.shadowColor = '#4ade80';
-    g.shadowBlur = 10;
-    g.strokeStyle = 'rgba(74, 222, 128, 0.7)';
+    g.shadowColor = '#55e98c';
+    g.shadowBlur = 7;
+    g.strokeStyle = 'rgba(85, 233, 140, 0.62)';
     g.lineWidth = 2;
     g.stroke();
     g.restore();
@@ -536,8 +535,8 @@
     const ctx = c.getContext('2d');
     const g = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
     g.addColorStop(0, 'rgba(255,255,255,0.95)');
-    g.addColorStop(0.35, 'rgba(134,239,172,0.55)');
-    g.addColorStop(1, 'rgba(134,239,172,0)');
+    g.addColorStop(0.35, 'rgba(131,242,167,0.38)');
+    g.addColorStop(1, 'rgba(131,242,167,0)');
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, 64, 64);
     _glowSpriteTex = new THREE.CanvasTexture(c);
@@ -667,7 +666,7 @@
       void main() {
         float pulse = 0.5 + 0.1 * sin(uTime * 1.8);
         float rim = pow(max(0.0, 0.6 - dot(vNormal, vec3(0,0,1))), 2.5);
-        gl_FragColor = vec4(0.14, 0.77, 0.37, 1.0) * rim * pulse;
+        gl_FragColor = vec4(0.125, 0.85, 0.42, 1.0) * rim * pulse;
       }`,
     blending: THREE.AdditiveBlending,
     side: THREE.BackSide,

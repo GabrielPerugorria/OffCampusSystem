@@ -150,23 +150,23 @@
     }
     // Recria o gradiente radial do halo (depende de cx, cy, orbR)
     haloGrad = ctx.createRadialGradient(cx, cy, orbR * 0.2, cx, cy, orbR * 1.25);
-    haloGrad.addColorStop(0, 'rgba(34,197,94,0.07)');
-    haloGrad.addColorStop(0.75, 'rgba(34,197,94,0.10)');
-    haloGrad.addColorStop(1, 'rgba(34,197,94,0)');
+    haloGrad.addColorStop(0, 'rgba(32,217,107,0.045)');
+    haloGrad.addColorStop(0.75, 'rgba(32,217,107,0.06)');
+    haloGrad.addColorStop(1, 'rgba(32,217,107,0)');
   }
 
   /* ---------- render ---------- */
   function ease(t) { t = t < 0 ? 0 : t > 1 ? 1 : t; return 1 - (1 - t) * (1 - t) * (1 - t); }
 
   // Constantes de cor para os pontos (evita criar strings em loop)
-  var DOT_COLOR_FRONT = '#bbf7d0';
-  var DOT_COLOR_BACK = '#4ade80';
-  var EDGE_COLOR_FRONT = '#4ade80';
-  var EDGE_COLOR_BACK = '#22c55e';
+  var DOT_COLOR_FRONT = '#d7e6dc';
+  var DOT_COLOR_BACK = '#55e98c';
+  var EDGE_COLOR_FRONT = '#55e98c';
+  var EDGE_COLOR_BACK = '#20d96b';
 
   function draw(t) {
     // Limpa com fillRect preto (mais rápido que clearRect em canvas opaco)
-    ctx.fillStyle = '#000';
+    ctx.fillStyle = '#101214';
     ctx.globalAlpha = 1;
     ctx.fillRect(0, 0, W, H);
 
@@ -202,7 +202,7 @@
     ctx.globalAlpha = rimA;
     ctx.fillStyle = haloGrad; // gradiente cacheado (criado no layout)
     ctx.beginPath(); ctx.arc(cx, cy, orbR * 1.25, 0, TWO_PI); ctx.fill();
-    ctx.strokeStyle = 'rgba(74,222,128,0.28)';
+    ctx.strokeStyle = 'rgba(85,233,140,0.2)';
     ctx.lineWidth = 1;
     ctx.beginPath(); ctx.arc(cx, cy, orbR, 0, TWO_PI); ctx.stroke();
 
@@ -279,7 +279,7 @@
     var orbRatio = orbR / 140;
     var splitZ = 0.2; // z = 0.2 → near2 = 0.6 (limiar de cor original)
 
-    // Lote 1: pontos de trás (cor '#4ade80') — já vêm ordenados do sort
+    // Lote 1: pontos de trás — já vêm ordenados do sort
     ctx.fillStyle = DOT_COLOR_BACK;
     var n1 = 0;
     for (; n1 < NODES; n1++) {
