@@ -149,6 +149,7 @@ CREATE TABLE order_items (
   event_id    BIGINT UNSIGNED NOT NULL,
   quantity    INT UNSIGNED    NOT NULL DEFAULT 1,
   unit_price  DECIMAL(10,2)   NOT NULL,
+  line_total  DECIMAL(10,2)   NOT NULL DEFAULT 0.00,
   CONSTRAINT fk_oi_order FOREIGN KEY (order_id) REFERENCES orders(id)         ON DELETE CASCADE,
   CONSTRAINT fk_oi_batch FOREIGN KEY (batch_id) REFERENCES ticket_batches(id) ON DELETE RESTRICT,
   CONSTRAINT fk_oi_event FOREIGN KEY (event_id) REFERENCES events(id)         ON DELETE RESTRICT,

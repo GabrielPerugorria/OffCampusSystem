@@ -16,8 +16,8 @@ const runMigrationsPath = path.resolve(__dirname, '../backend/src/database/runMi
 const { MIGRATIONS } = require(runMigrationsPath);
 
 // Teste 1: Quantidade total e ordem sequencial estrita
-assert.strictEqual(MIGRATIONS.length, 8, 'Devem existir exatamente 8 migrações registradas');
-console.log('✓ Teste 1: Quantidade de migrações registrada confere (8 migrações)');
+assert.strictEqual(MIGRATIONS.length, 9, 'Devem existir exatamente 9 migrações registradas');
+console.log('✓ Teste 1: Quantidade de migrações registrada confere (9 migrações)');
 
 // Teste 2: Versões estritamente crescentes e únicas
 const versions = MIGRATIONS.map(m => m.version);

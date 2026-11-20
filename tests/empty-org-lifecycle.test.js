@@ -194,7 +194,7 @@ async function run() {
   console.log(' CICLO OPERACIONAL COMPLETO VALIDADO COM 100% SUCESSO! ');
   console.log('======================================================');
   await db.pool.end();
-  process.exit(0);
+  setTimeout(() => process.exit(0), 100);
 }
 
 run().catch((err) => {

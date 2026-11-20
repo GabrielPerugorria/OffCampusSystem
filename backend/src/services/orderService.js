@@ -195,11 +195,12 @@ async function createOrder(data, user) {
     );
     const orderId = orderInsertResult.insertId;
 
-    // Registra o item do pedido
+    // Registra o item do pedido com line_total
+    const lineTotal = Number((unitPrice * data.quantity).toFixed(2));
     await conn.execute(
-      `INSERT INTO order_items (order_id, batch_id, event_id, quantity, unit_price)
-       VALUES (?,?,?,?,?)`,
-      [orderId, batch.id, batch.event_id, data.quantity, unitPrice]
+      `INSERT INTO order_items (order_id, batch_id, event_id, quantity, unit_price, line_total)
+       VALUES (?,?,?,?,?,?)`,
+      [orderId, batch.id, batch.event_id, data.quantity, unitPrice, lineTotal]
     );
 
     let tickets = [];
@@ -322,7 +323,7 @@ async function confirmOrder(orderId, organizationId, confirmedByUserId) {
 
     // Busca os itens do pedido
     const [items] = await conn.execute(
-      `SELECT oi.batch_id, oi.event_id, oi.quantity, oi.unit_price,
+      `SELECT oi.batch_id, oi.event_id, oi.quantity, oi.unit_price, oi.line_total,
               b.name AS batch_name, b.quantity_total, b.quantity_sold, b.quantity_reserved,
               b.status AS batch_status,
               e.name AS event_name_b, e.capacity AS event_capacity, e.event_date AS event_date_b, e.venue AS venue_b
@@ -753,6 +754,13 @@ function startReservationCleanupJob(intervalMs = 60000) {
   }
 }
 
+function stopReservationCleanupJob() {
+  if (_cleanupInterval) {
+    clearInterval(_cleanupInterval);
+    _cleanupInterval = null;
+  }
+}
+
 module.exports = {
   createOrder,
   confirmOrder,
@@ -762,5 +770,6 @@ module.exports = {
   listTickets,
   releaseExpiredReservations,
   startReservationCleanupJob,
+  stopReservationCleanupJob,
   runMigrations,
 };

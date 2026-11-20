@@ -52,13 +52,14 @@ const expectedFiles = [
   '005_add_password_resets_and_email_tracking.sql',
   '006_notification_system.sql',
   '007_admin_2fa_and_in_app_notifications.sql',
-  '008_jwt_revocation_and_performance_indexes.sql'
+  '008_jwt_revocation_and_performance_indexes.sql',
+  '009_order_items_line_total_and_resilience.sql'
 ];
 
 for (const expected of expectedFiles) {
   assert.ok(files.includes(expected), `Arquivo físico de migração ausente: ${expected}`);
 }
-console.log('✓ Teste 4: Todos os 8 arquivos físicos de migração existem na pasta migrations/');
+console.log('✓ Teste 4: Todos os 9 arquivos físicos de migração existem na pasta migrations/');
 
 // 3. Validação do arquivo 008_jwt_revocation_and_performance_indexes.sql
 const sql008Path = path.join(migrationsDir, '008_jwt_revocation_and_performance_indexes.sql');

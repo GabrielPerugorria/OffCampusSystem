@@ -59,14 +59,21 @@ function startNotificationScheduler(intervalMs = 15000) {
 }
 
 /**
- * Para o scheduler com segurança
+ * Para o scheduler com segurança, aguardando ciclos em andamento
  */
-function stopNotificationScheduler() {
+async function stopNotificationScheduler(timeoutMs = 3000) {
   if (_schedulerInterval) {
     clearInterval(_schedulerInterval);
     _schedulerInterval = null;
-    logger.info('[Scheduler] Notification Scheduler encerrado.');
   }
+  if (_isTicking) {
+    logger.info('[Scheduler] Aguardando ciclo de notificações em andamento terminar...');
+    const start = Date.now();
+    while (_isTicking && Date.now() - start < timeoutMs) {
+      await new Promise(r => setTimeout(r, 100));
+    }
+  }
+  logger.info('[Scheduler] Notification Scheduler encerrado.');
 }
 
 module.exports = {

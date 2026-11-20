@@ -440,6 +440,35 @@ const MIGRATIONS = [
       }
     },
   },
+  {
+    version: '20261120_009',
+    name: '009_order_items_line_total_and_resilience',
+    up: async (conn) => {
+      // 1. Verifica se a coluna line_total já existe em order_items
+      const [cols] = await conn.execute(
+        `SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+          WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'order_items' AND COLUMN_NAME = 'line_total'`
+      );
+      if (cols.length === 0) {
+        await conn.execute(
+          'ALTER TABLE order_items ADD COLUMN line_total DECIMAL(10,2) NOT NULL DEFAULT 0.00 AFTER unit_price'
+        );
+      }
+      // 2. Backfill seguro: preenche com o produto exato unit_price * quantity
+      await conn.execute(
+        'UPDATE order_items SET line_total = ROUND(quantity * unit_price, 2) WHERE line_total = 0.00 OR line_total IS NULL'
+      );
+    },
+    verify: async (conn) => {
+      const [cols] = await conn.execute(
+        `SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+          WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'order_items' AND COLUMN_NAME = 'line_total'`
+      );
+      if (cols.length === 0) {
+        throw new Error('Falha na validação pós-migração: coluna line_total ausente na tabela order_items.');
+      }
+    },
+  },
 ];
 
 let _migrated = false;
