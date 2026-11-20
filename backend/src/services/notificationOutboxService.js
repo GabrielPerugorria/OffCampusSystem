@@ -312,6 +312,74 @@ async function listHistory({ organizationId, eventId = null, category = null, st
   };
 }
 
+/**
+ * Envia um e-mail transacional com garantia de persistência imediata na outbox,
+ * despacho imediato e fallback automático com retry / backoff se houver falha.
+ */
+async function sendImmediateTransactional({
+  organizationId = null,
+  eventId = null,
+  category = 'transactional',
+  recipientUserId = null,
+  recipientEmail,
+  recipientName = null,
+  subject,
+  htmlBody,
+  textBody = null,
+  idempotencyKey = null,
+  payload = null,
+}) {
+  const outboxId = await enqueueNotification({
+    organizationId: organizationId || null,
+    eventId,
+    category,
+    priority: 'immediate',
+    recipientUserId,
+    recipientEmail,
+    recipientName,
+    subject,
+    htmlBody,
+    textBody,
+    idempotencyKey,
+    scheduledFor: new Date(),
+    payload,
+  });
+
+  if (!outboxId) {
+    return { success: true, duplicate: true };
+  }
+
+  // Marca como processing
+  await db.query(
+    `UPDATE notification_outbox
+        SET status = 'processing',
+            processing_started_at = NOW()
+      WHERE id = ?`,
+    [outboxId]
+  );
+
+  const emailService = require('./emailService');
+  try {
+    const sendResult = await emailService.sendMail({
+      to: recipientEmail,
+      subject,
+      html: htmlBody,
+      text: textBody,
+    });
+
+    if (sendResult.success) {
+      await markResendAccepted(outboxId, sendResult.id);
+      return { success: true, id: sendResult.id, outboxId };
+    } else {
+      await markResendFailed(outboxId, sendResult.error || 'Erro ao comunicar com provedor');
+      return { success: false, error: sendResult.error, outboxId };
+    }
+  } catch (err) {
+    await markResendFailed(outboxId, err.message);
+    return { success: false, error: err.message, outboxId };
+  }
+}
+
 module.exports = {
   enqueueNotification,
   claimPendingNotifications,
@@ -322,4 +390,5 @@ module.exports = {
   recoverStaleProcessingJobs,
   listHistory,
   generateIdempotencyKey,
+  sendImmediateTransactional,
 };

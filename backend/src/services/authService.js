@@ -7,6 +7,8 @@ const env = require('../config/env');
 const AppError = require('../utils/AppError');
 const logger = require('../utils/logger');
 const emailService = require('./emailService');
+const notificationOutboxService = require('./notificationOutboxService');
+const inAppNotificationService = require('./inAppNotificationService');
 
 const hashToken = t => crypto.createHash('sha256').update(t).digest('hex');
 
@@ -77,21 +79,40 @@ async function register(data) {
     [data.name, data.email, passwordHash, data.cpf || null, data.phone || null, data.birthDate || null]
   );
 
-  // Envio assíncrono do e-mail de boas-vindas sem bloquear ou quebrar o fluxo de cadastro caso o Resend falhe
-  emailService.sendWelcomeEmail({ to: data.email, name: data.name })
-    .then(result => {
-      if (result && !result.success) {
-        logger.error(`[Auth] Falha no envio do e-mail de boas-vindas: ${result.error}`);
-      }
-    })
-    .catch(err => logger.error('[Auth] Exceção ao disparar e-mail de boas-vindas:', err.message));
+  const userId = result.insertId;
 
-  return issueTokens(result.insertId);
+  // Envio do e-mail de boas-vindas com persistência garantida na outbox
+  const loginUrl = `${env.frontendUrl}/index.html`;
+  const renderWelcomeTemplate = require('./emailTemplates/welcomeTemplate');
+  const { html, text } = renderWelcomeTemplate({ name: data.name, loginUrl });
+
+  await notificationOutboxService.sendImmediateTransactional({
+    organizationId: null,
+    category: 'transactional',
+    recipientUserId: userId,
+    recipientEmail: data.email,
+    recipientName: data.name,
+    subject: 'Bem-vindo ao EvoTech Events',
+    htmlBody: html,
+    textBody: text,
+    idempotencyKey: `welcome_${userId}`,
+  }).catch(err => logger.error('[Auth] Erro ao enviar boas-vindas:', err.message));
+
+  // Notificação interna para a equipe e administradores
+  inAppNotificationService.createNotification({
+    category: 'account',
+    severity: 'info',
+    title: 'Novo cadastro de participante',
+    message: `Novo participante registrado: ${data.name} (${emailService.maskEmail(data.email)}).`,
+    metadata: { userId, email: emailService.maskEmail(data.email) },
+  }).catch(err => logger.error('[Auth] Erro ao registrar alerta interno de cadastro:', err.message));
+
+  return issueTokens(userId);
 }
 
-async function login(email, password) {
+async function login(email, password, { ipAddress = null, userAgent = null } = {}) {
   const user = await db.queryOne(
-    'SELECT id, password_hash, status FROM users WHERE email = ? LIMIT 1', [email]
+    'SELECT id, name, email, password_hash, status FROM users WHERE email = ? LIMIT 1', [email]
   );
   // Mensagem única para e-mail inexistente e senha errada (não revela cadastro).
   if (!user) throw AppError.unauthorized('E-mail ou senha incorretos.');
@@ -100,7 +121,209 @@ async function login(email, password) {
   if (!match) throw AppError.unauthorized('E-mail ou senha incorretos.');
   if (user.status === 'blocked') throw AppError.forbidden('Conta bloqueada. Fale com o organizador.');
 
+  const session = await buildSession(user.id);
+
+  // DESAFIO 2FA OBRIGATÓRIO PARA CONTAS COM ACESSO ADMINISTRATIVO
+  if (session.role === 'admin') {
+    // 1. Gera token de desafio criptográfico seguro (64 caracteres hex)
+    const challengeToken = crypto.randomBytes(32).toString('hex');
+    // 2. Gera código OTP numérico de 6 dígitos
+    const code = String(crypto.randomInt(100000, 1000000));
+    const codeHash = hashToken(code);
+
+    // 3. Invalida desafios anteriores não utilizados deste usuário
+    await db.query(
+      'UPDATE admin_login_codes SET used_at = NOW() WHERE user_id = ? AND used_at IS NULL',
+      [user.id]
+    );
+
+    // 4. Armazena o código de verificação com expiração de 10 min e reenvio em 60s
+    await db.query(
+      `INSERT INTO admin_login_codes (
+        user_id, challenge_token, code_hash, expires_at, resend_available_at, ip_address, user_agent
+      ) VALUES (?, ?, ?, DATE_ADD(NOW(), INTERVAL 10 MINUTE), DATE_ADD(NOW(), INTERVAL 60 SECOND), ?, ?)`,
+      [user.id, challengeToken, codeHash, ipAddress || null, userAgent || null]
+    );
+
+    // 5. Renderiza template oficial de segurança e envia via outbox persistente imediata
+    const renderAdminLoginCodeTemplate = require('./emailTemplates/adminLoginCodeTemplate');
+    const { html, text } = renderAdminLoginCodeTemplate({
+      name: user.name,
+      code,
+      expiresMinutes: 10,
+      ipAddress,
+    });
+
+    await notificationOutboxService.sendImmediateTransactional({
+      organizationId: session.organizationId,
+      category: 'transactional',
+      recipientUserId: user.id,
+      recipientEmail: user.email,
+      recipientName: user.name,
+      subject: `Código de Acesso Administrativo: ${code} — EvoTech Events`,
+      htmlBody: html,
+      textBody: text,
+      idempotencyKey: `admin_2fa_${challengeToken}`,
+    }).catch(err => logger.error('[Auth] Falha no disparo do código 2FA:', err.message));
+
+    // 6. Registra notificação interna de segurança
+    inAppNotificationService.createNotification({
+      organizationId: session.organizationId,
+      category: 'account',
+      severity: 'warning',
+      title: 'Desafio 2FA de Login Administrativo',
+      message: `Código de acesso emitido para o administrador ${user.name} (${emailService.maskEmail(user.email)}).`,
+      metadata: { userId: user.id, ipAddress },
+    }).catch(err => logger.error('[Auth] Erro ao registrar alerta 2FA:', err.message));
+
+    return {
+      requires2FA: true,
+      challengeToken,
+      emailMasked: emailService.maskEmail(user.email),
+      expiresInSeconds: 600,
+    };
+  }
+
+  // Usuário participante comum: autenticação direta
   return issueTokens(user.id);
+}
+
+/**
+ * Valida o código 2FA enviado por e-mail e libera a sessão administrativa
+ */
+async function verifyAdminCode({ challengeToken, code, ipAddress = null }) {
+  if (!challengeToken || !code) {
+    throw AppError.badRequest('Token de desafio e código de 6 dígitos são obrigatórios.');
+  }
+
+  const row = await db.queryOne(
+    `SELECT id, user_id, code_hash, attempts, max_attempts, expires_at, used_at
+       FROM admin_login_codes
+      WHERE challenge_token = ?
+      LIMIT 1`,
+    [challengeToken]
+  );
+
+  if (!row || row.used_at || new Date(row.expires_at) < new Date()) {
+    throw AppError.unauthorized('Código de verificação expirado ou inválido. Faça login novamente.');
+  }
+
+  if (Number(row.attempts) >= Number(row.max_attempts)) {
+    await db.query('UPDATE admin_login_codes SET used_at = NOW() WHERE id = ?', [row.id]);
+    const user = await db.queryOne('SELECT email, name FROM users WHERE id = ?', [row.user_id]);
+    await inAppNotificationService.createNotification({
+      category: 'account',
+      severity: 'critical',
+      title: 'Tentativa suspeita de acesso administrativo bloqueada',
+      message: `Acesso bloqueado para ${emailService.maskEmail(user?.email)} por excesso de tentativas incorretas no 2FA.`,
+      metadata: { userId: row.user_id, ipAddress },
+    });
+    throw AppError.unauthorized('Limite de tentativas excedido. Faça login novamente.');
+  }
+
+  const expectedHash = hashToken(code);
+  const isMatch = (expectedHash === row.code_hash);
+
+  if (!isMatch) {
+    const nextAttempts = Number(row.attempts) + 1;
+    await db.query('UPDATE admin_login_codes SET attempts = ? WHERE id = ?', [nextAttempts, row.id]);
+
+    if (nextAttempts >= Number(row.max_attempts)) {
+      await db.query('UPDATE admin_login_codes SET used_at = NOW() WHERE id = ?', [row.id]);
+      throw AppError.unauthorized('Código incorreto. Limite de tentativas excedido. Faça login novamente.');
+    }
+
+    const remaining = Number(row.max_attempts) - nextAttempts;
+    throw AppError.unauthorized(`Código de verificação incorreto. Você tem mais ${remaining} tentativa(s).`);
+  }
+
+  // Código correto: consome o token de uso único
+  await db.query('UPDATE admin_login_codes SET used_at = NOW() WHERE id = ?', [row.id]);
+
+  const session = await buildSession(row.user_id);
+
+  // Registra acesso bem-sucedido na central de notificações internas
+  await inAppNotificationService.createNotification({
+    organizationId: session.organizationId,
+    category: 'account',
+    severity: 'info',
+    title: 'Acesso administrativo autorizado (2FA)',
+    message: `Administrador ${session.nome} concluiu verificação 2FA com sucesso.`,
+    metadata: { userId: row.user_id, ipAddress },
+  });
+
+  return issueTokens(row.user_id);
+}
+
+/**
+ * Reenvia o código 2FA com respeito ao intervalo mínimo de 60 segundos
+ */
+async function resendAdminCode({ challengeToken, ipAddress = null }) {
+  if (!challengeToken) {
+    throw AppError.badRequest('Token de desafio obrigatório.');
+  }
+
+  const row = await db.queryOne(
+    `SELECT id, user_id, resend_available_at, expires_at, used_at
+       FROM admin_login_codes
+      WHERE challenge_token = ?
+      LIMIT 1`,
+    [challengeToken]
+  );
+
+  if (!row || row.used_at || new Date(row.expires_at) < new Date()) {
+    throw AppError.unauthorized('Sessão de verificação expirada. Faça login novamente.');
+  }
+
+  if (new Date(row.resend_available_at) > new Date()) {
+    const waitSeconds = Math.max(1, Math.ceil((new Date(row.resend_available_at).getTime() - Date.now()) / 1000));
+    throw AppError.badRequest(`Aguarde ${waitSeconds} segundos antes de solicitar um novo código.`);
+  }
+
+  const user = await db.queryOne('SELECT id, name, email FROM users WHERE id = ?', [row.user_id]);
+  if (!user) throw AppError.unauthorized('Usuário não encontrado.');
+
+  const session = await buildSession(user.id);
+
+  // Invalida o código anterior
+  await db.query('UPDATE admin_login_codes SET used_at = NOW() WHERE id = ?', [row.id]);
+
+  // Gera novo código
+  const newCode = String(crypto.randomInt(100000, 1000000));
+  const newCodeHash = hashToken(newCode);
+
+  await db.query(
+    `INSERT INTO admin_login_codes (
+      user_id, challenge_token, code_hash, expires_at, resend_available_at, ip_address
+    ) VALUES (?, ?, ?, DATE_ADD(NOW(), INTERVAL 10 MINUTE), DATE_ADD(NOW(), INTERVAL 60 SECOND), ?)`,
+    [user.id, challengeToken, newCodeHash, ipAddress]
+  );
+
+  const renderAdminLoginCodeTemplate = require('./emailTemplates/adminLoginCodeTemplate');
+  const { html, text } = renderAdminLoginCodeTemplate({
+    name: user.name,
+    code: newCode,
+    expiresMinutes: 10,
+    ipAddress,
+  });
+
+  await notificationOutboxService.sendImmediateTransactional({
+    organizationId: session.organizationId,
+    category: 'transactional',
+    recipientUserId: user.id,
+    recipientEmail: user.email,
+    recipientName: user.name,
+    subject: `Novo Código de Acesso Administrativo: ${newCode} — EvoTech Events`,
+    htmlBody: html,
+    textBody: text,
+    idempotencyKey: `admin_2fa_resend_${Date.now()}`,
+  }).catch(err => logger.error('[Auth] Erro ao reenviar código 2FA:', err.message));
+
+  return {
+    success: true,
+    message: `Novo código enviado com sucesso para ${emailService.maskEmail(user.email)}.`,
+    expiresInSeconds: 600,
+  };
 }
 
 async function issueTokens(userId) {
@@ -191,17 +414,32 @@ async function forgotPassword(email) {
     [user.id, tokenHash, expiresAt]
   );
 
-  // Dispara e-mail de recuperação de senha via Resend
-  emailService.sendPasswordResetEmail({
-    to: user.email,
-    name: user.name,
-    token,
-    expiresMinutes: 30,
-  }).then(result => {
-    if (result && !result.success) {
-      logger.error(`[Auth] Falha no envio do e-mail de recuperação de senha: ${result.error}`);
-    }
-  }).catch(err => logger.error('[Auth] Exceção ao disparar e-mail de recuperação de senha:', err.message));
+  // Renderiza template de e-mail de recuperação de senha
+  const renderPasswordResetTemplate = require('./emailTemplates/passwordResetTemplate');
+  const resetLink = `${env.frontendUrl}/index.html?reset_token=${encodeURIComponent(token)}`;
+  const { html, text } = renderPasswordResetTemplate({ name: user.name, resetLink, expiresMinutes: 30 });
+
+  // Dispara e-mail de recuperação de senha via outbox persistente imediata
+  await notificationOutboxService.sendImmediateTransactional({
+    organizationId: null,
+    category: 'transactional',
+    recipientUserId: user.id,
+    recipientEmail: user.email,
+    recipientName: user.name,
+    subject: 'Recuperação de Senha — EvoTech Events',
+    htmlBody: html,
+    textBody: text,
+    idempotencyKey: `pwd_reset_${tokenHash}`,
+  }).catch(err => logger.error('[Auth] Erro ao disparar e-mail de recuperação de senha:', err.message));
+
+  // Alerta interno na central de notificações administrativas
+  inAppNotificationService.createNotification({
+    category: 'account',
+    severity: 'info',
+    title: 'Solicitação de recuperação de senha',
+    message: `Instruções de redefinição de senha geradas para uma conta de usuário.`,
+    metadata: { emailMasked: emailService.maskEmail(user.email) },
+  }).catch(err => logger.error('[Auth] Erro ao registrar alerta de recuperação:', err.message));
 
   return { message: genericMessage };
 }
@@ -276,8 +514,27 @@ async function resetPassword(token, newPassword) {
 
   // E-mail disparado de forma assíncrona APÓS confirmação do commit da transação
   if (userEmail) {
-    emailService.sendPasswordChangedNotification({ to: userEmail, name: userName })
-      .catch(err => logger.error('Falha ao disparar notificação de senha alterada:', err.message));
+    const renderPasswordChangedTemplate = require('./emailTemplates/passwordChangedTemplate');
+    const { html, text } = renderPasswordChangedTemplate({ name: userName, timestamp: Date.now() });
+
+    await notificationOutboxService.sendImmediateTransactional({
+      organizationId: null,
+      category: 'transactional',
+      recipientEmail: userEmail,
+      recipientName: userName,
+      subject: 'Segurança: Sua senha foi alterada — EvoTech Events',
+      htmlBody: html,
+      textBody: text,
+      idempotencyKey: `pwd_changed_${Date.now()}_${userEmail}`,
+    }).catch(err => logger.error('[Auth] Falha ao disparar notificação de senha alterada:', err.message));
+
+    inAppNotificationService.createNotification({
+      category: 'account',
+      severity: 'info',
+      title: 'Senha de conta alterada com sucesso',
+      message: `A senha do usuário ${userName} (${emailService.maskEmail(userEmail)}) foi redefinida com revogação das sessões ativas.`,
+      metadata: { emailMasked: emailService.maskEmail(userEmail) },
+    }).catch(err => logger.error('[Auth] Erro ao registrar notificação de troca de senha:', err.message));
   }
 
   return { message: 'Senha atualizada com sucesso. Você já pode fazer login com sua nova senha.' };
@@ -417,5 +674,6 @@ async function myOrderDetails(orderId, userId, email) {
 
 module.exports = {
   register, login, refresh, logout, updateMe, forgotPassword, resetPassword,
+  verifyAdminCode, resendAdminCode,
   buildSession, myTickets, myHistory, myOrders, myOrderDetails,
 };

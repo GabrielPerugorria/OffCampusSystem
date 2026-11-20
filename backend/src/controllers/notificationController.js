@@ -4,6 +4,7 @@ const { ok, badRequest } = require('../utils/response');
 const AppError = require('../utils/AppError');
 const notificationOutboxService = require('../services/notificationOutboxService');
 const notificationProcessor = require('../services/notificationProcessor');
+const inAppNotificationService = require('../services/inAppNotificationService');
 
 /**
  * notificationController — Preferências e histórico de notificações empresariais
@@ -153,10 +154,53 @@ async function triggerSummary(req, res) {
   return ok(res, { message: 'Resumo consolidado enfileirado para envio aos gestores autorizados.' });
 }
 
+/* =============================================================================
+   NOTIFICAÇÕES INTERNAS DO PAINEL (IN-APP NOTIFICATIONS)
+============================================================================= */
+
+async function getInAppNotifications(req, res) {
+  const organizationId = req.user.organizationId;
+  const { category, severity, unreadOnly, limit, offset } = req.query;
+
+  const result = await inAppNotificationService.listNotifications({
+    organizationId,
+    category: category || null,
+    severity: severity || null,
+    unreadOnly: unreadOnly === 'true' || unreadOnly === '1',
+    limit: limit ? Number(limit) : 50,
+    offset: offset ? Number(offset) : 0,
+  });
+
+  return ok(res, result);
+}
+
+async function getInAppUnreadCount(req, res) {
+  const organizationId = req.user.organizationId;
+  const count = await inAppNotificationService.getUnreadCount(organizationId);
+  return ok(res, { unreadCount: count });
+}
+
+async function markInAppAsRead(req, res) {
+  const organizationId = req.user.organizationId;
+  const id = Number(req.params.id);
+  const success = await inAppNotificationService.markAsRead(id, organizationId);
+  return ok(res, { success, id });
+}
+
+async function markAllInAppAsRead(req, res) {
+  const organizationId = req.user.organizationId;
+  const affected = await inAppNotificationService.markAllAsRead(organizationId);
+  return ok(res, { success: true, affectedRows: affected });
+}
+
 module.exports = {
   getPreferences,
   updatePreferences,
   getHistory,
   getMetrics,
   triggerSummary,
+  getInAppNotifications,
+  getInAppUnreadCount,
+  markInAppAsRead,
+  markAllInAppAsRead,
 };

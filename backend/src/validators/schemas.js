@@ -36,6 +36,13 @@ const resetPasswordSchema = z.object({
   token: z.string().trim().min(20, 'Token de recuperação inválido.').max(256),
   password,
 });
+const verifyAdminCodeSchema = z.object({
+  challengeToken: z.string().trim().min(32).max(128),
+  code: z.string().trim().regex(/^\d{6}$/, 'O código de verificação deve conter 6 dígitos numéricos.'),
+});
+const resendAdminCodeSchema = z.object({
+  challengeToken: z.string().trim().min(32).max(128),
+});
 const updateMeSchema = z.object({
   name: str(3, 120).optional(),
   phone: phone.optional(),
@@ -183,6 +190,7 @@ const unitEconQuery = z.object({
 
 module.exports = {
   registerSchema, loginSchema, refreshSchema, forgotSchema, resetPasswordSchema, updateMeSchema,
+  verifyAdminCodeSchema, resendAdminCodeSchema,
   eventSchema, eventUpdateSchema, goalsSchema,
   batchSchema, batchUpdateSchema, batchStockSchema,
   orderSchema, checkinSchema,

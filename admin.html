@@ -135,8 +135,38 @@
       <div class="topbar-title" id="topbar-title" aria-live="polite">Dashboard</div>
       <span class="topbar-sub" id="topbar-sub">Visão geral em tempo real</span>
     </div>
-    <div class="topbar-actions">
+    <div class="topbar-actions" style="position:relative;display:flex;align-items:center;gap:8px;">
       <span class="live-indicator"><span class="dot"></span>Ao vivo</span>
+
+      <!-- Central de Notificações Internas com Badge -->
+      <div style="position:relative;">
+        <button class="btn btn-outline btn-sm notif-bell-btn" id="btn-topbar-notif" onclick="toggleNotifDropdown()" title="Central de Notificações" aria-label="Notificações" style="position:relative;display:inline-flex;align-items:center;justify-content:center;padding:6px 10px;">
+          <i data-lucide="bell" style="width:16px;height:16px"></i>
+          <span class="notif-badge" id="topbar-notif-badge" style="display:none;position:absolute;top:-4px;right:-4px;background:#ef4444;color:#fff;border-radius:10px;font-size:10px;font-weight:700;padding:1px 5px;min-width:16px;text-align:center;">0</span>
+        </button>
+
+        <!-- Dropdown de Notificações em Tempo Real -->
+        <div id="notif-dropdown" style="display:none;position:absolute;top:calc(100% + 8px);right:0;width:360px;max-width:90vw;background:#0d1117;border:1px solid #1e293b;border-radius:12px;box-shadow:0 12px 32px rgba(0,0,0,0.6);z-index:999;overflow:hidden;">
+          <div style="padding:12px 16px;border-bottom:1px solid #1e293b;display:flex;align-items:center;justify-content:space-between;background:#131b2e;">
+            <div style="font-size:13px;font-weight:700;color:#f1f5f9;display:flex;align-items:center;gap:6px;">
+              <i data-lucide="bell" style="width:14px;height:14px;color:#10b981;"></i>
+              Notificações Internas
+            </div>
+            <button onclick="marcarTodasNotifLidas()" style="background:none;border:none;color:#10b981;font-size:11px;font-weight:600;cursor:pointer;padding:0;">
+              Marcar lidas
+            </button>
+          </div>
+          <div id="notif-dropdown-list" style="max-height:360px;overflow-y:auto;padding:4px 0;">
+            <div style="padding:20px;text-align:center;color:#64748b;font-size:12px;">Carregando notificações...</div>
+          </div>
+          <div style="padding:10px 16px;border-top:1px solid #1e293b;text-align:center;background:#090d14;">
+            <a href="#" onclick="event.preventDefault();toggleNotifDropdown(false);goPanel('notificacoes');" style="color:#94a3b8;font-size:12px;text-decoration:none;font-weight:600;">
+              Ver central completa &rarr;
+            </a>
+          </div>
+        </div>
+      </div>
+
       <button class="btn btn-outline btn-sm" onclick="exportData()" title="Exportar dados do sistema" style="display:inline-flex;align-items:center;gap:6px">
         <i data-lucide="download" style="width:14px;height:14px"></i>Exportar
       </button>
@@ -604,6 +634,43 @@
           <div class="kpi-label">Falhas / Bounced</div>
           <div class="kpi-value text-danger" id="notif-kpi-failed">0</div>
           <div class="kpi-sub">Controle de erro</div>
+        </div>
+      </div>
+
+      <!-- Central de Alertas & Notificações Internas (Em Tempo Real) -->
+      <div class="card" style="margin-bottom:20px;">
+        <div class="card-header" style="flex-wrap:wrap;gap:12px;">
+          <div>
+            <div class="card-title" style="display:flex;align-items:center;gap:8px;">
+              <i data-lucide="bell-ring" style="color:#10b981;width:18px;height:18px;"></i>
+              Central de Notificações Internas (Em Tempo Real)
+            </div>
+            <div class="card-sub">Acompanhamento contínuo de vendas, contas, financeiro, estoque e operações</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <div class="tab-pills" id="notif-category-pills" style="display:flex;gap:4px;background:#0d1117;padding:3px;border-radius:8px;border:1px solid #1e293b;">
+              <button class="pill active" onclick="filtrarNotifCategoria('')" style="padding:4px 10px;border-radius:6px;font-size:12px;cursor:pointer;background:#10b981;color:#fff;border:none;">Todas</button>
+              <button class="pill" onclick="filtrarNotifCategoria('sales')" style="padding:4px 10px;border-radius:6px;font-size:12px;cursor:pointer;background:none;color:#94a3b8;border:none;">Vendas</button>
+              <button class="pill" onclick="filtrarNotifCategoria('account')" style="padding:4px 10px;border-radius:6px;font-size:12px;cursor:pointer;background:none;color:#94a3b8;border:none;">Contas &amp; 2FA</button>
+              <button class="pill" onclick="filtrarNotifCategoria('financial')" style="padding:4px 10px;border-radius:6px;font-size:12px;cursor:pointer;background:none;color:#94a3b8;border:none;">Financeiro</button>
+              <button class="pill" onclick="filtrarNotifCategoria('stock')" style="padding:4px 10px;border-radius:6px;font-size:12px;cursor:pointer;background:none;color:#94a3b8;border:none;">Estoque</button>
+              <button class="pill" onclick="filtrarNotifCategoria('operation')" style="padding:4px 10px;border-radius:6px;font-size:12px;cursor:pointer;background:none;color:#94a3b8;border:none;">Operação</button>
+            </div>
+            <label style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#94a3b8;cursor:pointer;">
+              <input type="checkbox" id="filtro-notif-nao-lidas" onchange="carregarNotificacoesPainel()" style="cursor:pointer;">
+              Apenas não lidas
+            </label>
+            <button class="btn btn-outline btn-sm" onclick="marcarTodasNotifLidas()" style="font-size:12px;">
+              Marcar todas como lidas
+            </button>
+            <button class="btn btn-outline btn-sm" onclick="carregarNotificacoesPainel()" title="Recarregar">
+              <i data-lucide="refresh-cw" style="width:14px;height:14px;"></i>
+            </button>
+          </div>
+        </div>
+
+        <div id="inapp-notifications-container" style="max-height:420px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:12px 0;">
+          <div style="text-align:center;padding:30px;color:#64748b;font-size:13px;">Carregando notificações internas...</div>
         </div>
       </div>
 

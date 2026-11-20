@@ -10,7 +10,28 @@ exports.register = asyncHandler(async (req, res) => {
 });
 
 exports.login = asyncHandler(async (req, res) => {
-  const result = await authService.login(req.body.email, req.body.password);
+  const ipAddress = req.ip || req.connection?.remoteAddress || null;
+  const userAgent = req.headers['user-agent'] || null;
+  const result = await authService.login(req.body.email, req.body.password, { ipAddress, userAgent });
+  return ok(res, result);
+});
+
+exports.verifyAdminCode = asyncHandler(async (req, res) => {
+  const ipAddress = req.ip || req.connection?.remoteAddress || null;
+  const result = await authService.verifyAdminCode({
+    challengeToken: req.body.challengeToken,
+    code: req.body.code,
+    ipAddress,
+  });
+  return ok(res, result);
+});
+
+exports.resendAdminCode = asyncHandler(async (req, res) => {
+  const ipAddress = req.ip || req.connection?.remoteAddress || null;
+  const result = await authService.resendAdminCode({
+    challengeToken: req.body.challengeToken,
+    ipAddress,
+  });
   return ok(res, result);
 });
 

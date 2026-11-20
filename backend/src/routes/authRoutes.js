@@ -8,9 +8,11 @@ const s = require('../validators/schemas');
 
 const router = Router();
 
-router.post('/register',        authLimiter, validate(s.registerSchema), c.register);
-router.post('/login',           authLimiter, validate(s.loginSchema),    c.login);
-router.post('/refresh',         validate(s.refreshSchema),               c.refresh);
+router.post('/register',          authLimiter, validate(s.registerSchema),         c.register);
+router.post('/login',             authLimiter, validate(s.loginSchema),            c.login);
+router.post('/verify-admin-code', authLimiter, validate(s.verifyAdminCodeSchema), c.verifyAdminCode);
+router.post('/resend-admin-code', authLimiter, validate(s.resendAdminCodeSchema), c.resendAdminCode);
+router.post('/refresh',           validate(s.refreshSchema),                       c.refresh);
 router.post('/logout',          c.logout);
 router.post('/forgot-password', authLimiter, validate(s.forgotSchema),        c.forgotPassword);
 router.post('/reset-password',  authLimiter, validate(s.resetPasswordSchema), c.resetPassword);

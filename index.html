@@ -1771,32 +1771,66 @@
         </div>
         <!-- Lado direito: formulário -->
         <div class="auth-form-side">
-          <h2 class="auth-title">Bem-vindo de volta</h2>
-          <p class="auth-sub">Acesse sua conta para continuar</p>
-          <div class="auth-field">
-            <i data-lucide="mail"></i>
-            <input type="email" id="loginEmail" placeholder="Seu e-mail" autocomplete="email" required>
+          <!-- Etapa 1: Credenciais (E-mail e Senha) -->
+          <div id="loginStepCredentials">
+            <h2 class="auth-title">Bem-vindo de volta</h2>
+            <p class="auth-sub">Acesse sua conta para continuar</p>
+            <div class="auth-field">
+              <i data-lucide="mail"></i>
+              <input type="email" id="loginEmail" placeholder="Seu e-mail" autocomplete="email" required>
+            </div>
+            <span class="mfield-error" id="loginEmail-error"></span>
+            <div class="auth-field">
+              <i data-lucide="lock"></i>
+              <input type="password" id="loginSenha" placeholder="Senha" autocomplete="current-password" required disabled>
+            </div>
+            <span class="mfield-error" id="loginSenha-error"></span>
+            <div class="auth-form-link-row">
+              <a href="#" class="auth-link-small" id="linkEsqueci">Esqueci minha senha</a>
+            </div>
+            <button class="auth-btn" id="btnLoginSubmit">
+              <span>Entrar</span>
+              <i data-lucide="arrow-right"></i>
+            </button>
+            <p class="auth-alt">Não tem conta? <a href="#" id="linkParaCadastro">Criar conta</a></p>
+            <!-- Demo admin shortcut -->
+            <div class="modal-demo-hint">
+              <span>Demo rápida:</span>
+              <a href="#" id="linkDemoAdmin" class="modal-demo-btn">Admin</a>
+              <a href="#" id="linkDemoParticipante" class="modal-demo-btn">Participante</a>
+            </div>
           </div>
-          <span class="mfield-error" id="loginEmail-error"></span>
-          <div class="auth-field">
-            <i data-lucide="lock"></i>
-            <input type="password" id="loginSenha" placeholder="Senha" autocomplete="current-password" required disabled>
+
+          <!-- Etapa 2: Desafio 2FA para Contas Administrativas -->
+          <div id="loginStep2FA" style="display:none">
+            <h2 class="auth-title" style="display:flex;align-items:center;gap:8px;">
+              <i data-lucide="shield-check" style="color:#10b981;width:24px;height:24px;"></i>
+              Acesso Administrativo
+            </h2>
+            <p class="auth-sub">
+              Enviamos um código de 6 dígitos para o e-mail de segurança:<br>
+              <strong id="login2FAEmailMasked" style="color:#10b981;">---</strong>
+            </p>
+            <input type="hidden" id="adminChallengeToken">
+            <div style="margin:20px 0 10px 0;">
+              <input type="text" id="login2FACode" maxlength="6" placeholder="000000" inputmode="numeric" autocomplete="one-time-code" style="letter-spacing:8px;font-size:26px;text-align:center;font-weight:800;color:#10b981;background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.3);border-radius:10px;padding:12px;width:100%;box-sizing:border-box;outline:none;">
+            </div>
+            <span class="mfield-error" id="login2FA-error" style="display:block;text-align:center;margin-bottom:12px;"></span>
+            <button class="auth-btn" id="btnLogin2FASubmit">
+              <span>Confirmar Código</span>
+              <i data-lucide="check"></i>
+            </button>
+            <p class="auth-alt" style="margin-top:16px;">
+              Não recebeu? <a href="#" id="linkReenviar2FA">Reenviar código</a>
+              <span id="timerReenviar2FA" style="color:#64748b;font-size:12px;margin-left:4px;"></span>
+            </p>
+            <p class="auth-alt" style="margin-top:8px;">
+              <a href="#" id="linkVoltarLoginCreds" style="color:#94a3b8;display:inline-flex;align-items:center;gap:4px;">
+                <i data-lucide="arrow-left" style="width:12px;height:12px;"></i> Voltar ao login
+              </a>
+            </p>
           </div>
-          <span class="mfield-error" id="loginSenha-error"></span>
-          <div class="auth-form-link-row">
-            <a href="#" class="auth-link-small" id="linkEsqueci">Esqueci minha senha</a>
-          </div>
-          <button class="auth-btn" id="btnLoginSubmit">
-            <span>Entrar</span>
-            <i data-lucide="arrow-right"></i>
-          </button>
-          <p class="auth-alt">Não tem conta? <a href="#" id="linkParaCadastro">Criar conta</a></p>
-          <!-- Demo admin shortcut -->
-          <div class="modal-demo-hint">
-            <span>Demo rápida:</span>
-            <a href="#" id="linkDemoAdmin" class="modal-demo-btn">Admin</a>
-            <a href="#" id="linkDemoParticipante" class="modal-demo-btn">Participante</a>
-          </div>
+
           <button class="auth-close" id="modalLoginClose" aria-label="Fechar">
             <i data-lucide="x"></i>
           </button>

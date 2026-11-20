@@ -170,9 +170,27 @@
       const data = await request('/auth/login', {
         method: 'POST', body: { email, password }, skipAuth: true,
       });
+      if (data && data.requires2FA) {
+        return data;
+      }
       store.setAuth({ accessToken: data.accessToken, refreshToken: data.refreshToken });
       store.setSession(data.user);
       return data.user;
+    },
+
+    async verifyAdminCode(challengeToken, code) {
+      const data = await request('/auth/verify-admin-code', {
+        method: 'POST', body: { challengeToken, code }, skipAuth: true,
+      });
+      store.setAuth({ accessToken: data.accessToken, refreshToken: data.refreshToken });
+      store.setSession(data.user);
+      return data.user;
+    },
+
+    async resendAdminCode(challengeToken) {
+      return request('/auth/resend-admin-code', {
+        method: 'POST', body: { challengeToken }, skipAuth: true,
+      });
     },
 
     async register(payload) {

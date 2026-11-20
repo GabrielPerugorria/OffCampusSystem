@@ -7,6 +7,7 @@ const notificationOutboxService = require('./notificationOutboxService');
 const notificationRateLimitService = require('./notificationRateLimitService');
 const recipientResolver = require('./recipientResolver');
 const emailService = require('./emailService');
+const inAppNotificationService = require('./inAppNotificationService');
 
 // Templates
 const renderSalesUpdateTemplate = require('./emailTemplates/salesUpdateTemplate');
@@ -509,10 +510,31 @@ async function dispatchClaimedNotifications(batchSize = 10) {
       } else {
         // Falha no envio (ex: rate limit do Resend, rede, erro de formatação)
         await notificationOutboxService.markResendFailed(job.id, sendResult.error || 'Erro no Resend');
+
+        // Cria alerta interno de operação para os administradores
+        await inAppNotificationService.createNotification({
+          organizationId: job.organization_id,
+          eventId: job.event_id,
+          category: 'operation',
+          severity: 'warning',
+          title: 'Falha no envio de e-mail pelo provedor',
+          message: `E-mail "${job.subject}" para ${emailService.maskEmail(job.recipient_email)} não foi aceito: ${sendResult.error || 'Erro no Resend'}`,
+          metadata: { jobId: job.id, recipientEmail: emailService.maskEmail(job.recipient_email) },
+        }).catch(() => {});
       }
     } catch (err) {
       logger.error(`[Outbox] Exceção ao despachar notificação #${job.id}:`, err.message);
       await notificationOutboxService.markResendFailed(job.id, err.message);
+
+      await inAppNotificationService.createNotification({
+        organizationId: job.organization_id,
+        eventId: job.event_id,
+        category: 'operation',
+        severity: 'critical',
+        title: 'Exceção crítica no processamento de e-mails',
+        message: `Exceção ao despachar notificação #${job.id}: ${err.message}`,
+        metadata: { jobId: job.id, error: err.message },
+      }).catch(() => {});
     }
   }
 

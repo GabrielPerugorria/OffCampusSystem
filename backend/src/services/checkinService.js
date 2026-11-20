@@ -2,6 +2,7 @@
 const db = require('../config/db');
 const AppError = require('../utils/AppError');
 const businessEventService = require('./businessEventService');
+const inAppNotificationService = require('./inAppNotificationService');
 
 // Consulta de código antes de liberar a entrada (tela da portaria).
 async function validateCode(code, organizationId) {
@@ -64,6 +65,17 @@ async function checkIn(data, user) {
           guestName: data.guestName,
           method: 'manual',
         },
+        conn,
+      });
+
+      await inAppNotificationService.createNotification({
+        organizationId,
+        eventId: event.id,
+        category: 'operation',
+        severity: 'info',
+        title: 'Check-in realizado (Manual)',
+        message: `Entrada autorizada para ${data.guestName} no evento ${event.name}.`,
+        metadata: { checkinId: result.insertId, guestName: data.guestName, method: 'manual' },
         conn,
       });
 
@@ -135,6 +147,17 @@ async function checkIn(data, user) {
         guestName: ticket.holder_name,
         method: 'code',
       },
+      conn,
+    });
+
+    await inAppNotificationService.createNotification({
+      organizationId,
+      eventId: ticket.event_id,
+      category: 'operation',
+      severity: 'info',
+      title: 'Check-in realizado (Ingresso QR)',
+      message: `Entrada validada: ${ticket.holder_name} (${ticket.code}) no evento ${ticket.event_name}.`,
+      metadata: { checkinId: result.insertId, ticketId: ticket.id, code: ticket.code },
       conn,
     });
 

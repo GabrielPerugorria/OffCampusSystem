@@ -346,6 +346,7 @@ function goPanel(id) {
   } else if (id === 'notificacoes') {
     carregarPreferenciasNotificacao();
     carregarMetricasNotificacoes();
+    carregarNotificacoesPainel();
     carregarHistoricoNotificacoes();
   } else {
     atualizar();
@@ -2317,6 +2318,212 @@ async function dispararResumoExecutivoAgora() {
     toast(`Erro ao disparar resumo: ${err.message}`, 'error');
   }
 }
+
+/* ===== NOTIFICAÇÕES INTERNAS EM TEMPO REAL ===== */
+let notifCategoriaAtiva = '';
+
+function filtrarNotifCategoria(cat) {
+  notifCategoriaAtiva = cat;
+  const container = document.getElementById('notif-category-pills');
+  if (container) {
+    const buttons = container.querySelectorAll('.pill');
+    buttons.forEach(btn => {
+      btn.style.background = 'none';
+      btn.style.color = '#94a3b8';
+      btn.classList.remove('active');
+    });
+  }
+  const activeBtn = window.event?.currentTarget;
+  if (activeBtn) {
+    activeBtn.style.background = '#10b981';
+    activeBtn.style.color = '#fff';
+    activeBtn.classList.add('active');
+  }
+  carregarNotificacoesPainel();
+}
+
+async function carregarNotificacoesPainel() {
+  const container = document.getElementById('inapp-notifications-container');
+  if (!container) return;
+
+  const unreadOnly = document.getElementById('filtro-notif-nao-lidas')?.checked || false;
+  const query = { limit: 50 };
+  if (notifCategoriaAtiva) query.category = notifCategoriaAtiva;
+  if (unreadOnly) query.unreadOnly = 'true';
+
+  try {
+    const res = await EvoAPI.get('/notifications/in-app', query);
+    const items = res.items || [];
+
+    if (items.length === 0) {
+      container.innerHTML = `
+        <div style="text-align:center;padding:40px 20px;color:#64748b;font-size:13px;">
+          <i data-lucide="bell-off" style="width:32px;height:32px;margin:0 auto 10px auto;display:block;opacity:0.5;"></i>
+          Nenhuma notificação interna encontrada com os filtros selecionados.
+        </div>
+      `;
+      if (window.lucide && lucide.createIcons) lucide.createIcons();
+      return;
+    }
+
+    const SEVERITY_COLORS = {
+      info: { border: '#1e293b', iconColor: '#38bdf8', icon: 'info' },
+      warning: { border: 'rgba(245,158,11,0.3)', iconColor: '#f59e0b', icon: 'alert-triangle' },
+      critical: { border: 'rgba(239,68,68,0.4)', iconColor: '#ef4444', icon: 'alert-octagon' },
+    };
+
+    const CATEGORY_NAMES = {
+      sales: 'Vendas',
+      account: 'Contas & Segurança',
+      financial: 'Financeiro',
+      stock: 'Estoque',
+      operation: 'Operação',
+    };
+
+    container.innerHTML = items.map(item => {
+      const isUnread = !item.read_at;
+      const sev = SEVERITY_COLORS[item.severity] || SEVERITY_COLORS.info;
+      const catName = CATEGORY_NAMES[item.category] || item.category;
+      const dataStr = item.created_at ? new Date(item.created_at).toLocaleString('pt-BR') : '';
+
+      return `
+        <div style="padding:14px 16px;background:${isUnread ? 'rgba(16,185,129,0.04)' : '#0d1117'};border:1px solid ${isUnread ? '#10b981' : sev.border};border-radius:10px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;transition:all 0.2s;">
+          <div style="display:flex;align-items:flex-start;gap:12px;flex:1;min-width:0;">
+            <div style="margin-top:2px;display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,0.03);flex-shrink:0;">
+              <i data-lucide="${sev.icon}" style="width:18px;height:18px;color:${sev.iconColor};"></i>
+            </div>
+            <div style="flex:1;min-width:0;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap;">
+                <span style="font-size:11px;font-weight:700;text-transform:uppercase;color:#64748b;letter-spacing:0.5px;">${escapeHTML(catName)}</span>
+                <span style="font-size:11px;color:#475569;">&bull;</span>
+                <span style="font-size:11px;color:#64748b;">${escapeHTML(dataStr)}</span>
+                ${isUnread ? '<span style="background:#10b981;color:#fff;font-size:9px;font-weight:800;padding:1px 6px;border-radius:10px;text-transform:uppercase;">Nova</span>' : ''}
+              </div>
+              <div style="font-size:14px;font-weight:700;color:#f1f5f9;margin-bottom:4px;">${escapeHTML(item.title)}</div>
+              <div style="font-size:13px;color:#94a3b8;line-height:1.5;">${escapeHTML(item.message)}</div>
+            </div>
+          </div>
+          <div>
+            ${isUnread ? `
+              <button onclick="marcarNotifLida(${item.id})" class="btn btn-outline btn-sm" title="Marcar como lida" style="padding:4px 8px;font-size:11px;white-space:nowrap;">
+                <i data-lucide="check" style="width:12px;height:12px;margin-right:4px;"></i>Lida
+              </button>
+            ` : '<span style="font-size:11px;color:#475569;display:inline-flex;align-items:center;gap:3px;"><i data-lucide="check-check" style="width:13px;height:13px;"></i>Lida</span>'}
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    if (window.lucide && lucide.createIcons) lucide.createIcons();
+  } catch (err) {
+    container.innerHTML = `<div style="text-align:center;padding:20px;color:#ef4444;font-size:13px;">Erro ao carregar notificações: ${escapeHTML(err.message)}</div>`;
+  }
+}
+
+async function marcarNotifLida(id) {
+  try {
+    await EvoAPI.patch(`/notifications/in-app/${id}/read`, {});
+    carregarNotificacoesPainel();
+    atualizarContadorNotificacoes();
+    carregarNotificacoesDropdown();
+  } catch (err) {
+    toast(`Erro: ${err.message}`, 'error');
+  }
+}
+
+async function marcarTodasNotifLidas() {
+  try {
+    await EvoAPI.post('/notifications/in-app/mark-all-read', {});
+    toast('Todas as notificações foram marcadas como lidas!', 'success');
+    carregarNotificacoesPainel();
+    atualizarContadorNotificacoes();
+    carregarNotificacoesDropdown();
+  } catch (err) {
+    toast(`Erro: ${err.message}`, 'error');
+  }
+}
+
+function toggleNotifDropdown(forceState) {
+  const dd = document.getElementById('notif-dropdown');
+  if (!dd) return;
+  const isShown = dd.style.display === 'block';
+  const nextState = forceState !== undefined ? forceState : !isShown;
+  dd.style.display = nextState ? 'block' : 'none';
+  if (nextState) {
+    carregarNotificacoesDropdown();
+  }
+}
+
+async function carregarNotificacoesDropdown() {
+  const list = document.getElementById('notif-dropdown-list');
+  if (!list) return;
+
+  try {
+    const res = await EvoAPI.get('/notifications/in-app', { limit: 8 });
+    const items = res.items || [];
+
+    if (items.length === 0) {
+      list.innerHTML = '<div style="padding:24px 16px;text-align:center;color:#64748b;font-size:12px;">Nenhuma notificação recente.</div>';
+      return;
+    }
+
+    list.innerHTML = items.map(item => {
+      const isUnread = !item.read_at;
+      return `
+        <div onclick="marcarNotifLida(${item.id})" style="padding:10px 14px;border-bottom:1px solid #1a2234;cursor:pointer;background:${isUnread ? 'rgba(16,185,129,0.06)' : 'transparent'};transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.04)'" onmouseout="this.style.background='${isUnread ? 'rgba(16,185,129,0.06)' : 'transparent'}'">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;">
+            <span style="font-size:12px;font-weight:700;color:${isUnread ? '#f1f5f9' : '#cbd5e1'};">${escapeHTML(item.title)}</span>
+            ${isUnread ? '<span style="width:6px;height:6px;background:#10b981;border-radius:50%;display:inline-block;"></span>' : ''}
+          </div>
+          <div style="font-size:11px;color:#94a3b8;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHTML(item.message)}</div>
+        </div>
+      `;
+    }).join('');
+  } catch {
+    list.innerHTML = '<div style="padding:16px;text-align:center;color:#ef4444;font-size:11px;">Falha ao carregar.</div>';
+  }
+}
+
+let lastUnreadCount = 0;
+async function atualizarContadorNotificacoes() {
+  try {
+    const res = await EvoAPI.get('/notifications/in-app/unread-count');
+    const unread = Number(res.unreadCount || 0);
+
+    const badge = document.getElementById('topbar-notif-badge');
+    if (badge) {
+      if (unread > 0) {
+        badge.textContent = unread > 99 ? '99+' : unread;
+        badge.style.display = 'inline-block';
+      } else {
+        badge.style.display = 'none';
+      }
+    }
+
+    if (unread > lastUnreadCount && lastUnreadCount > 0) {
+      toast(`Você tem ${unread} notificação(ões) nova(s) no painel.`, 'info');
+      if (document.getElementById('panel-notificacoes')?.classList.contains('active')) {
+        carregarNotificacoesPainel();
+      }
+    }
+    lastUnreadCount = unread;
+  } catch {
+    // Polling silencioso
+  }
+}
+
+// Inicia polling periódico de notificações a cada 15 segundos
+setInterval(atualizarContadorNotificacoes, 15000);
+setTimeout(atualizarContadorNotificacoes, 1500);
+
+// Fecha o dropdown se clicar fora
+document.addEventListener('click', (e) => {
+  const dd = document.getElementById('notif-dropdown');
+  const btn = document.getElementById('btn-topbar-notif');
+  if (dd && dd.style.display === 'block' && !dd.contains(e.target) && !btn?.contains(e.target)) {
+    dd.style.display = 'none';
+  }
+});
 
 /* ===== INIT ===== */
 atualizar();

@@ -1147,10 +1147,67 @@ document.getElementById('linkVoltarLogin')?.addEventListener('click', e => { e.p
 // Demo shortcuts
 // Atalhos de demonstração: agora fazem login de verdade contra a API,
 // usando as contas criadas pelo seed do banco.
+let timer2FAInterval = null;
+
+function iniciarTimer2FA(segundos) {
+    if (timer2FAInterval) clearInterval(timer2FAInterval);
+    const span = document.getElementById('timerReenviar2FA');
+    const link = document.getElementById('linkReenviar2FA');
+    let restante = segundos;
+
+    if (link) {
+        link.style.pointerEvents = 'none';
+        link.style.opacity = '0.5';
+    }
+
+    const atualizar = () => {
+        if (restante <= 0) {
+            clearInterval(timer2FAInterval);
+            if (span) span.textContent = '';
+            if (link) {
+                link.style.pointerEvents = 'auto';
+                link.style.opacity = '1';
+            }
+            return;
+        }
+        const m = Math.floor(restante / 60);
+        const s = restante % 60;
+        if (span) span.textContent = `(disponível em ${m}:${s < 10 ? '0' : ''}${s})`;
+        restante--;
+    };
+    atualizar();
+    timer2FAInterval = setInterval(atualizar, 1000);
+}
+
+function exibirDesafio2FA(res) {
+    const sCreds = document.getElementById('loginStepCredentials');
+    const s2FA = document.getElementById('loginStep2FA');
+    const tokenInp = document.getElementById('adminChallengeToken');
+    const maskedSpan = document.getElementById('login2FAEmailMasked');
+    const codeInp = document.getElementById('login2FACode');
+    const errSpan = document.getElementById('login2FA-error');
+
+    if (sCreds) sCreds.style.display = 'none';
+    if (s2FA) s2FA.style.display = 'block';
+    if (tokenInp) tokenInp.value = res.challengeToken;
+    if (maskedSpan) maskedSpan.textContent = res.emailMasked || 'seu e-mail cadastrado';
+    if (codeInp) { codeInp.value = ''; codeInp.focus(); }
+    if (errSpan) { errSpan.textContent = ''; errSpan.style.color = ''; }
+
+    if (window.lucide && window.lucide.createIcons) {
+        window.lucide.createIcons();
+    }
+    iniciarTimer2FA(60);
+}
+
 async function loginDemo(email, senha, destinoAdmin) {
     try {
-        const user = await EvoAPI.login(email, senha);
-        if (destinoAdmin && user.role === 'admin') { window.location.href = 'admin.html'; return; }
+        const res = await EvoAPI.login(email, senha);
+        if (res && res.requires2FA) {
+            exibirDesafio2FA(res);
+            return;
+        }
+        if (destinoAdmin && res.role === 'admin') { window.location.href = 'admin.html'; return; }
         updateNavUI();
         closeModal();
     } catch (err) {
@@ -1186,8 +1243,12 @@ document.getElementById('btnLoginSubmit')?.addEventListener('click', async () =>
     ocupado(botao, true);
     try {
         // A verificação de senha acontece no servidor, contra o hash bcrypt.
-        const user = await EvoAPI.login(email, senha);
-        if (user.role === 'admin') { window.location.href = 'admin.html'; return; }
+        const res = await EvoAPI.login(email, senha);
+        if (res && res.requires2FA) {
+            exibirDesafio2FA(res);
+            return;
+        }
+        if (res.role === 'admin') { window.location.href = 'admin.html'; return; }
         updateNavUI();
         closeModal();
     } catch (err) {
@@ -1195,6 +1256,72 @@ document.getElementById('btnLoginSubmit')?.addEventListener('click', async () =>
     } finally {
         ocupado(botao, false, 'Entrar');
     }
+});
+
+/* ---------- VERIFICAÇÃO 2FA DE ADMINISTRADOR ---------- */
+document.getElementById('btnLogin2FASubmit')?.addEventListener('click', async () => {
+    const challengeToken = document.getElementById('adminChallengeToken')?.value;
+    const code = document.getElementById('login2FACode')?.value.trim();
+    const errSpan = document.getElementById('login2FA-error');
+    const botao = document.getElementById('btnLogin2FASubmit');
+
+    if (!code || code.length !== 6 || !/^\d{6}$/.test(code)) {
+        if (errSpan) {
+            errSpan.style.color = '#ef4444';
+            errSpan.textContent = 'Informe o código numérico de 6 dígitos.';
+        }
+        return;
+    }
+    if (errSpan) errSpan.textContent = '';
+
+    ocupado(botao, true, 'Validando…');
+    try {
+        const user = await EvoAPI.verifyAdminCode(challengeToken, code);
+        if (user.role === 'admin') {
+            window.location.href = 'admin.html';
+            return;
+        }
+        updateNavUI();
+        closeModal();
+    } catch (err) {
+        if (errSpan) {
+            errSpan.style.color = '#ef4444';
+            errSpan.textContent = err.message || 'Código incorreto ou expirado.';
+        }
+    } finally {
+        ocupado(botao, false, 'Confirmar Código');
+    }
+});
+
+document.getElementById('linkReenviar2FA')?.addEventListener('click', async (e) => {
+    e.preventDefault();
+    const challengeToken = document.getElementById('adminChallengeToken')?.value;
+    const errSpan = document.getElementById('login2FA-error');
+    if (!challengeToken) return;
+
+    try {
+        await EvoAPI.resendAdminCode(challengeToken);
+        if (errSpan) {
+            errSpan.style.color = '#10b981';
+            errSpan.textContent = 'Novo código enviado com sucesso ao seu e-mail!';
+            setTimeout(() => { if (errSpan) { errSpan.textContent = ''; errSpan.style.color = ''; } }, 4000);
+        }
+        iniciarTimer2FA(60);
+    } catch (err) {
+        if (errSpan) {
+            errSpan.style.color = '#ef4444';
+            errSpan.textContent = err.message || 'Erro ao reenviar código.';
+        }
+    }
+});
+
+document.getElementById('linkVoltarLoginCreds')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    const sCreds = document.getElementById('loginStepCredentials');
+    const s2FA = document.getElementById('loginStep2FA');
+    if (sCreds) sCreds.style.display = 'block';
+    if (s2FA) s2FA.style.display = 'none';
+    if (timer2FAInterval) clearInterval(timer2FAInterval);
 });
 
 /* ---------- CADASTRO ---------- */

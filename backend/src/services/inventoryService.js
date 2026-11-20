@@ -2,6 +2,7 @@
 const db = require('../config/db');
 const AppError = require('../utils/AppError');
 const businessEventService = require('./businessEventService');
+const inAppNotificationService = require('./inAppNotificationService');
 
 function shape(p) {
   return {
@@ -151,6 +152,17 @@ async function move(productId, organizationId, data, userId) {
           currentQuantity: newBalance,
           minStock: Number(product.min_stock),
         },
+        conn,
+      });
+
+      await inAppNotificationService.createNotification({
+        organizationId,
+        eventId: data.eventId || null,
+        category: 'stock',
+        severity: newBalance === 0 ? 'critical' : 'warning',
+        title: newBalance === 0 ? 'Produto esgotado!' : 'Estoque baixo / crítico',
+        message: `Item "${product.name}" atingiu nível crítico: ${newBalance} un. restantes (mínimo: ${product.min_stock}).`,
+        metadata: { productId, currentQuantity: newBalance, minStock: Number(product.min_stock) },
         conn,
       });
     }

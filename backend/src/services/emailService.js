@@ -6,6 +6,7 @@ const renderWelcomeTemplate = require('./emailTemplates/welcomeTemplate');
 const renderPasswordResetTemplate = require('./emailTemplates/passwordResetTemplate');
 const renderOrderConfirmationTemplate = require('./emailTemplates/orderConfirmationTemplate');
 const renderPasswordChangedTemplate = require('./emailTemplates/passwordChangedTemplate');
+const renderAdminLoginCodeTemplate = require('./emailTemplates/adminLoginCodeTemplate');
 
 // Instancia Resend se a chave estiver presente
 let resendClient = null;
@@ -186,6 +187,24 @@ async function sendPasswordChangedNotification({ to, name }) {
 }
 
 /**
+ * Dispara código de verificação em 2 etapas para login administrativo
+ */
+async function sendAdminLoginCodeEmail({ to, name, code, expiresMinutes = 10, ipAddress = null }) {
+  try {
+    const { html, text } = renderAdminLoginCodeTemplate({ name, code, expiresMinutes, ipAddress });
+    return await sendMail({
+      to,
+      subject: `Código de Acesso Administrativo: ${code} — EvoTech Events`,
+      html,
+      text,
+    });
+  } catch (err) {
+    logger.error('Erro ao gerar template de código administrativo:', err.message);
+    return { success: false, error: err.message };
+  }
+}
+
+/**
  * Permite recarregar ou injetar cliente (útil para testes unitários ou alteração de chave)
  */
 function _setResendClient(client) {
@@ -198,6 +217,7 @@ module.exports = {
   sendPasswordResetEmail,
   sendOrderConfirmationEmail,
   sendPasswordChangedNotification,
+  sendAdminLoginCodeEmail,
   _setResendClient,
   maskEmail,
 };

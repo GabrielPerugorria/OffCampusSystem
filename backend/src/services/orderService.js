@@ -5,6 +5,7 @@ const AppError = require('../utils/AppError');
 const logger = require('../utils/logger');
 const emailService = require('./emailService');
 const businessEventService = require('./businessEventService');
+const inAppNotificationService = require('./inAppNotificationService');
 const { generateTicketCode } = require('../utils/ticketCode');
 const { runMigrations } = require('../database/runMigrations');
 
@@ -424,6 +425,18 @@ async function confirmOrder(orderId, organizationId, confirmedByUserId) {
       conn,
     });
 
+    // Central de Notificações do Painel: Alerta imediato de venda
+    await inAppNotificationService.createNotification({
+      organizationId: order.organization_id,
+      eventId: order.event_id,
+      category: 'sales',
+      severity: 'info',
+      title: 'Nova venda confirmada',
+      message: `Pedido #${orderId} de ${order.buyer_name} confirmado (R$ ${Number(order.total_amount).toFixed(2)}).`,
+      metadata: { orderId, totalAmount: Number(order.total_amount), buyerName: order.buyer_name },
+      conn,
+    });
+
     return {
       orderId,
       status: 'paid',
@@ -564,6 +577,18 @@ async function cancelOrder(orderId, { organizationId, userId, isAdmin, reason })
         totalAmount: Number(order.total_amount),
         wasPaid: order.status === 'paid',
       },
+      conn,
+    });
+
+    // Central de Notificações do Painel: Alerta de cancelamento
+    await inAppNotificationService.createNotification({
+      organizationId: order.organization_id,
+      eventId: order.event_id,
+      category: 'sales',
+      severity: 'warning',
+      title: 'Pedido cancelado',
+      message: `Pedido #${orderId} foi cancelado. Motivo: ${cancellationReason}.`,
+      metadata: { orderId, reason: cancellationReason },
       conn,
     });
 

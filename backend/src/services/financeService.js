@@ -2,6 +2,7 @@
 const db = require('../config/db');
 const AppError = require('../utils/AppError');
 const businessEventService = require('./businessEventService');
+const inAppNotificationService = require('./inAppNotificationService');
 
 async function listCategories(organizationId) {
   return db.query(
@@ -79,6 +80,16 @@ async function createExpense(organizationId, userId, data) {
       amount: Number(data.amount),
       status: data.status || 'paid',
     },
+  });
+
+  await inAppNotificationService.createNotification({
+    organizationId,
+    eventId: eventId || null,
+    category: 'financial',
+    severity: 'info',
+    title: 'Nova despesa cadastrada',
+    message: `Despesa de R$ ${Number(data.amount).toFixed(2)} (${data.description || 'Geral'}) cadastrada.`,
+    metadata: { expenseId: result.insertId, amount: Number(data.amount) },
   });
 
   return getExpense(result.insertId, organizationId);
