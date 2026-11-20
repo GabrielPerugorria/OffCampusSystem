@@ -334,6 +334,112 @@ const MIGRATIONS = [
       }
     },
   },
+  {
+    version: '20261120_007',
+    name: '007_admin_2fa_and_in_app_notifications',
+    up: async (conn) => {
+      // 1. Modifica organization_id em notification_outbox para aceitar NULL
+      await conn.execute('ALTER TABLE notification_outbox MODIFY COLUMN organization_id BIGINT UNSIGNED NULL');
+
+      // 2. admin_login_codes
+      await conn.execute(`
+        CREATE TABLE IF NOT EXISTS admin_login_codes (
+          id                  BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+          user_id             BIGINT UNSIGNED NOT NULL,
+          challenge_token     VARCHAR(64) NOT NULL,
+          code_hash           CHAR(64) NOT NULL,
+          attempts            TINYINT UNSIGNED NOT NULL DEFAULT 0,
+          max_attempts        TINYINT UNSIGNED NOT NULL DEFAULT 5,
+          expires_at          DATETIME NOT NULL,
+          resend_available_at DATETIME NOT NULL,
+          used_at             DATETIME NULL,
+          ip_address          VARCHAR(45) NULL,
+          user_agent          VARCHAR(255) NULL,
+          created_at          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          UNIQUE KEY uq_admin_challenge (challenge_token),
+          INDEX idx_alc_user (user_id, expires_at),
+          CONSTRAINT fk_alc_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+      `);
+
+      // 3. in_app_notifications
+      await conn.execute(`
+        CREATE TABLE IF NOT EXISTS in_app_notifications (
+          id              BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+          organization_id BIGINT UNSIGNED NULL,
+          event_id        BIGINT UNSIGNED NULL,
+          category        ENUM('sales', 'account', 'financial', 'stock', 'operation') NOT NULL,
+          severity        ENUM('info', 'warning', 'critical') NOT NULL DEFAULT 'info',
+          title           VARCHAR(160) NOT NULL,
+          message         TEXT NOT NULL,
+          metadata        JSON NULL,
+          read_at         DATETIME NULL,
+          created_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          INDEX idx_ian_org_unread (organization_id, read_at, created_at),
+          INDEX idx_ian_category (organization_id, category, created_at)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+      `);
+    },
+    verify: async (conn) => {
+      const requiredTables = ['admin_login_codes', 'in_app_notifications'];
+      for (const tableName of requiredTables) {
+        const [rows] = await conn.execute(
+          `SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES
+            WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ?`,
+          [tableName]
+        );
+        if (rows.length === 0) {
+          throw new Error(`Falha na validação pós-migração: tabela ${tableName} não foi criada.`);
+        }
+      }
+    },
+  },
+  {
+    version: '20261120_008',
+    name: '008_jwt_revocation_and_performance_indexes',
+    up: async (conn) => {
+      // 1. Tabela revoked_tokens
+      await conn.execute(`
+        CREATE TABLE IF NOT EXISTS revoked_tokens (
+          jti         VARCHAR(36) NOT NULL PRIMARY KEY,
+          user_id     BIGINT UNSIGNED NULL,
+          reason      VARCHAR(100) NULL DEFAULT 'logout',
+          expires_at  DATETIME NOT NULL,
+          created_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          INDEX idx_revoked_expires (expires_at),
+          INDEX idx_revoked_user (user_id),
+          CONSTRAINT fk_revoked_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+      `);
+
+      // 2. Índice idx_order_status_expires em orders se não existir
+      const [orderIdx] = await conn.execute(
+        `SELECT INDEX_NAME FROM INFORMATION_SCHEMA.STATISTICS
+          WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'orders' AND INDEX_NAME = 'idx_order_status_expires'`
+      );
+      if (orderIdx.length === 0) {
+        await conn.execute('ALTER TABLE orders ADD INDEX idx_order_status_expires (status, expires_at)');
+      }
+
+      // 3. Índice idx_ticket_event_holder em tickets se não existir
+      const [ticketIdx] = await conn.execute(
+        `SELECT INDEX_NAME FROM INFORMATION_SCHEMA.STATISTICS
+          WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'tickets' AND INDEX_NAME = 'idx_ticket_event_holder'`
+      );
+      if (ticketIdx.length === 0) {
+        await conn.execute('ALTER TABLE tickets ADD INDEX idx_ticket_event_holder (event_id, holder_name)');
+      }
+    },
+    verify: async (conn) => {
+      const [revTables] = await conn.execute(
+        `SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES
+          WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'revoked_tokens'`
+      );
+      if (revTables.length === 0) {
+        throw new Error('Falha na validação pós-migração: tabela revoked_tokens não foi criada.');
+      }
+    },
+  },
 ];
 
 let _migrated = false;

@@ -90,6 +90,12 @@ async function run() {
   assert.strictEqual(Number(createdOrder.total), 160.00, 'Total do pedido deve ser 2 * 80 = 160');
   console.log(`✓ Pedido gerado: #${createdOrder.orderId} - Total: R$ ${createdOrder.total}`);
 
+  // Se o pedido estiver pendente de pagamento (autoConfirmOrders=false), confirma o pagamento
+  if (createdOrder.status === 'pending') {
+    await orderService.confirmOrder(createdOrder.orderId, orgId, adminUser.id);
+    console.log(`✓ Pagamento confirmado para o pedido #${createdOrder.orderId}`);
+  }
+
   // 6. Verificar Ingressos Emitidos
   const tickets = await db.query(
     'SELECT * FROM tickets WHERE order_id = ? ORDER BY id ASC',
@@ -187,6 +193,7 @@ async function run() {
   console.log('======================================================');
   console.log(' CICLO OPERACIONAL COMPLETO VALIDADO COM 100% SUCESSO! ');
   console.log('======================================================');
+  await db.pool.end();
   process.exit(0);
 }
 

@@ -456,3 +456,17 @@ CREATE TABLE in_app_notifications (
   INDEX idx_ian_org_unread (organization_id, read_at, created_at),
   INDEX idx_ian_category (organization_id, category, created_at)
 ) ENGINE=InnoDB;
+
+-- ------------------------------------------------------------
+-- REVOGAÇÃO DE TOKENS JWT
+-- ------------------------------------------------------------
+CREATE TABLE revoked_tokens (
+  jti         VARCHAR(36) NOT NULL PRIMARY KEY,
+  user_id     BIGINT UNSIGNED NULL,
+  reason      VARCHAR(100) NULL DEFAULT 'logout',
+  expires_at  DATETIME NOT NULL,
+  created_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_revoked_expires (expires_at),
+  INDEX idx_revoked_user (user_id),
+  CONSTRAINT fk_revoked_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB;

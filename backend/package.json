@@ -7,6 +7,7 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
+    "test": "node ../tests/xss-verification.js && node ../tests/backend-integrity.test.js && node ../tests/concurrency-and-security.test.js && node ../tests/admin-auth-and-notifications.test.js && node ../tests/security-audit.test.js && node ../tests/event-image.test.js && node ../tests/jwt-security.test.js && node ../tests/cors-ratelimit.test.js && node ../tests/storage-mock.test.js && node ../tests/event-image-mapping.test.js && node ../tests/migrations-integrity.test.js && node ../tests/pre-homologation-migrations.test.js && node ../tests/fase5-database-audit.test.js",
     "db:setup": "node src/database/setup.js",
     "db:seed": "node src/database/seed.js",
     "db:clean": "node src/scripts/cleanDemoData.js"
@@ -22,6 +23,7 @@
     "express-rate-limit": "^7.4.0",
     "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.2",
+    "multer": "^1.4.5-lts.1",
     "mysql2": "^3.11.0",
     "resend": "^6.39.0",
     "zod": "^4.6.7"

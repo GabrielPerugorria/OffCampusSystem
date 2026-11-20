@@ -76,7 +76,7 @@ async function releaseExpiredReservations() {
       `SELECT id FROM orders
         WHERE status = 'pending'
           AND expires_at IS NOT NULL
-          AND expires_at < NOW()
+          AND expires_at < UTC_TIMESTAMP()
         FOR UPDATE`
     );
 
@@ -100,7 +100,7 @@ async function releaseExpiredReservations() {
         `UPDATE orders
             SET status = 'cancelled',
                 cancellation_reason = 'Tempo de reserva expirado',
-                cancelled_at = NOW()
+                cancelled_at = UTC_TIMESTAMP()
           WHERE id = ?`,
         [order.id]
       );
@@ -178,16 +178,19 @@ async function createOrder(data, user) {
     const unitPrice = Number(batch.price);
     const total = unitPrice * data.quantity;
     const paid = env.autoConfirmOrders;
+    const expiresAt = paid ? null : new Date(Date.now() + 15 * 60 * 1000);
+    const paidAt = paid ? new Date() : null;
+    const emailSentAt = paid ? new Date() : null;
 
     // Pedidos pendentes recebem expiração de 15 minutos para pagamento
     const [orderInsertResult] = await conn.execute(
       `INSERT INTO orders
          (event_id, user_id, buyer_name, buyer_email, buyer_cpf, total_amount,
           status, payment_method, paid_at, expires_at, confirmation_email_sent_at)
-       VALUES (?,?,?,?,?,?,?,?,?, ${paid ? 'NULL' : 'DATE_ADD(NOW(), INTERVAL 15 MINUTE)'}, ${paid ? 'NOW()' : 'NULL'})`,
+       VALUES (?,?,?,?,?,?,?,?,?,?,?)`,
       [
         batch.event_id, user?.id || null, data.buyerName, data.buyerEmail, data.buyerCpf,
-        total, paid ? 'paid' : 'pending', total > 0 ? 'pix' : 'free', paid ? new Date() : null,
+        total, paid ? 'paid' : 'pending', total > 0 ? 'pix' : 'free', paidAt, expiresAt, emailSentAt,
       ]
     );
     const orderId = orderInsertResult.insertId;
@@ -310,7 +313,7 @@ async function confirmOrder(orderId, organizationId, confirmedByUserId) {
         `UPDATE orders
             SET status = 'cancelled',
                 cancellation_reason = 'Prazo de pagamento expirado',
-                cancelled_at = NOW()
+                cancelled_at = UTC_TIMESTAMP()
           WHERE id = ?`,
         [orderId]
       );
@@ -384,8 +387,8 @@ async function confirmOrder(orderId, organizationId, confirmedByUserId) {
     // O status de envio do e-mail é atualizado FORA da transação, após aceitação do Resend.
     await conn.execute(
       `UPDATE orders
-          SET status = 'paid', paid_at = NOW(),
-              confirmed_by = ?, confirmed_at = NOW(),
+          SET status = 'paid', paid_at = UTC_TIMESTAMP(),
+              confirmed_by = ?, confirmed_at = UTC_TIMESTAMP(),
               expires_at = NULL
         WHERE id = ?`,
       [confirmedByUserId || null, orderId]

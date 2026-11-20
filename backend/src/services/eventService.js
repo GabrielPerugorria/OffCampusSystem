@@ -40,6 +40,7 @@ function shape(row, batches = []) {
     eventDate: row.event_date,
     capacity: Number(row.capacity || 0),
     bannerUrl: row.banner_url,
+    imagePath: row.banner_url,
     status: row.status,
     goalAttendance: Number(row.goal_attendance || 0),
     goalRevenue: Number(row.goal_revenue || 0),
@@ -162,7 +163,8 @@ async function create(organizationId, data) {
 
 const FIELD_MAP = {
   name: 'name', type: 'type', description: 'description', rules: 'rules',
-  venue: 'venue', capacity: 'capacity', bannerUrl: 'banner_url', status: 'status',
+  venue: 'venue', capacity: 'capacity', bannerUrl: 'banner_url',
+  imagePath: 'banner_url', status: 'status',
   goalAttendance: 'goal_attendance', goalRevenue: 'goal_revenue',
 };
 
