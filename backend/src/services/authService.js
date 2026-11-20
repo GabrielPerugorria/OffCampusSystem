@@ -5,6 +5,8 @@ const crypto = require('crypto');
 const db = require('../config/db');
 const env = require('../config/env');
 const AppError = require('../utils/AppError');
+const logger = require('../utils/logger');
+const emailService = require('./emailService');
 
 const hashToken = t => crypto.createHash('sha256').update(t).digest('hex');
 
@@ -74,6 +76,11 @@ async function register(data) {
      VALUES (?, ?, ?, ?, ?, ?)`,
     [data.name, data.email, passwordHash, data.cpf || null, data.phone || null, data.birthDate || null]
   );
+
+  // Envio assíncrono do e-mail de boas-vindas sem bloquear ou quebrar o fluxo de cadastro caso o Resend falhe
+  emailService.sendWelcomeEmail({ to: data.email, name: data.name })
+    .catch(err => logger.error('Falha ao disparar e-mail de boas-vindas:', err.message));
+
   return issueTokens(result.insertId);
 }
 
@@ -121,12 +128,14 @@ async function logout(refreshToken) {
 }
 
 async function updateMe(userId, data) {
+  let passwordChanged = false;
   if (data.newPassword) {
     const user = await db.queryOne('SELECT password_hash FROM users WHERE id = ?', [userId]);
     const match = await bcrypt.compare(data.currentPassword || '', user.password_hash);
     if (!match) throw AppError.badRequest('Senha atual incorreta.');
     const hash = await bcrypt.hash(data.newPassword, env.bcryptRounds);
     await db.query('UPDATE users SET password_hash = ? WHERE id = ?', [hash, userId]);
+    passwordChanged = true;
   }
   const fields = [];
   const params = [];
@@ -136,7 +145,128 @@ async function updateMe(userId, data) {
     params.push(userId);
     await db.query(`UPDATE users SET ${fields.join(', ')} WHERE id = ?`, params);
   }
+  if (passwordChanged) {
+    const u = await db.queryOne('SELECT name, email FROM users WHERE id = ?', [userId]);
+    if (u) {
+      emailService.sendPasswordChangedNotification({ to: u.email, name: u.name })
+        .catch(err => logger.error('Falha ao enviar aviso de alteração de senha:', err.message));
+    }
+  }
   return buildSession(userId);
+}
+
+async function forgotPassword(email) {
+  const genericMessage = 'Se o e-mail estiver cadastrado, você receberá as instruções de recuperação.';
+  if (!email) return { message: genericMessage };
+
+  const user = await db.queryOne('SELECT id, name, email FROM users WHERE email = ? LIMIT 1', [email]);
+  if (!user) {
+    // Retorna mensagem genérica para não revelar existência de usuário (proteção contra enumeração)
+    return { message: genericMessage };
+  }
+
+  // Invalida tokens anteriores não utilizados do usuário
+  await db.query(
+    'UPDATE password_reset_tokens SET used_at = NOW() WHERE user_id = ? AND used_at IS NULL',
+    [user.id]
+  );
+
+  // Gera token criptograficamente seguro (32 bytes = 64 chars hex)
+  const token = crypto.randomBytes(32).toString('hex');
+  const tokenHash = hashToken(token);
+  const expiresAt = new Date(Date.now() + 30 * 60 * 1000); // 30 minutos
+
+  await db.query(
+    'INSERT INTO password_reset_tokens (user_id, token_hash, expires_at) VALUES (?, ?, ?)',
+    [user.id, tokenHash, expiresAt]
+  );
+
+  // Dispara e-mail de recuperação de senha via Resend
+  emailService.sendPasswordResetEmail({
+    to: user.email,
+    name: user.name,
+    token,
+    expiresMinutes: 30,
+  }).catch(err => logger.error('Falha ao disparar e-mail de recuperação de senha:', err.message));
+
+  return { message: genericMessage };
+}
+
+async function resetPassword(token, newPassword) {
+  if (!token) throw AppError.badRequest('Token de recuperação obrigatório.');
+  const tokenHash = hashToken(token);
+
+  // bcrypt.hash executado ANTES da transação: é CPU-intensivo e não pode segurar
+  // o lock da conexão durante o processamento. A validação prévia do token é feita
+  // fora da transação apenas para retornar erros de forma rápida ao usuário.
+  // A validação definitiva ocorre DENTRO da transação com SELECT FOR UPDATE.
+  const preCheck = await db.queryOne(
+    `SELECT id, expires_at, used_at
+       FROM password_reset_tokens
+      WHERE token_hash = ?
+      LIMIT 1`,
+    [tokenHash]
+  );
+  if (!preCheck || preCheck.used_at || new Date(preCheck.expires_at) < new Date()) {
+    throw AppError.badRequest('Link de recuperação inválido ou expirado.');
+  }
+
+  // Hash da nova senha feito fora da transação (operação CPU-intensiva)
+  const passwordHash = await bcrypt.hash(newPassword, env.bcryptRounds);
+
+  // Variáveis para capturar dados após a transação (necessários para o e-mail)
+  let userEmail = null;
+  let userName = null;
+
+  await db.transaction(async (conn) => {
+    // SELECT FOR UPDATE serializa acessos concorrentes ao mesmo token.
+    // Se dois requests chegarem ao mesmo tempo com o mesmo token,
+    // apenas um obterá o lock; o segundo encontrará used_at preenchido.
+    const [tokenRows] = await conn.execute(
+      `SELECT prt.id, prt.user_id, prt.expires_at, prt.used_at, u.name, u.email
+         FROM password_reset_tokens prt
+         JOIN users u ON u.id = prt.user_id
+        WHERE prt.token_hash = ?
+        LIMIT 1
+        FOR UPDATE`,
+      [tokenHash]
+    );
+    const row = tokenRows[0];
+
+    // Validação definitiva dentro da transação com lock
+    if (!row || row.used_at || new Date(row.expires_at) < new Date()) {
+      throw AppError.badRequest('Link de recuperação inválido ou expirado.');
+    }
+
+    // 1. Altera a senha
+    await conn.execute(
+      'UPDATE users SET password_hash = ? WHERE id = ?',
+      [passwordHash, row.user_id]
+    );
+
+    // 2. Marca token como utilizado (one-time use, dentro da mesma transação)
+    await conn.execute(
+      'UPDATE password_reset_tokens SET used_at = NOW() WHERE id = ?',
+      [row.id]
+    );
+
+    // 3. Revoga todas as sessões ativas por segurança
+    await conn.execute(
+      'UPDATE refresh_tokens SET revoked_at = NOW() WHERE user_id = ? AND revoked_at IS NULL',
+      [row.user_id]
+    );
+
+    userEmail = row.email;
+    userName = row.name;
+  });
+
+  // E-mail disparado de forma assíncrona APÓS confirmação do commit da transação
+  if (userEmail) {
+    emailService.sendPasswordChangedNotification({ to: userEmail, name: userName })
+      .catch(err => logger.error('Falha ao disparar notificação de senha alterada:', err.message));
+  }
+
+  return { message: 'Senha atualizada com sucesso. Você já pode fazer login com sua nova senha.' };
 }
 
 // Ingressos e histórico do participante (aba "Meus ingressos").
@@ -272,6 +402,6 @@ async function myOrderDetails(orderId, userId, email) {
 }
 
 module.exports = {
-  register, login, refresh, logout, updateMe,
+  register, login, refresh, logout, updateMe, forgotPassword, resetPassword,
   buildSession, myTickets, myHistory, myOrders, myOrderDetails,
 };

@@ -102,6 +102,10 @@
       <span class="nav-icon"><i data-lucide="settings"></i></span>
       <span class="nav-label">Sistema &amp; Contingência</span>
     </button>
+    <button class="nav-item" onclick="goPanel('notificacoes')" data-tooltip="Notificações &amp; E-mails" aria-label="Notificações &amp; E-mails">
+      <span class="nav-icon"><i data-lucide="bell"></i></span>
+      <span class="nav-label">Notificações &amp; E-mails</span>
+    </button>
   </nav>
 
   <div class="sidebar-footer">
@@ -574,6 +578,180 @@
         <div class="card">
           <div class="card-title" style="margin-bottom:14px">Status dos Módulos Operacionais</div>
           <div class="status-grid" id="status-modulos"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== NOTIFICAÇÕES & E-MAILS ====== -->
+    <div class="panel" id="panel-notificacoes">
+      <div class="kpi-grid" id="notif-kpis">
+        <div class="kpi-card">
+          <div class="kpi-label">Total Gerado</div>
+          <div class="kpi-value" id="notif-kpi-total">0</div>
+          <div class="kpi-sub">Fila persistente</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Aceitos pelo Resend</div>
+          <div class="kpi-value text-success" id="notif-kpi-accepted">0</div>
+          <div class="kpi-sub">Transmissão confirmada</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Entregues</div>
+          <div class="kpi-value text-accent" id="notif-kpi-delivered">0</div>
+          <div class="kpi-sub">Webhook confirmado</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Falhas / Bounced</div>
+          <div class="kpi-value text-danger" id="notif-kpi-failed">0</div>
+          <div class="kpi-sub">Controle de erro</div>
+        </div>
+      </div>
+
+      <div class="grid-2" style="margin-bottom:20px;">
+        <div class="card">
+          <div class="card-title" style="margin-bottom:12px">Preferências de Comunicação Empresarial</div>
+          <div class="card-sub" style="margin-bottom:18px">Configure as regras de envio e janelas de agrupamento para sua organização.</div>
+
+          <div class="toggle-row">
+            <div class="toggle-info">
+              <div class="t-title">Notificações Inteligentes Ativadas</div>
+              <div class="t-sub">Canal oficial de e-mails para gestores e responsáveis.</div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="pref-enabled" onchange="salvarPreferenciasNotificacao()">
+              <span class="switch-track"></span>
+            </label>
+          </div>
+
+          <div class="toggle-row">
+            <div class="toggle-info">
+              <div class="t-title">Vendas Agrupadas (Comercial)</div>
+              <div class="t-sub">Consolidação frequente em janela configurável (sem spam individual).</div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="pref-sales" onchange="salvarPreferenciasNotificacao()">
+              <span class="switch-track"></span>
+            </label>
+          </div>
+
+          <div class="toggle-row">
+            <div class="toggle-info">
+              <div class="t-title">Alertas Financeiros Críticos</div>
+              <div class="t-sub">Avisos imediatos de saldo negativo e ponto de equilíbrio.</div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="pref-finance" onchange="salvarPreferenciasNotificacao()">
+              <span class="switch-track"></span>
+            </label>
+          </div>
+
+          <div class="toggle-row">
+            <div class="toggle-info">
+              <div class="t-title">Atenção ao Estoque (Open Bar)</div>
+              <div class="t-sub">Avisos imediatos com deduplicação para produtos abaixo do mínimo.</div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="pref-stock" onchange="salvarPreferenciasNotificacao()">
+              <span class="switch-track"></span>
+            </label>
+          </div>
+
+          <div class="toggle-row">
+            <div class="toggle-info">
+              <div class="t-title">Metas &amp; Lotes Esgotados</div>
+              <div class="t-sub">Disparo prioritário quando um lote esgota ou meta é batida.</div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="pref-goals" onchange="salvarPreferenciasNotificacao()">
+              <span class="switch-track"></span>
+            </label>
+          </div>
+
+          <div class="toggle-row">
+            <div class="toggle-info">
+              <div class="t-title">Resumos Consolidados</div>
+              <div class="t-sub">Visão executiva periódica do desempenho da organização.</div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="pref-summaries" onchange="salvarPreferenciasNotificacao()">
+              <span class="switch-track"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title" style="margin-bottom:12px">Parâmetros &amp; Disparo Manual</div>
+          <div class="card-sub" style="margin-bottom:18px">Ajuste de janelas e ações executivas do proprietário.</div>
+
+          <div class="form-group" style="margin-bottom:16px;">
+            <label>Janela de Agrupamento Comercial (minutos)</label>
+            <input type="number" id="pref-window" min="1" max="60" value="5" onchange="salvarPreferenciasNotificacao()" style="width:100%;margin-top:6px;">
+            <div class="card-sub" style="margin-top:6px;">Vendas ocorridas dentro desta janela são consolidadas em uma única atualização.</div>
+          </div>
+
+          <div class="form-group" style="margin-bottom:20px;">
+            <label>Limite Máximo de E-mails / Hora por Evento</label>
+            <input type="number" id="pref-max-hour" min="1" max="100" value="10" onchange="salvarPreferenciasNotificacao()" style="width:100%;margin-top:6px;">
+            <div class="card-sub" style="margin-top:6px;">Protege contra excessos e consumo desnecessário da cota do Resend.</div>
+          </div>
+
+          <div style="padding-top:16px;border-top:1px solid #1e293b;">
+            <button class="btn btn-primary" onclick="dispararResumoExecutivoAgora()" style="width:100%;">
+              <i data-lucide="send" style="margin-right:8px;"></i>
+              Disparar Resumo Consolidado Agora
+            </button>
+            <div class="card-sub" style="margin-top:8px;text-align:center;">Gera e enfileira imediatamente a visão consolidada para o proprietário e gestores autorizados.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Histórico de Notificações &amp; Rastreamento</div>
+            <div class="card-sub">Registro auditável de cada disparo, aceitação do provedor e confirmação de entrega</div>
+          </div>
+          <div style="display:flex;gap:10px;">
+            <select id="filtro-notif-categoria" onchange="carregarHistoricoNotificacoes()" style="padding:6px 12px;background:#0d1117;border:1px solid #1e293b;border-radius:6px;color:#f1f5f9;font-size:13px;">
+              <option value="">Todas Categorias</option>
+              <option value="sales_update">Vendas Agrupadas</option>
+              <option value="finance_update">Financeiro</option>
+              <option value="stock_alert">Estoque</option>
+              <option value="goal_reached">Metas</option>
+              <option value="summary">Resumo</option>
+            </select>
+            <select id="filtro-notif-status" onchange="carregarHistoricoNotificacoes()" style="padding:6px 12px;background:#0d1117;border:1px solid #1e293b;border-radius:6px;color:#f1f5f9;font-size:13px;">
+              <option value="">Todos Status</option>
+              <option value="pending">Pendente</option>
+              <option value="processing">Em Processamento</option>
+              <option value="resend_accepted">Aceito pelo Resend</option>
+              <option value="delivered">Entregue</option>
+              <option value="resend_failed">Falha</option>
+              <option value="bounced">Bounced</option>
+            </select>
+            <button class="btn btn-outline btn-sm" onclick="carregarHistoricoNotificacoes()">
+              <i data-lucide="refresh-cw"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Data / Hora</th>
+                <th>Destinatário</th>
+                <th>Assunto</th>
+                <th>Categoria</th>
+                <th>Prioridade</th>
+                <th>Situação</th>
+                <th>Tentativas</th>
+              </tr>
+            </thead>
+            <tbody id="notificacoes-tbody">
+              <tr><td colspan="7" style="text-align:center;padding:24px;color:#64748b;">Carregando histórico...</td></tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>

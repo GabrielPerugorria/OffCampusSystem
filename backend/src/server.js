@@ -14,6 +14,10 @@ async function start() {
     // Inicia verificação periódica em background para liberar reservas expiradas
     const { startReservationCleanupJob } = require('./services/orderService');
     startReservationCleanupJob(60000);
+
+    // Inicia o Scheduler Inteligente de Notificações Empresariais (Transactional Outbox)
+    const { startNotificationScheduler, stopNotificationScheduler } = require('./services/notificationScheduler');
+    startNotificationScheduler(15000); // ciclo a cada 15s
   } catch (err) {
     logger.error('Não foi possível conectar ao MySQL. Verifique o .env.', err.message);
     process.exit(1);
@@ -26,6 +30,7 @@ async function start() {
 
   const shutdown = (signal) => async () => {
     logger.info(`${signal} recebido. Encerrando...`);
+    stopNotificationScheduler();
     server.close(async () => {
       await db.pool.end();
       process.exit(0);

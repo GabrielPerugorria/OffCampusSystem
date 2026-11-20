@@ -1,6 +1,7 @@
 'use strict';
 const db = require('../config/db');
 const AppError = require('../utils/AppError');
+const businessEventService = require('./businessEventService');
 
 function shape(p) {
   return {
@@ -123,6 +124,36 @@ async function move(productId, organizationId, data, userId) {
       ]
     );
     await conn.execute('UPDATE products SET stock_quantity = ? WHERE id = ?', [newBalance, productId]);
+
+    // Transactional Outbox: Emite movimentação de estoque
+    await businessEventService.emit({
+      type: 'stock_movement',
+      organizationId,
+      eventId: data.eventId || null,
+      payload: {
+        productId,
+        productName: product.name,
+        quantity: signed,
+        balance: newBalance,
+      },
+      conn,
+    });
+
+    // Se o saldo ficar abaixo do estoque mínimo, emite alerta de estoque crítico
+    if (newBalance <= Number(product.min_stock)) {
+      await businessEventService.emit({
+        type: 'stock_critical',
+        organizationId,
+        eventId: data.eventId || null,
+        payload: {
+          productId,
+          productName: product.name,
+          currentQuantity: newBalance,
+          minStock: Number(product.min_stock),
+        },
+        conn,
+      });
+    }
 
     return { productId, type: data.type, quantity: signed, balance: newBalance };
   });

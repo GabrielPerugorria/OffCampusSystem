@@ -29,5 +29,7 @@ router.use('/dashboard',    require('./dashboardRoutes'));
 router.use('/analytics',    require('./analyticsRoutes'));
 router.use('/reports',      require('./reportRoutes'));
 router.use('/audit-logs',   require('./auditRoutes'));
+router.use('/notifications',require('./notificationRoutes'));
+router.use('/webhooks',     require('./webhookRoutes'));
 
 module.exports = router;

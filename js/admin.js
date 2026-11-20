@@ -320,6 +320,7 @@ const panels = {
   equipe:    { title:'Equipe & Permissões', sub:'Controle de acesso por perfil', action:'+ Novo Membro', fn:'openModalEquipe' },
   auditoria: { title:'Auditoria', sub:'Histórico de ações realizadas no sistema', action:null },
   sistema:   { title:'Sistema & Contingência', sub:'Estabilidade, modo offline e backups', action:null },
+  notificacoes: { title:'Notificações & E-mails', sub:'Controle empresarial, preferências, agrupamento e rastreamento de entregas', action:null },
 };
 
 function goPanel(id) {
@@ -342,6 +343,10 @@ function goPanel(id) {
 
   if (id === 'pedidos') {
     carregarPedidosAdmin();
+  } else if (id === 'notificacoes') {
+    carregarPreferenciasNotificacao();
+    carregarMetricasNotificacoes();
+    carregarHistoricoNotificacoes();
   } else {
     atualizar();
   }
@@ -2144,6 +2149,172 @@ async function verDetalhesPedidoAdmin(orderId) {
     `;
   } catch (err) {
     content.innerHTML = `<div style="text-align:center; padding:20px; color:var(--red)">Erro ao buscar detalhes: ${escapeHTML(err.message)}</div>`;
+  }
+}
+
+/* ===== NOTIFICAÇÕES & E-MAILS ===== */
+
+async function carregarPreferenciasNotificacao() {
+  try {
+    const pref = await EvoAPI.get('/notifications/preferences');
+    if (!pref) return;
+
+    const setChecked = (id, val) => {
+      const el = document.getElementById(id);
+      if (el) el.checked = Boolean(val);
+    };
+
+    setChecked('pref-enabled', pref.enabled !== 0);
+    setChecked('pref-sales', pref.sales_updates !== 0);
+    setChecked('pref-finance', pref.finance_updates !== 0);
+    setChecked('pref-stock', pref.stock_alerts !== 0);
+    setChecked('pref-goals', pref.goals_reached !== 0);
+    setChecked('pref-summaries', pref.summaries_enabled !== 0);
+
+    const winEl = document.getElementById('pref-window');
+    if (winEl) winEl.value = pref.grouping_window_minutes || 5;
+
+    const maxEl = document.getElementById('pref-max-hour');
+    if (maxEl) maxEl.value = pref.max_emails_per_event_per_hour || 10;
+  } catch (err) {
+    console.error('Falha ao carregar preferências de notificação:', err);
+  }
+}
+
+async function salvarPreferenciasNotificacao() {
+  try {
+    const getVal = (id) => {
+      const el = document.getElementById(id);
+      return el ? el.checked : true;
+    };
+
+    const payload = {
+      enabled: getVal('pref-enabled'),
+      salesUpdates: getVal('pref-sales'),
+      financeUpdates: getVal('pref-finance'),
+      stockAlerts: getVal('pref-stock'),
+      goalsReached: getVal('pref-goals'),
+      summariesEnabled: getVal('pref-summaries'),
+      groupingWindowMinutes: Number(document.getElementById('pref-window')?.value || 5),
+      maxEmailsPerEventPerHour: Number(document.getElementById('pref-max-hour')?.value || 10),
+      minIntervalMinutes: 2,
+    };
+
+    await EvoAPI.put('/notifications/preferences', payload);
+    toast('Preferências de notificação salvas!', 'success');
+  } catch (err) {
+    toast(`Erro ao salvar preferências: ${err.message}`, 'error');
+  }
+}
+
+async function carregarMetricasNotificacoes() {
+  try {
+    const m = await EvoAPI.get('/notifications/metrics');
+    if (!m) return;
+
+    const setTxt = (id, val) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = Number(val || 0).toLocaleString('pt-BR');
+    };
+
+    setTxt('notif-kpi-total', m.total);
+    setTxt('notif-kpi-accepted', m.resend_accepted);
+    setTxt('notif-kpi-delivered', m.delivered);
+    setTxt('notif-kpi-failed', (m.resend_failed || 0) + (m.bounced || 0));
+  } catch (err) {
+    console.error('Falha ao carregar métricas de notificações:', err);
+  }
+}
+
+async function carregarHistoricoNotificacoes() {
+  const tbody = document.getElementById('notificacoes-tbody');
+  if (!tbody) return;
+
+  tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;color:#64748b;">Carregando histórico...</td></tr>';
+
+  try {
+    const categoria = document.getElementById('filtro-notif-categoria')?.value || '';
+    const status = document.getElementById('filtro-notif-status')?.value || '';
+
+    const query = { limit: 50 };
+    if (categoria) query.category = categoria;
+    if (status) query.status = status;
+
+    const res = await EvoAPI.get('/notifications/history', query);
+    const rows = res.data || [];
+
+    if (rows.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;color:#64748b;">Nenhuma notificação registrada com os filtros selecionados.</td></tr>';
+      return;
+    }
+
+    const STATUS_BADGES = {
+      pending:         { label: 'Pendente', bg: 'rgba(245,158,11,0.15)', color: '#f59e0b' },
+      processing:      { label: 'Processando', bg: 'rgba(59,130,246,0.15)', color: '#60a5fa' },
+      resend_accepted: { label: 'Aceito pelo Resend', bg: 'rgba(16,185,129,0.15)', color: '#10b981' },
+      delivered:       { label: 'Entregue', bg: 'rgba(32,217,107,0.2)', color: '#20d96b' },
+      resend_failed:   { label: 'Falha no Envio', bg: 'rgba(239,68,68,0.15)', color: '#ef4444' },
+      bounced:         { label: 'Bounced / Devolvido', bg: 'rgba(239,68,68,0.15)', color: '#ef4444' },
+      cancelled:       { label: 'Cancelado', bg: 'rgba(100,116,139,0.15)', color: '#94a3b8' },
+    };
+
+    const CATEGORIA_LABELS = {
+      sales_update:   'Vendas Agrupadas',
+      finance_update: 'Financeiro',
+      stock_alert:    'Atenção ao Estoque',
+      goal_reached:   'Meta Atingida',
+      summary:        'Resumo Consolidado',
+      transactional:  'Transacional',
+    };
+
+    tbody.innerHTML = rows.map(r => {
+      const dataHora = r.created_at ? new Date(r.created_at).toLocaleString('pt-BR') : '—';
+      const badge = STATUS_BADGES[r.status] || { label: r.status, bg: '#1e293b', color: '#cbd5e1' };
+      const catLabel = CATEGORIA_LABELS[r.category] || r.category;
+      const prioridade = r.priority === 'immediate' ? '<span style="color:#ef4444;font-weight:700;">Imediato</span>' : (r.priority === 'summary' ? 'Resumo' : 'Agrupado');
+
+      return `
+        <tr>
+          <td style="font-size:12px;color:#94a3b8;">${escapeHTML(dataHora)}</td>
+          <td style="font-weight:600;">
+            <div>${escapeHTML(r.recipient_name || 'Destinatário')}</div>
+            <div style="font-size:11px;color:#64748b;">${escapeHTML(r.recipient_email)}</div>
+          </td>
+          <td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escapeHTML(r.subject)}">
+            ${escapeHTML(r.subject)}
+          </td>
+          <td><span style="font-size:12px;color:#cbd5e1;">${escapeHTML(catLabel)}</span></td>
+          <td style="font-size:12px;">${prioridade}</td>
+          <td>
+            <span style="display:inline-block;padding:3px 8px;border-radius:12px;font-size:11px;font-weight:600;background:${badge.bg};color:${badge.color};">
+              ${escapeHTML(badge.label)}
+            </span>
+          </td>
+          <td style="text-align:center;font-size:12px;color:#94a3b8;">${r.attempts}</td>
+        </tr>
+      `;
+    }).join('');
+
+    if (window.lucide && lucide.createIcons) {
+      lucide.createIcons();
+    }
+  } catch (err) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:24px;color:#ef4444;">Erro ao carregar histórico: ${escapeHTML(err.message)}</td></tr>`;
+  }
+}
+
+async function dispararResumoExecutivoAgora() {
+  if (!confirm('Deseja gerar e enviar agora um resumo consolidado aos gestores autorizados da organização?')) {
+    return;
+  }
+
+  try {
+    await EvoAPI.post('/notifications/trigger-summary', {});
+    toast('Resumo consolidado enfileirado com sucesso!', 'success');
+    carregarMetricasNotificacoes();
+    carregarHistoricoNotificacoes();
+  } catch (err) {
+    toast(`Erro ao disparar resumo: ${err.message}`, 'error');
   }
 }
 

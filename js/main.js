@@ -841,6 +841,7 @@ const modals = {
     login: document.getElementById('modalLogin'),
     cadastro: document.getElementById('modalCadastro'),
     recuperar: document.getElementById('modalRecuperar'),
+    redefinir: document.getElementById('modalRedefinirSenha'),
     participante: document.getElementById('modalParticipante'),
     evento: document.getElementById('modalEvento'),
     compra: document.getElementById('modalCompra'),
@@ -1258,19 +1259,114 @@ document.getElementById('btnCadastroSubmit')?.addEventListener('click', async ()
 });
 
 /* ---------- RECUPERAR SENHA ---------- */
-document.getElementById('btnRecuperarSubmit')?.addEventListener('click', () => {
-    const email = document.getElementById('recEmail').value.trim();
+document.getElementById('btnRecuperarSubmit')?.addEventListener('click', async () => {
+    const emailInput = document.getElementById('recEmail');
+    const email = emailInput.value.trim();
     const er = document.getElementById('recEmail-error');
+    const successDiv = document.getElementById('recSuccess');
+    const botao = document.getElementById('btnRecuperarSubmit');
+
+    successDiv.style.display = 'none';
+
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        document.getElementById('recEmail').classList.add('error');
+        emailInput.classList.add('error');
         er.textContent = 'E-mail inválido.';
         return;
     }
-    document.getElementById('recEmail').classList.remove('error');
+    emailInput.classList.remove('error');
     er.textContent = '';
-    // A API responde a mesma coisa exista ou não o e-mail (não revela cadastros).
-    EvoAPI.post('/auth/forgot-password', { email }).catch(() => { });
-    document.getElementById('recSuccess').style.display = 'block';
+
+    ocupado(botao, true, 'Enviando…');
+    try {
+        // A API responde mensagem neutra exista ou não o e-mail (proteção contra enumeração).
+        await EvoAPI.post('/auth/forgot-password', { email });
+        successDiv.style.display = 'block';
+    } catch {
+        // Mesmo em falha transitória mantemos mensagem segura ao usuário
+        successDiv.style.display = 'block';
+    } finally {
+        ocupado(botao, false, 'Enviar instruções');
+    }
+});
+
+/* ---------- REDEFINIR SENHA ---------- */
+document.getElementById('modalRedefinirClose')?.addEventListener('click', closeModal);
+document.getElementById('linkRedefinirVoltarLogin')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    openModal('login');
+});
+
+document.getElementById('btnRedefinirSubmit')?.addEventListener('click', async () => {
+    const token = document.getElementById('resetTokenHidden').value.trim();
+    const novaSenha = document.getElementById('resetNovaSenha').value;
+    const confirmaSenha = document.getElementById('resetConfirmaSenha').value;
+    const errNova = document.getElementById('resetNovaSenha-error');
+    const errConfirma = document.getElementById('resetConfirmaSenha-error');
+    const errGlobal = document.getElementById('resetGlobalError');
+    const successDiv = document.getElementById('resetSuccess');
+    const botao = document.getElementById('btnRedefinirSubmit');
+
+    errNova.textContent = '';
+    errConfirma.textContent = '';
+    errGlobal.style.display = 'none';
+    errGlobal.textContent = '';
+    document.getElementById('resetNovaSenha').classList.remove('error');
+    document.getElementById('resetConfirmaSenha').classList.remove('error');
+
+    if (!token) {
+        errGlobal.textContent = 'Token de recuperação ausente ou inválido. Solicite um novo link.';
+        errGlobal.style.display = 'block';
+        return;
+    }
+
+    if (novaSenha.length < 6) {
+        document.getElementById('resetNovaSenha').classList.add('error');
+        errNova.textContent = 'A nova senha deve ter ao menos 6 caracteres.';
+        return;
+    }
+
+    if (novaSenha !== confirmaSenha) {
+        document.getElementById('resetConfirmaSenha').classList.add('error');
+        errConfirma.textContent = 'As senhas não conferem.';
+        return;
+    }
+
+    ocupado(botao, true, 'Salvando…');
+    try {
+        await EvoAPI.post('/auth/reset-password', { token, password: novaSenha });
+        successDiv.style.display = 'block';
+        botao.style.display = 'none';
+        setTimeout(() => {
+            closeModal();
+            // Limpa parâmetro da URL
+            try {
+                const url = new URL(window.location.href);
+                url.searchParams.delete('reset_token');
+                window.history.replaceState({}, document.title, url.toString());
+            } catch { }
+            openModal('login');
+        }, 2200);
+    } catch (err) {
+        errGlobal.textContent = err.message || 'Erro ao redefinir senha. O link pode ter expirado.';
+        errGlobal.style.display = 'block';
+    } finally {
+        ocupado(botao, false, 'Salvar nova senha');
+    }
+});
+
+// Verifica se há token de redefinição na URL ao carregar a página
+window.addEventListener('DOMContentLoaded', () => {
+    try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const resetToken = urlParams.get('reset_token');
+        if (resetToken) {
+            const hiddenInput = document.getElementById('resetTokenHidden');
+            if (hiddenInput) hiddenInput.value = resetToken;
+            setTimeout(() => {
+                openModal('redefinir');
+            }, 300);
+        }
+    } catch { }
 });
 
 /* ---------- LOGOUT ---------- */

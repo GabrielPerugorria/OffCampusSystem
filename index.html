@@ -1895,6 +1895,32 @@
       <div class="modal-alt"><a href="#" class="modal-link" id="linkVoltarLogin">← Voltar ao login</a></div>
     </div>
 
+    <!-- REDEFINIR SENHA -->
+    <div class="modal" id="modalRedefinirSenha" aria-label="Redefinir senha" style="display:none">
+      <button class="modal-close" id="modalRedefinirClose" aria-label="Fechar"><i data-lucide="x"></i></button>
+      <div class="modal-logo">
+        <img src="imagens/favicon.png" alt="EvoTech" width="36" height="36">
+        <span>EvoTech<b>Events</b></span>
+      </div>
+      <h2 class="modal-title">Criar nova senha</h2>
+      <p class="modal-sub">Informe sua nova senha para redefinir o acesso à sua conta.</p>
+      <input type="hidden" id="resetTokenHidden">
+      <div class="mform-group">
+        <label for="resetNovaSenha">Nova senha (mínimo 6 caracteres)</label>
+        <input type="password" id="resetNovaSenha" placeholder="••••••••" autocomplete="new-password">
+        <span class="mfield-error" id="resetNovaSenha-error"></span>
+      </div>
+      <div class="mform-group">
+        <label for="resetConfirmaSenha">Confirme a nova senha</label>
+        <input type="password" id="resetConfirmaSenha" placeholder="••••••••" autocomplete="new-password">
+        <span class="mfield-error" id="resetConfirmaSenha-error"></span>
+      </div>
+      <button class="btn-primary btn-full modal-submit" id="btnRedefinirSubmit">Salvar nova senha</button>
+      <div id="resetSuccess" class="modal-success" style="display:none"><i data-lucide="check" style="width:16px;height:16px;display:inline-block;vertical-align:middle;margin-right:6px"></i> Senha atualizada! Redirecionando para login...</div>
+      <div id="resetGlobalError" class="mfield-error" style="display:none;margin-top:12px;text-align:center;"></div>
+      <div class="modal-alt"><a href="#" class="modal-link" id="linkRedefinirVoltarLogin">← Voltar ao login</a></div>
+    </div>
+
     <!-- ÁREA DO PARTICIPANTE -->
     <div class="modal modal-wide" id="modalParticipante" aria-label="Área do participante" style="display:none">
       <button class="modal-close" id="modalParticipanteClose" aria-label="Fechar"><i data-lucide="x"></i></button>

@@ -1,6 +1,7 @@
 'use strict';
 const db = require('../config/db');
 const AppError = require('../utils/AppError');
+const businessEventService = require('./businessEventService');
 
 // Consulta de código antes de liberar a entrada (tela da portaria).
 async function validateCode(code, organizationId) {
@@ -52,6 +53,20 @@ async function checkIn(data, user) {
          VALUES (?, NULL, ?, 'manual', ?)`,
         [event.id, data.guestName, user.id]
       );
+
+      await businessEventService.emit({
+        type: 'checkin',
+        organizationId,
+        eventId: event.id,
+        payload: {
+          checkinId: result.insertId,
+          ticketId: null,
+          guestName: data.guestName,
+          method: 'manual',
+        },
+        conn,
+      });
+
       return {
         id: result.insertId,
         method: 'manual',
@@ -109,6 +124,19 @@ async function checkIn(data, user) {
       [ticket.event_id, ticket.id, ticket.holder_name, user.id]
     );
     await conn.execute(`UPDATE tickets SET status = 'used' WHERE id = ?`, [ticket.id]);
+
+    await businessEventService.emit({
+      type: 'checkin',
+      organizationId,
+      eventId: ticket.event_id,
+      payload: {
+        checkinId: result.insertId,
+        ticketId: ticket.id,
+        guestName: ticket.holder_name,
+        method: 'code',
+      },
+      conn,
+    });
 
     return {
       id: result.insertId,

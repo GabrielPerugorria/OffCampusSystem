@@ -34,11 +34,16 @@ exports.updateMe = asyncHandler(async (req, res) => {
   return ok(res, user);
 });
 
-// Não revela se o e-mail existe. O envio de e-mail em si é uma fase futura.
+// Solicitação de recuperação de senha com link seguro (sem enumeração de e-mail)
 exports.forgotPassword = asyncHandler(async (req, res) => {
-  return ok(res, {
-    message: 'Se o e-mail estiver cadastrado, você receberá as instruções de recuperação.',
-  });
+  const result = await authService.forgotPassword(req.body.email);
+  return ok(res, result);
+});
+
+// Redefinição de senha com validação de token criptográfico
+exports.resetPassword = asyncHandler(async (req, res) => {
+  const result = await authService.resetPassword(req.body.token, req.body.password);
+  return ok(res, result);
 });
 
 exports.myTickets = asyncHandler(async (req, res) =>

@@ -1,6 +1,7 @@
 'use strict';
 const db = require('../config/db');
 const AppError = require('../utils/AppError');
+const businessEventService = require('./businessEventService');
 
 async function listCategories(organizationId) {
   return db.query(
@@ -68,6 +69,18 @@ async function createExpense(organizationId, userId, data) {
       data.expenseDate || new Date().toISOString().slice(0, 10), data.status || 'paid', userId,
     ]
   );
+
+  await businessEventService.emit({
+    type: 'expense_created',
+    organizationId,
+    eventId: eventId || null,
+    payload: {
+      expenseId: result.insertId,
+      amount: Number(data.amount),
+      status: data.status || 'paid',
+    },
+  });
+
   return getExpense(result.insertId, organizationId);
 }
 

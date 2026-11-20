@@ -2,6 +2,9 @@
 const db = require('../config/db');
 const env = require('../config/env');
 const AppError = require('../utils/AppError');
+const logger = require('../utils/logger');
+const emailService = require('./emailService');
+const businessEventService = require('./businessEventService');
 const { generateTicketCode } = require('../utils/ticketCode');
 const { runMigrations } = require('../database/runMigrations');
 
@@ -121,10 +124,10 @@ async function createOrder(data, user) {
     // Não interrompe o fluxo caso a limpeza falhe
   }
 
-  return db.transaction(async (conn) => {
+  const orderResult = await db.transaction(async (conn) => {
     const [batchRows] = await conn.execute(
       `SELECT b.*, e.id AS event_id, e.name AS event_name, e.status AS event_status,
-              e.capacity, e.organization_id
+              e.capacity, e.organization_id, e.event_date, e.venue
          FROM ticket_batches b
          JOIN events e ON e.id = b.event_id
         WHERE b.id = ? FOR UPDATE`,
@@ -176,17 +179,17 @@ async function createOrder(data, user) {
     const paid = env.autoConfirmOrders;
 
     // Pedidos pendentes recebem expiração de 15 minutos para pagamento
-    const [orderResult] = await conn.execute(
+    const [orderInsertResult] = await conn.execute(
       `INSERT INTO orders
          (event_id, user_id, buyer_name, buyer_email, buyer_cpf, total_amount,
-          status, payment_method, paid_at, expires_at)
-       VALUES (?,?,?,?,?,?,?,?,?, ${paid ? 'NULL' : 'DATE_ADD(NOW(), INTERVAL 15 MINUTE)'})`,
+          status, payment_method, paid_at, expires_at, confirmation_email_sent_at)
+       VALUES (?,?,?,?,?,?,?,?,?, ${paid ? 'NULL' : 'DATE_ADD(NOW(), INTERVAL 15 MINUTE)'}, ${paid ? 'NOW()' : 'NULL'})`,
       [
         batch.event_id, user?.id || null, data.buyerName, data.buyerEmail, data.buyerCpf,
         total, paid ? 'paid' : 'pending', total > 0 ? 'pix' : 'free', paid ? new Date() : null,
       ]
     );
-    const orderId = orderResult.insertId;
+    const orderId = orderInsertResult.insertId;
 
     // Registra o item do pedido
     await conn.execute(
@@ -231,8 +234,39 @@ async function createOrder(data, user) {
       total,
       buyerName: data.buyerName,
       tickets,
+      emailPayload: paid ? {
+        to: data.buyerEmail,
+        buyerName: data.buyerName,
+        orderId,
+        eventName: batch.event_name,
+        eventDate: batch.event_date,
+        venue: batch.venue,
+        totalAmount: total,
+        paymentMethod: total > 0 ? 'pix' : 'free',
+        items: [{ batch_name: batch.name, quantity: data.quantity, unit_price: unitPrice }],
+        tickets,
+      } : null,
     };
   });
+
+  // Se o pedido já nasceu pago (ambiente com autoConfirmOrders), dispara confirmação de compra
+  if (orderResult.status === 'paid' && orderResult.emailPayload) {
+    emailService.sendOrderConfirmationEmail(orderResult.emailPayload)
+      .catch(err => logger.error('Falha ao disparar e-mail de confirmação no createOrder:', err.message));
+  }
+
+  return {
+    orderId: orderResult.orderId,
+    status: orderResult.status,
+    eventId: orderResult.eventId,
+    eventName: orderResult.eventName,
+    batchName: orderResult.batchName,
+    unitPrice: orderResult.unitPrice,
+    quantity: orderResult.quantity,
+    total: orderResult.total,
+    buyerName: orderResult.buyerName,
+    tickets: orderResult.tickets,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -242,10 +276,10 @@ async function createOrder(data, user) {
 async function confirmOrder(orderId, organizationId, confirmedByUserId) {
   await runMigrations();
 
-  return db.transaction(async (conn) => {
+  const result = await db.transaction(async (conn) => {
     // Bloqueia o pedido para leitura consistente
     const [rows] = await conn.execute(
-      `SELECT o.*, e.organization_id, e.name AS event_name, e.capacity
+      `SELECT o.*, e.organization_id, e.name AS event_name, e.capacity, e.event_date, e.venue
          FROM orders o JOIN events e ON e.id = o.event_id
         WHERE o.id = ? FOR UPDATE`,
       [orderId]
@@ -287,7 +321,7 @@ async function confirmOrder(orderId, organizationId, confirmedByUserId) {
       `SELECT oi.batch_id, oi.event_id, oi.quantity, oi.unit_price,
               b.name AS batch_name, b.quantity_total, b.quantity_sold, b.quantity_reserved,
               b.status AS batch_status,
-              e.name AS event_name_b, e.capacity AS event_capacity
+              e.name AS event_name_b, e.capacity AS event_capacity, e.event_date AS event_date_b, e.venue AS venue_b
          FROM order_items oi
          JOIN ticket_batches b ON b.id = oi.batch_id
          JOIN events e          ON e.id = oi.event_id
@@ -302,7 +336,7 @@ async function confirmOrder(orderId, organizationId, confirmedByUserId) {
         `SELECT b.id AS batch_id, b.event_id, b.name AS batch_name,
                 b.quantity_total, b.quantity_sold, b.quantity_reserved, b.status AS batch_status,
                 b.price AS unit_price,
-                e.name AS event_name_b, e.capacity AS event_capacity
+                e.name AS event_name_b, e.capacity AS event_capacity, e.event_date AS event_date_b, e.venue AS venue_b
            FROM orders o
            JOIN ticket_batches b ON b.event_id = o.event_id
            JOIN events e         ON e.id = o.event_id
@@ -345,7 +379,8 @@ async function confirmOrder(orderId, organizationId, confirmedByUserId) {
       }
     }
 
-    // Atualiza o pedido para 'paid'
+    // Atualiza o pedido para 'paid' — NÃO marca confirmation_email_sent_at aqui.
+    // O status de envio do e-mail é atualizado FORA da transação, após aceitação do Resend.
     await conn.execute(
       `UPDATE orders
           SET status = 'paid', paid_at = NOW(),
@@ -373,8 +408,63 @@ async function confirmOrder(orderId, organizationId, confirmedByUserId) {
       allTickets.push(...tks);
     }
 
-    return { orderId, status: 'paid', tickets: allTickets };
+    // Transactional Outbox: Persiste evento de negócio de venda confirmada na mesma transação
+    await businessEventService.emit({
+      type: 'order_paid',
+      organizationId: order.organization_id,
+      eventId: order.event_id,
+      payload: {
+        orderId,
+        buyerName: order.buyer_name,
+        buyerEmail: order.buyer_email,
+        totalAmount: Number(order.total_amount),
+        ticketsCount: allTickets.length,
+        batchId: orderItems[0]?.batch_id,
+      },
+      conn,
+    });
+
+    return {
+      orderId,
+      status: 'paid',
+      tickets: allTickets,
+      emailPayload: {
+        to: order.buyer_email,
+        buyerName: order.buyer_name,
+        orderId,
+        eventName: order.event_name,
+        eventDate: order.event_date,
+        venue: order.venue,
+        totalAmount: Number(order.total_amount),
+        paymentMethod: order.payment_method,
+        items: orderItems,
+        tickets: allTickets,
+      },
+    };
   });
+
+  // Disparo assíncrono pós-confirmação.
+  // confirmation_email_sent_at só é gravado APÓS aceitação real pelo Resend.
+  // Isso diferencia: NULL = não tentado | valor = aceito pelo provedor (não necessariamente entregue)
+  if (result.emailPayload) {
+    emailService.sendOrderConfirmationEmail(result.emailPayload)
+      .then((emailResult) => {
+        if (emailResult.success) {
+          // Resend aceitou o e-mail para entrega (não garante entrega na caixa de entrada)
+          db.query(
+            'UPDATE orders SET confirmation_email_sent_at = NOW() WHERE id = ?',
+            [result.orderId]
+          ).catch(err => logger.error('Falha ao registrar confirmation_email_sent_at:', err.message));
+        } else {
+          logger.warn(
+            `E-mail de confirmação rejeitado pelo Resend para pedido #${result.orderId}: ${emailResult.error}`
+          );
+        }
+      })
+      .catch(err => logger.error('Falha ao disparar e-mail de confirmação de compra:', err.message));
+  }
+
+  return { orderId: result.orderId, status: result.status, tickets: result.tickets };
 }
 
 // ---------------------------------------------------------------------------
@@ -462,6 +552,20 @@ async function cancelOrder(orderId, { organizationId, userId, isAdmin, reason })
         WHERE id = ?`,
       [userId || null, cancellationReason, orderId]
     );
+
+    // Transactional Outbox: Persiste evento de negócio de cancelamento na mesma transação
+    await businessEventService.emit({
+      type: 'order_cancelled',
+      organizationId: order.organization_id,
+      eventId: order.event_id,
+      payload: {
+        orderId,
+        reason: cancellationReason,
+        totalAmount: Number(order.total_amount),
+        wasPaid: order.status === 'paid',
+      },
+      conn,
+    });
 
     return { orderId, status: 'cancelled' };
   });

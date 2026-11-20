@@ -12,8 +12,9 @@ router.post('/register',        authLimiter, validate(s.registerSchema), c.regis
 router.post('/login',           authLimiter, validate(s.loginSchema),    c.login);
 router.post('/refresh',         validate(s.refreshSchema),               c.refresh);
 router.post('/logout',          c.logout);
-router.post('/forgot-password', authLimiter, validate(s.forgotSchema),   c.forgotPassword);
-router.get('/me',               authenticate,                            c.me);
+router.post('/forgot-password', authLimiter, validate(s.forgotSchema),        c.forgotPassword);
+router.post('/reset-password',  authLimiter, validate(s.resetPasswordSchema), c.resetPassword);
+router.get('/me',               authenticate,                                 c.me);
 router.put('/me',               authenticate, validate(s.updateMeSchema), c.updateMe);
 
 module.exports = router;

@@ -220,3 +220,76 @@ Status usados: `200`, `201`, `204`, `400`, `401`, `403`, `404`, `409`, `422`,
 - **Auditoria** com o autor real de cada ação, gravada no servidor.
 - Preço, disponibilidade e código do ingresso são decididos no servidor.
 - Bloqueio de participante revoga os refresh tokens dele na hora.
+
+---
+
+## E-mails Transacionais — Integração Resend
+
+O serviço de envio de e-mails transacionais é centralizado em `backend/src/services/emailService.js` utilizando o SDK oficial `resend` (`^6.x`).
+
+### 1. Variáveis de Ambiente necessárias (`.env`)
+
+```ini
+# Chave obtida no painel https://resend.com/api-keys
+RESEND_API_KEY=sua_chave_resend_aqui
+
+# Remetente oficial (inicialmente em sandbox; substitua pelo seu domínio quando verificado)
+EMAIL_FROM=EvoTech Events <onboarding@resend.dev>
+
+# URL base do frontend (usada nos links absolutos dos e-mails)
+FRONTEND_URL=https://gabrielperugorria.github.io/OffCampusSystem
+```
+
+### 2. Fluxos Transacionais com E-mail Ativo
+
+1. **Recuperação de Senha (`/auth/forgot-password` e `/auth/reset-password`)**:
+   - Token criptograficamente seguro (`crypto.randomBytes(32)`).
+   - Apenas o hash SHA-256 é armazenado em `password_reset_tokens`.
+   - Expiração estrita de 30 minutos e uso único (*one-time use*).
+   - Invalidação automática de tokens anteriores do usuário.
+   - Proteção estrita contra enumeração de e-mails (resposta idêntica para cadastrados e não cadastrados).
+   - Revogação imediata de todas as sessões anteriores após a redefinição de senha.
+   - Notificação de segurança enviada confirmando a alteração.
+
+2. **Confirmação de Cadastro (Boas-vindas)**:
+   - Disparado automaticamente após o registro bem-sucedido.
+   - Totalmente assíncrono: falhas transitórias do provedor de e-mail não impedem a criação da conta.
+
+3. **Confirmação de Compra de Ingressos**:
+   - Disparado **exclusivamente** após a confirmação efetiva do pagamento (`status = 'paid'`).
+   - Apresenta detalhes do evento, local, data, resumo financeiro e os códigos alfanuméricos dos ingressos emitidos.
+   - Idempotência a nível de banco: a coluna `confirmation_email_sent_at` na tabela `orders` impede envios duplicados caso o status seja atualizado repetidas vezes.
+
+### 3. Restrições do Domínio de Teste (`onboarding@resend.dev`)
+
+- Enquanto o domínio próprio não for verificado no painel do Resend, a plataforma opera com o remetente padrão `onboarding@resend.dev`.
+- No modo de teste, a API do Resend autoriza envios apenas para o e-mail cadastrado na conta do desenvolvedor ou para o destinatário de homologação `delivered@resend.dev`.
+- **Migração para Domínio Próprio**:
+  1. Adicione seu domínio no painel do Resend (Settings → Domains).
+  2. Configure os registros DNS (SPF, DKIM, DMARC) indicados pelo Resend.
+  3. No `.env`, atualize `EMAIL_FROM=EvoTech Events <contato@seudominio.com>`. Não é necessário alterar nenhuma linha de código.
+
+### 4. Como Testar o Envio Localmente
+
+Para validar a conectividade e os templates em ambiente local:
+
+```bash
+# Testa template de boas-vindas
+node src/scripts/testEmailSend.js seu-email@exemplo.com welcome
+
+# Testa template de recuperação de senha
+node src/scripts/testEmailSend.js seu-email@exemplo.com reset
+
+# Testa template de confirmação de pedido
+node src/scripts/testEmailSend.js seu-email@exemplo.com order
+```
+
+### 5. Execução dos Testes Automatizados
+
+```bash
+# Executa a suíte de testes de integração do Resend (mocks e segurança)
+node tests/resend-email-integration.test.js
+
+# Executa os testes de integridade do backend
+node tests/backend-integrity.test.js
+```

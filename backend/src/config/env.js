@@ -99,6 +99,12 @@ const env = {
     adminEmail: process.env.BOOTSTRAP_ADMIN_EMAIL || '',
     adminPassword: process.env.BOOTSTRAP_ADMIN_PASSWORD || '',
   },
+
+  email: {
+    resendApiKey: process.env.RESEND_API_KEY || '',
+    from: process.env.EMAIL_FROM || 'EvoTech Events <onboarding@resend.dev>',
+  },
+  frontendUrl: (process.env.FRONTEND_URL || 'https://gabrielperugorria.github.io/OffCampusSystem').replace(/\/+$/, ''),
 };
 
 env.isProduction = env.nodeEnv === 'production';

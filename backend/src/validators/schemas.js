@@ -32,6 +32,10 @@ const registerSchema = z.object({
 const loginSchema = z.object({ email, password: z.string().min(1).max(128) });
 const refreshSchema = z.object({ refreshToken: z.string().min(10) });
 const forgotSchema = z.object({ email });
+const resetPasswordSchema = z.object({
+  token: z.string().trim().min(20, 'Token de recuperação inválido.').max(256),
+  password,
+});
 const updateMeSchema = z.object({
   name: str(3, 120).optional(),
   phone: phone.optional(),
@@ -178,7 +182,7 @@ const unitEconQuery = z.object({
 });
 
 module.exports = {
-  registerSchema, loginSchema, refreshSchema, forgotSchema, updateMeSchema,
+  registerSchema, loginSchema, refreshSchema, forgotSchema, resetPasswordSchema, updateMeSchema,
   eventSchema, eventUpdateSchema, goalsSchema,
   batchSchema, batchUpdateSchema, batchStockSchema,
   orderSchema, checkinSchema,
