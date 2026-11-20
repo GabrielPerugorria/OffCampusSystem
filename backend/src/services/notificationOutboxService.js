@@ -233,15 +233,18 @@ async function markDelivered(resendMessageId) {
  * Rejeição / devolução confirmada via webhook do Resend.
  */
 async function markBounced(resendMessageId, bounceReason) {
-  if (!resendMessageId) return;
+  if (!resendMessageId) return false;
 
-  await db.query(
+  const result = await db.query(
     `UPDATE notification_outbox
         SET status = 'bounced',
             last_error = ?
-      WHERE resend_message_id = ?`,
+      WHERE resend_message_id = ?
+        AND status != 'bounced'`,
     [bounceReason || 'E-mail devolvido/rejeitado pelo destinatário', resendMessageId]
   );
+
+  return result.affectedRows > 0;
 }
 
 /**

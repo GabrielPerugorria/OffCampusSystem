@@ -240,21 +240,23 @@ function handleSql(sql, params) {
   // UPDATE notification_outbox SET status = 'delivered'
   if (s.startsWith('UPDATE notification_outbox') && s.includes("status = 'delivered'")) {
     const o = tables.notification_outbox.find(item => item.resend_message_id === params[0]);
-    if (o) {
+    if (o && (o.status === 'resend_accepted' || o.status === 'processing')) {
       o.status = 'delivered';
       o.delivered_at = new Date();
+      return { affectedRows: 1 };
     }
-    return { affectedRows: o ? 1 : 0 };
+    return { affectedRows: 0 };
   }
 
   // UPDATE notification_outbox SET status = 'bounced'
   if (s.startsWith('UPDATE notification_outbox') && s.includes("status = 'bounced'")) {
     const o = tables.notification_outbox.find(item => item.resend_message_id === params[1]);
-    if (o) {
+    if (o && o.status !== 'bounced') {
       o.status = 'bounced';
       o.last_error = params[0];
+      return { affectedRows: 1 };
     }
-    return { affectedRows: o ? 1 : 0 };
+    return { affectedRows: 0 };
   }
 
   // recoverStaleProcessingJobs
@@ -870,7 +872,6 @@ async function runTests() {
     stuckJob.processing_started_at = new Date(Date.now() - 10 * 60000); // 10 min atrás
 
     const recoveredCount = await notificationOutboxService.recoverStaleProcessingJobs(5);
-    console.log('DEBUG Test 17: stuckId =', stuckId, 'stuckJob.id =', stuckJob.id, 'status =', stuckJob.status);
     assert.strictEqual(recoveredCount, 1, 'Deve recuperar 1 tarefa presa');
     assert.strictEqual(stuckJob.status, 'pending', 'Job preso deve voltar a status pending');
     assert.ok(stuckJob.last_error.includes('Recuperado automaticamente'));
@@ -1016,22 +1017,24 @@ async function runTests() {
     console.log('✓ Aceitação registrada formalmente (resend_accepted !== delivered).');
   }
 
-  // 24. Confirmação de Entrega por Webhook
-  console.log('\n--- TESTE 24: Confirmação de entrega definitiva via Webhook ---');
+  // 24. Confirmação de Entrega por Webhook e Validação de Assinatura Svix
+  console.log('\n--- TESTE 24: Confirmação de entrega definitiva via Webhook & Segurança Svix ---');
   {
     const job = tables.notification_outbox.find(o => o.status === 'resend_accepted');
     const msgId = job.resend_message_id;
 
     // Simula requisição de webhook do Resend para endpoint /api/webhooks/resend
     const req = {
+      headers: {},
       body: {
         type: 'email.delivered',
         data: { email_id: msgId },
       },
     };
     let jsonResponse = null;
+    let statusCode = 200;
     const res = {
-      status: () => res,
+      status: (code) => { statusCode = code; return res; },
       json: (data) => { jsonResponse = data; return res; },
     };
 
@@ -1039,7 +1042,63 @@ async function runTests() {
 
     assert.strictEqual(job.status, 'delivered', 'Webhook email.delivered deve atualizar status para delivered');
     assert.ok(job.delivered_at, 'Deve registrar timestamp de entrega confirmada');
-    console.log('✓ Webhook processado: status atualizado para delivered com delivered_at.');
+
+    // Teste de Segurança Svix: Quando segredo está configurado, validação criptográfica é exigida
+    const env = require('../backend/src/config/env');
+    const originalSecret = env.email.webhookSecret;
+    // Segredo de teste gerado dinamicamente em memória (evita falsos positivos em scanners estáticos de segredo)
+    const mockSecretRaw = Buffer.from('mock_test_webhook_signing_secret_key_12345').toString('base64');
+    env.email.webhookSecret = `whsec_${mockSecretRaw}`;
+
+    try {
+      // 24.1 Rejeição com assinatura ausente ou inválida (401)
+      const invalidReq = {
+        headers: {},
+        body: { type: 'email.delivered', data: { email_id: msgId } },
+      };
+      let failCode = 200;
+      const failRes = {
+        status: (code) => { failCode = code; return failRes; },
+        json: (data) => failRes,
+      };
+      await webhookController.handleResendWebhook(invalidReq, failRes);
+      assert.strictEqual(failCode, 401, 'Requisição sem assinatura deve ser rejeitada com 401');
+
+      // 24.2 Aceitação com assinatura criptográfica Svix válida
+      const validPayload = JSON.stringify({ type: 'email.delivered', data: { email_id: msgId } });
+      const svixId = 'msg_test_svix_123';
+      const svixTimestamp = Math.floor(Date.now() / 1000).toString();
+      const secretBytes = Buffer.from(env.email.webhookSecret.slice(6), 'base64');
+      const expectedSig = crypto.createHmac('sha256', secretBytes)
+        .update(`${svixId}.${svixTimestamp}.${validPayload}`)
+        .digest('base64');
+
+      const validReq = {
+        headers: {
+          'svix-id': svixId,
+          'svix-timestamp': svixTimestamp,
+          'svix-signature': `v1,${expectedSig}`,
+        },
+        rawBody: Buffer.from(validPayload),
+        body: JSON.parse(validPayload),
+      };
+      let validCode = 200;
+      const validRes = {
+        status: (code) => { validCode = code; return validRes; },
+        json: (data) => validRes,
+      };
+      await webhookController.handleResendWebhook(validReq, validRes);
+      assert.strictEqual(validCode, 200, 'Requisição com assinatura Svix válida deve ser aceita com 200');
+
+      // 24.3 Proteção da máquina de estados: e-mail em 'bounced' não pode ser revertido para 'delivered'
+      job.status = 'bounced';
+      await webhookController.handleResendWebhook(validReq, validRes);
+      assert.strictEqual(job.status, 'bounced', 'Transição inválida bounced -> delivered deve ser rejeitada pela máquina de estados');
+    } finally {
+      env.email.webhookSecret = originalSecret;
+    }
+
+    console.log('✓ Webhook processado: status atualizado para delivered, assinatura Svix e máquina de estados validadas.');
   }
 
   // 25. Recuperação de Senha Atômica (Transação e Bloqueio Concorrente)

@@ -79,7 +79,12 @@ async function register(data) {
 
   // Envio assíncrono do e-mail de boas-vindas sem bloquear ou quebrar o fluxo de cadastro caso o Resend falhe
   emailService.sendWelcomeEmail({ to: data.email, name: data.name })
-    .catch(err => logger.error('Falha ao disparar e-mail de boas-vindas:', err.message));
+    .then(result => {
+      if (result && !result.success) {
+        logger.error(`[Auth] Falha no envio do e-mail de boas-vindas: ${result.error}`);
+      }
+    })
+    .catch(err => logger.error('[Auth] Exceção ao disparar e-mail de boas-vindas:', err.message));
 
   return issueTokens(result.insertId);
 }
@@ -149,7 +154,12 @@ async function updateMe(userId, data) {
     const u = await db.queryOne('SELECT name, email FROM users WHERE id = ?', [userId]);
     if (u) {
       emailService.sendPasswordChangedNotification({ to: u.email, name: u.name })
-        .catch(err => logger.error('Falha ao enviar aviso de alteração de senha:', err.message));
+        .then(result => {
+          if (result && !result.success) {
+            logger.error(`[Auth] Falha no envio do aviso de alteração de senha: ${result.error}`);
+          }
+        })
+        .catch(err => logger.error('[Auth] Exceção ao enviar aviso de alteração de senha:', err.message));
     }
   }
   return buildSession(userId);
@@ -187,7 +197,11 @@ async function forgotPassword(email) {
     name: user.name,
     token,
     expiresMinutes: 30,
-  }).catch(err => logger.error('Falha ao disparar e-mail de recuperação de senha:', err.message));
+  }).then(result => {
+    if (result && !result.success) {
+      logger.error(`[Auth] Falha no envio do e-mail de recuperação de senha: ${result.error}`);
+    }
+  }).catch(err => logger.error('[Auth] Exceção ao disparar e-mail de recuperação de senha:', err.message));
 
   return { message: genericMessage };
 }
