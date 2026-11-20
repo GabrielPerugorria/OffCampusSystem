@@ -86,8 +86,9 @@
       if (qs) url += `?${qs}`;
     }
 
+    const isFormData = typeof FormData !== 'undefined' && body instanceof FormData;
     const headers = {};
-    if (body !== undefined) headers['Content-Type'] = 'application/json';
+    if (body !== undefined && !isFormData) headers['Content-Type'] = 'application/json';
     if (!skipAuth) {
       const auth = store.getAuth();
       if (auth?.accessToken) headers.Authorization = `Bearer ${auth.accessToken}`;
@@ -98,7 +99,7 @@
       response = await fetch(url, {
         method,
         headers,
-        body: body !== undefined ? JSON.stringify(body) : undefined,
+        body: isFormData ? body : (body !== undefined ? JSON.stringify(body) : undefined),
       });
     } catch (err) {
       throw new ApiError(
@@ -150,6 +151,7 @@
     put:   (path, body)   => request(path, { method: 'PUT', body }),
     patch: (path, body)   => request(path, { method: 'PATCH', body }),
     del:   (path)         => request(path, { method: 'DELETE' }),
+    upload:(path, form)   => request(path, { method: 'POST', body: form }),
 
     // "Logado" = existem tokens. É a MESMA regra do admin-guard.js; antes, a
     // interface se baseava só no snapshot do usuário (evo_session) e o guard nos

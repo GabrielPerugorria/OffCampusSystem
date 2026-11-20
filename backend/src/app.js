@@ -1,4 +1,5 @@
 'use strict';
+const path = require('path');
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -16,6 +17,11 @@ app.disable('x-powered-by');
 
 app.use(helmet());
 app.use(cors(corsOptions));
+
+// Servir arquivos estáticos de upload (imagens de eventos)
+const uploadsDir = path.resolve(__dirname, '../../uploads');
+app.use('/uploads', express.static(uploadsDir));
+
 app.use(express.json({
   limit: '256kb',
   verify: (req, res, buf) => {

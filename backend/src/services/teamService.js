@@ -80,8 +80,8 @@ async function update(memberId, organizationId, data) {
   if (data.role)   { sets.push('role = ?');   params.push(data.role); }
   if (data.status) { sets.push('status = ?'); params.push(data.status); }
   if (sets.length) {
-    params.push(memberId);
-    await db.query(`UPDATE organization_members SET ${sets.join(', ')} WHERE id = ?`, params);
+    params.push(memberId, organizationId);
+    await db.query(`UPDATE organization_members SET ${sets.join(', ')} WHERE id = ? AND organization_id = ?`, params);
   }
   return shape(await getOwned(memberId, organizationId));
 }
@@ -89,8 +89,8 @@ async function update(memberId, organizationId, data) {
 async function remove(memberId, organizationId) {
   const member = await getOwned(memberId, organizationId);
   if (member.role === 'owner') throw AppError.conflict('O owner não pode ser removido da equipe.');
-  // Remove só o vínculo; a conta do usuário continua existindo.
-  await db.query('DELETE FROM organization_members WHERE id = ?', [memberId]);
+  // Remove só o vínculo da organização; a conta do usuário continua existindo.
+  await db.query('DELETE FROM organization_members WHERE id = ? AND organization_id = ?', [memberId, organizationId]);
   return { id: memberId, name: member.name };
 }
 

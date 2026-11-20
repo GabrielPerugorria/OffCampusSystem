@@ -84,6 +84,8 @@ const env = {
   jwt: {
     secret: required('JWT_SECRET'),
     expiresIn: process.env.JWT_EXPIRES_IN || '15m',
+    issuer: process.env.JWT_ISSUER || 'offcampussystem',
+    audience: process.env.JWT_AUDIENCE || 'offcampus-client',
     refreshSecret: required('REFRESH_SECRET'),
     refreshExpiresDays: Number(process.env.REFRESH_EXPIRES_DAYS || 30),
   },
@@ -112,6 +114,23 @@ env.isProduction = env.nodeEnv === 'production';
 
 if (env.isProduction && env.jwt.secret.startsWith('dev_only')) {
   throw new Error('JWT_SECRET de desenvolvimento detectado em produção. Gere um novo segredo.');
+}
+
+// JWT_SECRET deve ter no mínimo 32 bytes de entropia (64 hex chars).
+// Em desenvolvimento, aceita chaves mais curtas para conveniência.
+if (env.isProduction && env.jwt.secret.length < 64) {
+  throw new Error(
+    'JWT_SECRET muito curto para produção. ' +
+    'Use pelo menos 64 caracteres hexadecimais (32 bytes). ' +
+    'Gere com: openssl rand -hex 32'
+  );
+}
+
+if (env.isProduction && !env.corsOrigins.length) {
+  throw new Error(
+    'CORS_ORIGINS não configurado para produção. ' +
+    'Defina os domínios permitidos separados por vírgula.'
+  );
 }
 
 if (env.isProduction && env.autoConfirmOrders) {

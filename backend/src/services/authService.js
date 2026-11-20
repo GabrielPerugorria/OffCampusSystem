@@ -14,9 +14,14 @@ const hashToken = t => crypto.createHash('sha256').update(t).digest('hex');
 
 function signAccessToken(user) {
   return jwt.sign(
-    { sub: user.id, role: user.role },
+    { sub: user.id, role: user.role, jti: crypto.randomUUID() },
     env.jwt.secret,
-    { expiresIn: env.jwt.expiresIn }
+    {
+      algorithm: 'HS256',
+      expiresIn: env.jwt.expiresIn,
+      issuer: env.jwt.issuer,
+      audience: env.jwt.audience,
+    }
   );
 }
 
@@ -110,16 +115,66 @@ async function register(data) {
   return issueTokens(userId);
 }
 
+const loginAttempts = new Map();
+const MAX_LOGIN_ATTEMPTS = 5;
+const LOCKOUT_DURATION_MS = 15 * 60 * 1000; // 15 minutos
+
+function checkLoginLockout(key) {
+  const record = loginAttempts.get(key);
+  if (!record) return;
+  const now = Date.now();
+  if (record.lockedUntil && now < record.lockedUntil) {
+    const remainingMin = Math.ceil((record.lockedUntil - now) / 60000);
+    throw new AppError(
+      `Muitas tentativas incorretas. Por segurança, tente novamente em ${remainingMin} minuto(s).`,
+      429,
+      'TOO_MANY_ATTEMPTS'
+    );
+  }
+  if (now > record.resetAt) {
+    loginAttempts.delete(key);
+  }
+}
+
+function recordFailedLogin(key) {
+  const now = Date.now();
+  let record = loginAttempts.get(key);
+  if (!record || now > record.resetAt) {
+    record = { count: 0, resetAt: now + LOCKOUT_DURATION_MS, lockedUntil: 0 };
+  }
+  record.count += 1;
+  if (record.count >= MAX_LOGIN_ATTEMPTS) {
+    record.lockedUntil = now + LOCKOUT_DURATION_MS;
+  }
+  loginAttempts.set(key, record);
+}
+
+function clearFailedLogin(key) {
+  loginAttempts.delete(key);
+}
+
 async function login(email, password, { ipAddress = null, userAgent = null } = {}) {
+  const attemptKey = `${ipAddress || 'local'}:${email.toLowerCase().trim()}`;
+  checkLoginLockout(attemptKey);
+
   const user = await db.queryOne(
     'SELECT id, name, email, password_hash, status FROM users WHERE email = ? LIMIT 1', [email]
   );
   // Mensagem única para e-mail inexistente e senha errada (não revela cadastro).
-  if (!user) throw AppError.unauthorized('E-mail ou senha incorretos.');
+  if (!user) {
+    recordFailedLogin(attemptKey);
+    throw AppError.unauthorized('E-mail ou senha incorretos.');
+  }
 
   const match = await bcrypt.compare(password, user.password_hash);
-  if (!match) throw AppError.unauthorized('E-mail ou senha incorretos.');
+  if (!match) {
+    recordFailedLogin(attemptKey);
+    throw AppError.unauthorized('E-mail ou senha incorretos.');
+  }
   if (user.status === 'blocked') throw AppError.forbidden('Conta bloqueada. Fale com o organizador.');
+
+  // Sucesso: limpa falhas registradas
+  clearFailedLogin(attemptKey);
 
   const session = await buildSession(user.id);
 
@@ -222,7 +277,9 @@ async function verifyAdminCode({ challengeToken, code, ipAddress = null }) {
   }
 
   const expectedHash = hashToken(code);
-  const isMatch = (expectedHash === row.code_hash);
+  const expBuf = Buffer.from(expectedHash, 'hex');
+  const actBuf = Buffer.from(row.code_hash, 'hex');
+  const isMatch = expBuf.length === actBuf.length && crypto.timingSafeEqual(expBuf, actBuf);
 
   if (!isMatch) {
     const nextAttempts = Number(row.attempts) + 1;

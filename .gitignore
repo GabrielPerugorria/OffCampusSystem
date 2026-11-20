@@ -1,9 +1,55 @@
+# Dependências
 node_modules/
+.pnp
+.pnp.js
+
+# Variáveis de ambiente e segredos locais (preservando .env.example)
 .env
-.env.local
-.env.*.local
-*.log
-.DS_Store
+.env.*
+!.env.example
+*.key
+*.p12
+*.pfx
 *.pem
-.agents/
+!backend/src/certs/ca.pem
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+logs/
+
+# Backups e dumps de banco de dados
+*.dump
+*.bak
+*.sql.bak
+*.sqlite
+*.db
+backups/
 backend/src/database/backups/
+
+# Cobertura de testes e builds locais
+coverage/
+dist/
+build/
+.temp/
+temp/
+tmp/
+
+# Configurações do sistema operacional e IDEs
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Proteção contra Agent Skills no repositório (instalação estritamente global)
+.agent/
+.agents/skills/
+skills/
+SKILL.md
+**/SKILL.md
+

@@ -71,8 +71,8 @@ async function update(id, organizationId, data, userId) {
     if (data[key] !== undefined) { sets.push(`${column} = ?`); params.push(data[key]); }
   }
   if (sets.length) {
-    params.push(id);
-    await db.query(`UPDATE products SET ${sets.join(', ')} WHERE id = ?`, params);
+    params.push(id, organizationId);
+    await db.query(`UPDATE products SET ${sets.join(', ')} WHERE id = ? AND organization_id = ?`, params);
   }
   // Edição direta do estoque é registrada como ajuste, não sobrescrita silenciosa.
   if (data.stockQuantity !== undefined && Number(data.stockQuantity) !== Number(current.stock_quantity)) {
@@ -88,7 +88,7 @@ async function update(id, organizationId, data, userId) {
 async function remove(id, organizationId) {
   const product = await getOwned(id, organizationId);
   // Arquiva em vez de apagar: as movimentações são histórico de custo.
-  await db.query(`UPDATE products SET status = 'archived' WHERE id = ?`, [id]);
+  await db.query(`UPDATE products SET status = 'archived' WHERE id = ? AND organization_id = ?`, [id, organizationId]);
   return shape(product);
 }
 

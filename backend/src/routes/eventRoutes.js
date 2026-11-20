@@ -5,6 +5,7 @@ const validate = require('../middlewares/validate');
 const { authenticate } = require('../middlewares/auth');
 const { requireMember, requireAdmin } = require('../middlewares/authorize');
 const s = require('../validators/schemas');
+const upload = require('../middlewares/upload');
 
 const router = Router();
 router.use(authenticate);
@@ -18,5 +19,8 @@ router.delete('/:id',      requireAdmin,  validate(s.idParam, 'params'),  c.remo
 
 router.get('/:id/batches',  requireMember, validate(s.idParam, 'params'), c.listBatches);
 router.post('/:id/batches', requireAdmin,  validate(s.idParam, 'params'), validate(s.batchSchema), c.createBatch);
+
+// Upload image for an event
+router.post('/:id/image', requireAdmin, upload.upload.single('image'), c.uploadImage);
 
 module.exports = router;

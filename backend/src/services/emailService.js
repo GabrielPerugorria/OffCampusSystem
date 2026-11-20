@@ -194,7 +194,7 @@ async function sendAdminLoginCodeEmail({ to, name, code, expiresMinutes = 10, ip
     const { html, text } = renderAdminLoginCodeTemplate({ name, code, expiresMinutes, ipAddress });
     return await sendMail({
       to,
-      subject: `Código de Acesso Administrativo: ${code} — EvoTech Events`,
+      subject: 'Código de Acesso Administrativo — EvoTech Events',
       html,
       text,
     });

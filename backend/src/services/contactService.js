@@ -47,13 +47,16 @@ async function update(id, organizationId, data) {
   for (const [k, col] of Object.entries(FIELDS)) {
     if (data[k] !== undefined) { sets.push(`${col} = ?`); params.push(data[k]); }
   }
-  if (sets.length) { params.push(id); await db.query(`UPDATE contacts SET ${sets.join(', ')} WHERE id = ?`, params); }
+  if (sets.length) {
+    params.push(id, organizationId);
+    await db.query(`UPDATE contacts SET ${sets.join(', ')} WHERE id = ? AND organization_id = ?`, params);
+  }
   return shape(await getOwned(id, organizationId));
 }
 
 async function remove(id, organizationId) {
   const c = await getOwned(id, organizationId);
-  await db.query('DELETE FROM contacts WHERE id = ?', [id]);
+  await db.query('DELETE FROM contacts WHERE id = ? AND organization_id = ?', [id, organizationId]);
   return shape(c);
 }
 

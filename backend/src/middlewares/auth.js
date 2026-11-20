@@ -3,6 +3,13 @@ const jwt = require('jsonwebtoken');
 const env = require('../config/env');
 const db = require('../config/db');
 const AppError = require('../utils/AppError');
+const logger = require('../utils/logger');
+
+const JWT_VERIFY_OPTIONS = {
+  algorithms: ['HS256'],
+  issuer: env.jwt.issuer,
+  audience: env.jwt.audience,
+};
 
 // Extrai e valida o Bearer token. Popula req.user com dados vindos do TOKEN
 // e da base — nunca do corpo da requisição.
@@ -14,11 +21,40 @@ async function authenticate(req, res, next) {
 
     let payload;
     try {
-      payload = jwt.verify(token, env.jwt.secret);
+      payload = jwt.verify(token, env.jwt.secret, JWT_VERIFY_OPTIONS);
     } catch (err) {
       throw AppError.unauthorized(
         err.name === 'TokenExpiredError' ? 'Sessão expirada.' : 'Token inválido.'
       );
+    }
+
+    // Verificação de revogação (jti). Comportamento fail-closed:
+    // se a consulta falhar por motivo diferente de "tabela inexistente",
+    // recusa o token em vez de aceitá-lo silenciosamente.
+    if (payload.jti) {
+      try {
+        const revoked = await db.queryOne(
+          'SELECT 1 FROM revoked_tokens WHERE jti = ? LIMIT 1',
+          [payload.jti]
+        );
+        if (revoked) throw AppError.unauthorized('Token revogado.');
+      } catch (err) {
+        // Tabela inexistente (ER_NO_SUCH_TABLE) é esperado antes da migration.
+        // Qualquer outro erro de DB é tratado como falha de segurança.
+        if (err instanceof AppError) throw err;
+        if (err.code === 'ER_NO_SUCH_TABLE') {
+          // Tabela ainda não criada — aceitar token (pré-migration).
+          // Este comportamento deve ser removido após a migration de produção.
+          logger.warn('[auth] Tabela revoked_tokens não existe. Verificação de revogação ignorada.');
+        } else {
+          logger.error('[auth] Falha ao verificar revogação do token:', err.message);
+          throw new AppError(
+            'Serviço de autenticação temporariamente indisponível.',
+            503,
+            'AUTH_SERVICE_UNAVAILABLE'
+          );
+        }
+      }
     }
 
     const user = await db.queryOne(

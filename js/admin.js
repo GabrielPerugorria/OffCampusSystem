@@ -155,6 +155,8 @@ const STATUS_EVENTO_UI = { draft: 'em_breve', upcoming: 'em_breve', active: 'ati
 
 function mapEvento(e) {
   const dataISO = e.eventDate ? String(e.eventDate).slice(0, 10) : '';
+  const imgPath = e.imagePath || e.image_url || '';
+  const imgUrl = e.imageUrl || (imgPath ? (imgPath.startsWith('http') ? imgPath : '/' + imgPath) : '');
   return {
     id: e.id,
     nome: String(e.name ?? ''),
@@ -166,6 +168,8 @@ function mapEvento(e) {
     statusApi: e.status,
     desc: String(e.description || ''),
     regras: String(e.rules || ''),
+    imagePath: imgPath,
+    imageUrl: imgUrl,
     metaPublico: num(e.goalAttendance),
     metaFaturamento: num(e.goalRevenue),
     sold: num(e.sold),
@@ -291,9 +295,49 @@ function getSession() { return EvoAPI.session(); }
 function initAdminInfo() {
   const session = getSession();
   if (!session) return;
-  const initials = session.nome.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
-  document.getElementById('admin-avatar').textContent = initials || 'A';
-  document.getElementById('admin-name').textContent = session.nome;
+  const initials = (session.nome || 'Admin').split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
+  const avatarEl = document.getElementById('admin-avatar');
+  if (avatarEl) avatarEl.textContent = initials || 'A';
+  const nameEl = document.getElementById('admin-name');
+  if (nameEl) nameEl.textContent = session.nome;
+
+  const roleEl = document.querySelector('.admin-role');
+  const roleLabels = {
+    owner: 'Proprietário',
+    admin: 'Administrador',
+    finance: 'Financeiro',
+    gate: 'Operador Portaria',
+    bar: 'Operador Bar'
+  };
+  if (roleEl && session.orgRole) {
+    roleEl.textContent = roleLabels[session.orgRole] || session.orgRole;
+  }
+
+  applyRbacNav(session.orgRole);
+}
+
+function applyRbacNav(role) {
+  if (!role || role === 'owner' || role === 'admin') return;
+
+  const roleAllowedPanels = {
+    gate: ['dashboard', 'portaria'],
+    bar: ['dashboard', 'bar'],
+    finance: ['dashboard', 'financeiro', 'pedidos', 'metas', 'unitecon', 'relatorios']
+  };
+
+  const allowed = roleAllowedPanels[role];
+  if (!allowed) return;
+
+  document.querySelectorAll('.sidebar-nav .nav-item').forEach(item => {
+    const attr = item.getAttribute('onclick') || '';
+    const match = attr.match(/goPanel\('([^']+)'\)/);
+    if (match) {
+      const panelId = match[1];
+      if (!allowed.includes(panelId)) {
+        item.style.display = 'none';
+      }
+    }
+  });
 }
 
 async function adminLogout() {
@@ -696,7 +740,17 @@ function renderEventos(search='') {
     const stBadge = pick({ativo:'badge-green',em_breve:'badge-blue',esgotado:'badge-red',encerrado:'badge-yellow'}, ev.status, 'badge-yellow');
     const stLabel = pick({ativo:'Ativo',em_breve:'Em breve',esgotado:'Esgotado',encerrado:'Encerrado'}, ev.status, ev.status);
     return `<tr>
-      <td><b>${escapeHTML(ev.nome)}</b><div style="font-size:10px;color:var(--text3)">${escapeHTML(ev.tipo)}</div></td>
+      <td>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div class="event-thumb" onclick="EventImageUI.open(${idx})" title="Clique para alterar imagem" style="cursor:pointer;width:40px;height:40px;border-radius:6px;overflow:hidden;background:var(--surface3);flex-shrink:0;border:1px solid var(--border1);display:flex;align-items:center;justify-content:center;">
+            ${ev.imageUrl ? `<img src="${sanitizeURL(ev.imageUrl)}" alt="${escapeHTML(ev.nome)}" style="width:100%;height:100%;object-fit:cover;">` : `<i data-lucide="image" style="width:18px;height:18px;color:var(--text3);opacity:0.6"></i>`}
+          </div>
+          <div>
+            <b>${escapeHTML(ev.nome)}</b>
+            <div style="font-size:10px;color:var(--text3)">${escapeHTML(ev.tipo || 'Geral')}</div>
+          </div>
+        </div>
+      </td>
       <td>${ev.data !== '' ? new Date(ev.data+'T12:00').toLocaleDateString('pt-BR') : 'A definir'}</td>
       <td>${escapeHTML(ev.local)}</td>
       <td>${ev.capacidade.toLocaleString('pt-BR')}</td>
@@ -704,6 +758,7 @@ function renderEventos(search='') {
       <td>${fmt_brl(receita)}</td>
       <td><span class="badge ${stBadge}">${escapeHTML(stLabel)}</span></td>
       <td style="white-space:nowrap">
+        <button class="btn btn-outline btn-sm" onclick="EventImageUI.open(${idx})" title="Alterar imagem do evento" style="margin-right:4px"><i data-lucide="image"></i></button>
         <button class="btn btn-outline btn-sm" onclick="verLotes(${idx})" style="margin-right:4px">Lotes</button>
         <button class="btn btn-outline btn-sm" onclick="editEvento(${idx})" style="margin-right:4px"><i data-lucide="pencil"></i></button>
         <button class="btn btn-danger btn-sm" onclick="delEvento(${idx})"><i data-lucide="trash-2"></i></button>

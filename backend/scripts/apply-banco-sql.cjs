@@ -11,8 +11,15 @@ async function applyBancoSql() {
 
   if (!user) {
     console.log('[BANCO.SQL] Usuário gabrielperugorria681@gmail.com não encontrado. Criando...');
-    const defaultPassword = process.env.INITIAL_OWNER_PASSWORD || process.argv[2] || 'OffCampus2026!';
-    const hash = await bcrypt.hash(defaultPassword, 10);
+    const ownerPassword = process.env.INITIAL_OWNER_PASSWORD || process.argv[2];
+    if (!ownerPassword || typeof ownerPassword !== 'string' || ownerPassword.trim().length < 8) {
+      console.error('\n[ERRO DE SEGURANÇA]: Nenhuma senha foi informada para o usuário proprietário.');
+      console.error('Para criar o usuário com segurança, forneça uma senha com no mínimo 8 caracteres:');
+      console.error('  1. Via variável de ambiente: INITIAL_OWNER_PASSWORD="sua_senha_segura" node apply-banco-sql.cjs');
+      console.error('  2. Ou via argumento CLI: node apply-banco-sql.cjs "sua_senha_segura"\n');
+      process.exit(1);
+    }
+    const hash = await bcrypt.hash(ownerPassword.trim(), 10);
     const result = await db.query(
       `INSERT INTO users (name, email, password_hash, role, status)
        VALUES (?, ?, ?, 'user', 'active')`,

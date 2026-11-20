@@ -82,7 +82,7 @@ Se você não solicitou este acesso, altere sua senha imediatamente.
 
   return renderBaseLayout({
     title: 'Código de Acesso Administrativo — EvoTech Events',
-    previewText: `Seu código de verificação é ${code}. Válido por ${expiresMinutes} minutos.`,
+    previewText: `Você recebeu um código de acesso administrativo. Válido por ${expiresMinutes} minutos.`,
     contentHtml,
     contentText,
   });

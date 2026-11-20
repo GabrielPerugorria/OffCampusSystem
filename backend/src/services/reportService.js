@@ -7,7 +7,12 @@ const finance = require('./financeService');
 
 function toCSV(rows, headers) {
   const escape = v => {
-    const s = v === null || v === undefined ? '' : String(v);
+    let s = v === null || v === undefined ? '' : String(v);
+    // Mitigação de CSV/Formula Injection (CWE-1236):
+    // Se o texto iniciar com caracteres de fórmula (=, +, -, @, \t, \r), adiciona aspa simples para forçar modo texto no Excel/Calc
+    if (/^[=+\-@\t\r]/.test(s)) {
+      s = `'${s}`;
+    }
     return /[";\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
   };
   const head = headers.map(h => escape(h.label)).join(';');
@@ -126,12 +131,12 @@ const REPORTS = {
 };
 
 async function exportCsv(organizationId, type) {
-  const report = REPORTS[type];
-  if (!report) {
+  if (!type || !Object.prototype.hasOwnProperty.call(REPORTS, type)) {
     throw AppError.badRequest(
       `Relatório desconhecido. Disponíveis: ${Object.keys(REPORTS).join(', ')}.`
     );
   }
+  const report = REPORTS[type];
   return report(organizationId);
 }
 

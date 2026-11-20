@@ -175,6 +175,7 @@ async function checkIn(data, user) {
 }
 
 async function list(organizationId, { eventId, limit = 200 } = {}) {
+  const safeLimit = Math.max(1, Math.min(1000, parseInt(limit, 10) || 200));
   const params = [organizationId];
   let where = 'WHERE e.organization_id = ?';
   if (eventId) { where += ' AND c.event_id = ?'; params.push(eventId); }
@@ -188,7 +189,7 @@ async function list(organizationId, { eventId, limit = 200 } = {}) {
   LEFT JOIN users u   ON u.id = c.checked_by_user_id
        ${where}
       ORDER BY c.checked_in_at DESC
-      LIMIT ${Number(limit)}`,
+      LIMIT ${safeLimit}`,
     params
   );
 

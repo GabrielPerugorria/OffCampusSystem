@@ -1,11 +1,44 @@
+# Dependências
 node_modules/
+
+# Variáveis de ambiente locais
 .env
-.env.local
-.env.*.local
+.env.*
+!.env.example
+
+# Logs
 *.log
 npm-debug.log*
-.DS_Store
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+logs/
+
+# Cobertura e temporários
 coverage/
+.temp/
+temp/
+tmp/
+.DS_Store
+
+# Certificados e chaves
+*.key
+*.p12
+*.pfx
 *.pem
 !src/certs/
 !src/certs/ca.pem
+
+# Backups
+src/database/backups/
+*.dump
+*.bak
+*.sql.bak
+
+# Prevenção de Skills no backend
+.agent/
+.agents/
+skills/
+SKILL.md
+**/SKILL.md
+

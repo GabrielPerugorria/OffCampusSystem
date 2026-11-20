@@ -1,0 +1,160 @@
+/* ============================================================
+   EvoTech Events — Design System Industrial / Swiss Modernist
+   Identidade: Professional SaaS / Refined Industrial / Editorial Minimalism
+   Paleta: Neutros, cinzas estruturados, tipografia precisa, densidade controlada.
+   ============================================================ */
+
+:root {
+  /* ===== PALETA DE CORES (SWISS INDUSTRIAL SAAS) ===== */
+  --bg-canvas: #f6f8fa;
+  --bg-surface: #ffffff;
+  --bg-surface-subtle: #f8fafc;
+  --bg-surface-muted: #f1f5f9;
+  --bg-surface-elevated: #ffffff;
+
+  /* Bordas neutras e precisas */
+  --border-subtle: #e2e8f0;
+  --border-default: #d1d5db;
+  --border-strong: #94a3b8;
+  --border-focus: #0f172a;
+
+  /* Tipografia: Escala de Grafite */
+  --text-primary: #0f172a;       /* Grafite escuro principal */
+  --text-secondary: #334155;     /* Textos informativos */
+  --text-muted: #64748b;         /* Metadados, legendas e rótulos */
+  --text-subtle: #94a3b8;        /* Placeholders e desabilitados */
+  --text-inverse: #ffffff;
+
+  /* Sidebar: Grafite Profundo / Arquitetura Técnica */
+  --sidebar-bg: #0f141c;
+  --sidebar-surface: #171d27;
+  --sidebar-surface-hover: #1f2633;
+  --sidebar-border: rgba(255, 255, 255, 0.08);
+  --sidebar-text: #e2e8f0;
+  --sidebar-text-muted: #94a3b8;
+  --sidebar-active-bg: rgba(255, 255, 255, 0.09);
+  --sidebar-active-text: #ffffff;
+  --sidebar-active-indicator: #10b981;
+
+  /* Cores de Acento Funcional (Usadas com Rigor e Moderação) */
+  --accent: #0f172a;
+  --accent-subtle: #f1f5f9;
+  --accent-teal: #0d9488;
+  --accent-emerald: #10b981;
+
+  /* Estados Funcionais */
+  --status-success: #059669;
+  --status-success-bg: #ecfdf5;
+  --status-success-border: #a7f3d0;
+  --status-success-text: #065f46;
+
+  --status-warning: #d97706;
+  --status-warning-bg: #fffbeb;
+  --status-warning-border: #fde68a;
+  --status-warning-text: #92400e;
+
+  --status-danger: #dc2626;
+  --status-danger-bg: #fef2f2;
+  --status-danger-border: #fecaca;
+  --status-danger-text: #991b1b;
+
+  --status-info: #2563eb;
+  --status-info-bg: #eff6ff;
+  --status-info-border: #bfdbfe;
+  --status-info-text: #1e40af;
+
+  /* ===== TIPOGRAFIA ===== */
+  --font-family-base: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-family-mono: 'JetBrains Mono', SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
+  --font-family-heading: 'Space Grotesk', var(--font-family-base);
+
+  --font-size-2xs: 0.6875rem; /* 11px */
+  --font-size-xs: 0.75rem;    /* 12px */
+  --font-size-sm: 0.8125rem;  /* 13px */
+  --font-size-base: 0.875rem; /* 14px */
+  --font-size-md: 0.9375rem;  /* 15px */
+  --font-size-lg: 1.125rem;   /* 18px */
+  --font-size-xl: 1.375rem;   /* 22px */
+  --font-size-2xl: 1.75rem;   /* 28px */
+
+  /* Espaçamentos Métricos */
+  --spacing-2xs: 2px;
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 12px;
+  --spacing-lg: 16px;
+  --spacing-xl: 24px;
+  --spacing-2xl: 32px;
+
+  /* Raios de Borda (Precisão Industrial — sem arredondamento excessivo) */
+  --radius-xs: 3px;
+  --radius-sm: 5px;
+  --radius-md: 7px;
+  --radius-lg: 10px;
+  --radius-full: 9999px;
+
+  /* Sombras Arquitetônicas / Precisão */
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.06), 0 1px 2px -1px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+
+  /* Transições Precisas */
+  --ease-industrial: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-instant: 100ms;
+  --dur-fast: 160ms;
+  --dur-normal: 240ms;
+}
+
+/* ===== RESET & PADRÕES TÉCNICOS ===== */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-base);
+  line-height: 1.5;
+  color: var(--text-primary);
+  background-color: var(--bg-canvas);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Tipografia e Rótulos Editoriais */
+.editorial-kicker {
+  font-size: var(--font-size-2xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+.tabular-numbers {
+  font-family: var(--font-family-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+/* Acessibilidade */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

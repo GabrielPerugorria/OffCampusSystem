@@ -22,12 +22,17 @@ const notificationOutboxService = require('../services/notificationOutboxService
 
 /**
  * Valida a assinatura de webhook enviada pelo Resend (padrão Svix).
- * Retorna true se a assinatura for válida ou se o segredo não estiver configurado (modo dev/testes).
+ * Em produção, a presença e validade do segredo são estritamente obrigatórias.
  */
 function verifyWebhookSignature(req) {
   const secret = env.email.webhookSecret;
   if (!secret) {
-    // Segredo não configurado: permite passagem em dev/testes, emitindo alerta
+    if (env.isProduction) {
+      logger.error('[Webhook Resend] RESEND_WEBHOOK_SECRET não configurado em ambiente de produção. Requisição bloqueada por segurança.');
+      return false;
+    }
+    // Em desenvolvimento/testes locais, permite passagem emitindo aviso
+    logger.warn('[Webhook Resend] RESEND_WEBHOOK_SECRET ausente em dev/testes. Ignorando validação estrita.');
     return true;
   }
 
@@ -65,16 +70,13 @@ function verifyWebhookSignature(req) {
     const toSign = `${svixId}.${svixTimestamp}.${bodyString}`;
     const computedHash = crypto.createHmac('sha256', secretBytes).update(toSign).digest('base64');
     const expectedSig = `v1,${computedHash}`;
+    const expBuf = Buffer.from(expectedSig);
 
     // svix-signature pode conter múltiplas assinaturas separadas por espaço
     const signatures = svixSignature.split(' ');
     for (const item of signatures) {
-      if (item === expectedSig) {
-        return true;
-      }
       if (item.startsWith('v1,')) {
         const itemBuf = Buffer.from(item);
-        const expBuf = Buffer.from(expectedSig);
         if (itemBuf.length === expBuf.length && crypto.timingSafeEqual(itemBuf, expBuf)) {
           return true;
         }

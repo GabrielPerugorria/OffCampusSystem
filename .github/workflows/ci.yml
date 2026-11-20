@@ -1,0 +1,174 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # ───────────────────────────────────────────────
+  # Testes unitários e de segurança (sem MySQL)
+  # ───────────────────────────────────────────────
+  unit-and-security:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend
+    env:
+      NODE_ENV: test
+      # Variáveis mínimas para que env.js carregue sem erro.
+      # Valores fictícios — nenhum banco real é acessado.
+      DB_HOST: 127.0.0.1
+      DB_USER: ci_user
+      DB_PASSWORD: ci_pass
+      DB_NAME: ci_db
+      JWT_SECRET: ci_test_secret_64chars_0000000000000000000000000000000000
+      REFRESH_SECRET: ci_refresh_secret_placeholder
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run XSS verification tests
+        run: node ../tests/xss-verification.js
+
+      - name: Run backend integrity tests
+        run: node ../tests/backend-integrity.test.js
+
+      - name: Run concurrency and security tests
+        run: node ../tests/concurrency-and-security.test.js
+
+      - name: Run auth and notifications tests
+        run: node ../tests/admin-auth-and-notifications.test.js
+
+      - name: Run security audit tests
+        run: node ../tests/security-audit.test.js
+
+      - name: Run event image upload tests
+        run: node ../tests/event-image.test.js
+
+      - name: Run JWT security tests
+        run: node ../tests/jwt-security.test.js
+
+  # ───────────────────────────────────────────────
+  # Testes de frontend (sem backend, sem MySQL)
+  # ───────────────────────────────────────────────
+  frontend-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run visual redesign tests
+        run: node tests/visual-redesign-lucide.test.js
+
+      - name: Run admin responsive tests
+        run: node tests/admin-responsive.test.js
+
+      - name: Run catalog page tests
+        run: node tests/catalog-page.test.js
+
+      - name: Run intro splash tests
+        run: node tests/intro-splash.test.js
+
+      - name: Run mobile fixes tests
+        run: node tests/mobile-fixes.test.js
+
+      - name: Run totem carousel tests
+        run: node tests/totem-carousel.test.js
+
+      - name: Run responsive check tests
+        run: node tests/responsive-check.js
+
+  # ───────────────────────────────────────────────
+  # E2E com Playwright Python (frontend servido localmente)
+  # ───────────────────────────────────────────────
+  e2e-python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Playwright Python
+        run: |
+          pip install playwright
+          python -m playwright install chromium
+
+      - name: Start frontend static server
+        run: |
+          python -m http.server 8080 &
+          echo $! > /tmp/frontend.pid
+          # Aguardar servidor ficar disponível
+          for i in $(seq 1 10); do
+            curl -s http://localhost:8080/index.html > /dev/null && break
+            sleep 1
+          done
+
+      - name: Run E2E session tests
+        run: python tests/e2e_sessao.py http://localhost:8080
+
+      - name: Stop frontend server
+        if: always()
+        run: |
+          if [ -f /tmp/frontend.pid ]; then
+            kill $(cat /tmp/frontend.pid) 2>/dev/null || true
+          fi
+
+  # ───────────────────────────────────────────────
+  # Testes de integração com MySQL (requer DB real)
+  # Descomente quando o serviço MySQL estiver configurado.
+  # ───────────────────────────────────────────────
+  # integration-mysql:
+  #   runs-on: ubuntu-latest
+  #   services:
+  #     mysql:
+  #       image: mysql:8.0
+  #       env:
+  #         MYSQL_ROOT_PASSWORD: rootpass
+  #         MYSQL_DATABASE: evotech_events
+  #         MYSQL_USER: evotech
+  #         MYSQL_PASSWORD: evotech_ci
+  #       ports:
+  #         - 3306:3306
+  #       options: >-
+  #         --health-cmd="mysqladmin ping -h 127.0.0.1"
+  #         --health-interval=10s
+  #         --health-timeout=5s
+  #         --health-retries=5
+  #   defaults:
+  #     run:
+  #       working-directory: ./backend
+  #   env:
+  #     DB_HOST: 127.0.0.1
+  #     DB_PORT: 3306
+  #     DB_USER: evotech
+  #     DB_PASSWORD: evotech_ci
+  #     DB_NAME: evotech_events
+  #     JWT_SECRET: ci_integration_test_secret_64chars_000000000000000000000000
+  #     REFRESH_SECRET: ci_integration_refresh_secret
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: actions/setup-node@v4
+  #       with: { node-version: '20' }
+  #     - run: npm ci
+  #     - name: Setup database schema
+  #       run: node src/database/setup.js
+  #     - name: Run organization lifecycle test
+  #       run: node ../tests/empty-org-lifecycle.test.js
