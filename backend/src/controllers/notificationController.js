@@ -160,10 +160,12 @@ async function triggerSummary(req, res) {
 
 async function getInAppNotifications(req, res) {
   const organizationId = req.user.organizationId;
+  const includeSystem = req.user.role === 'platform_admin';
   const { category, severity, unreadOnly, limit, offset } = req.query;
 
   const result = await inAppNotificationService.listNotifications({
     organizationId,
+    includeSystem,
     category: category || null,
     severity: severity || null,
     unreadOnly: unreadOnly === 'true' || unreadOnly === '1',
@@ -176,20 +178,23 @@ async function getInAppNotifications(req, res) {
 
 async function getInAppUnreadCount(req, res) {
   const organizationId = req.user.organizationId;
-  const count = await inAppNotificationService.getUnreadCount(organizationId);
+  const includeSystem = req.user.role === 'platform_admin';
+  const count = await inAppNotificationService.getUnreadCount(organizationId, includeSystem);
   return ok(res, { unreadCount: count });
 }
 
 async function markInAppAsRead(req, res) {
   const organizationId = req.user.organizationId;
+  const includeSystem = req.user.role === 'platform_admin';
   const id = Number(req.params.id);
-  const success = await inAppNotificationService.markAsRead(id, organizationId);
+  const success = await inAppNotificationService.markAsRead(id, organizationId, includeSystem);
   return ok(res, { success, id });
 }
 
 async function markAllInAppAsRead(req, res) {
   const organizationId = req.user.organizationId;
-  const affected = await inAppNotificationService.markAllAsRead(organizationId);
+  const includeSystem = req.user.role === 'platform_admin';
+  const affected = await inAppNotificationService.markAllAsRead(organizationId, includeSystem);
   return ok(res, { success: true, affectedRows: affected });
 }
 

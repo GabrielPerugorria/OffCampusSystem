@@ -52,6 +52,7 @@ async function createNotification({
 
 async function listNotifications({
   organizationId = null,
+  includeSystem = false,
   category = null,
   severity = null,
   unreadOnly = false,
@@ -62,7 +63,11 @@ async function listNotifications({
   const params = [];
 
   if (organizationId) {
-    where.push('(organization_id = ? OR organization_id IS NULL)');
+    if (includeSystem) {
+      where.push('(organization_id = ? OR organization_id IS NULL)');
+    } else {
+      where.push('organization_id = ?');
+    }
     params.push(organizationId);
   }
 
@@ -111,33 +116,39 @@ async function listNotifications({
   };
 }
 
-async function getUnreadCount(organizationId = null) {
+async function getUnreadCount(organizationId = null, includeSystem = false) {
   let sql = 'SELECT COUNT(*) AS unread FROM in_app_notifications WHERE read_at IS NULL';
   const params = [];
   if (organizationId) {
-    sql += ' AND (organization_id = ? OR organization_id IS NULL)';
+    sql += includeSystem
+      ? ' AND (organization_id = ? OR organization_id IS NULL)'
+      : ' AND organization_id = ?';
     params.push(organizationId);
   }
   const row = await db.queryOne(sql, params);
   return Number(row ? row.unread : 0);
 }
 
-async function markAsRead(id, organizationId = null) {
+async function markAsRead(id, organizationId = null, includeSystem = false) {
   let sql = 'UPDATE in_app_notifications SET read_at = NOW() WHERE id = ? AND read_at IS NULL';
   const params = [id];
   if (organizationId) {
-    sql += ' AND (organization_id = ? OR organization_id IS NULL)';
+    sql += includeSystem
+      ? ' AND (organization_id = ? OR organization_id IS NULL)'
+      : ' AND organization_id = ?';
     params.push(organizationId);
   }
   const result = await db.query(sql, params);
   return (result.affectedRows || (result[0] && result[0].affectedRows)) > 0;
 }
 
-async function markAllAsRead(organizationId = null) {
+async function markAllAsRead(organizationId = null, includeSystem = false) {
   let sql = 'UPDATE in_app_notifications SET read_at = NOW() WHERE read_at IS NULL';
   const params = [];
   if (organizationId) {
-    sql += ' AND (organization_id = ? OR organization_id IS NULL)';
+    sql += includeSystem
+      ? ' AND (organization_id = ? OR organization_id IS NULL)'
+      : ' AND organization_id = ?';
     params.push(organizationId);
   }
   const result = await db.query(sql, params);

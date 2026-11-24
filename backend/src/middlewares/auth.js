@@ -57,12 +57,31 @@ async function authenticate(req, res, next) {
       }
     }
 
-    const user = await db.queryOne(
-      'SELECT id, name, email, role, status FROM users WHERE id = ? LIMIT 1',
-      [payload.sub]
-    );
+    let user;
+    try {
+      user = await db.queryOne(
+        'SELECT id, name, email, role, status, email_verified_at, tokens_valid_after FROM users WHERE id = ? LIMIT 1',
+        [payload.sub]
+      );
+    } catch (err) {
+      if (err.code === 'ER_BAD_FIELD_ERROR') {
+        user = await db.queryOne(
+          'SELECT id, name, email, role, status FROM users WHERE id = ? LIMIT 1',
+          [payload.sub]
+        );
+      } else {
+        throw err;
+      }
+    }
     if (!user) throw AppError.unauthorized('Usuário não encontrado.');
     if (user.status === 'blocked') throw AppError.forbidden('Conta bloqueada.');
+
+    if (user.tokens_valid_after && payload.iat) {
+      const validAfterSec = Math.floor(new Date(user.tokens_valid_after).getTime() / 1000);
+      if (payload.iat < validAfterSec) {
+        throw AppError.unauthorized('Sessão revogada. Faça login novamente.');
+      }
+    }
 
     // Vínculo com a organização: SEMPRE relido do banco.
     const membership = await db.queryOne(

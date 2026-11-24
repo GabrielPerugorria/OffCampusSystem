@@ -43,13 +43,38 @@ const verifyAdminCodeSchema = z.object({
 const resendAdminCodeSchema = z.object({
   challengeToken: z.string().trim().min(32).max(128),
 });
+const verifyCodeSchema = verifyAdminCodeSchema;
+const resendCodeSchema = resendAdminCodeSchema;
+const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1, 'Informe a senha atual.').max(128),
+  newPassword: password,
+  confirmNewPassword: z.string().min(1, 'Confirme a nova senha.').max(128),
+}).strict().refine(d => d.newPassword === d.confirmNewPassword,
+  { message: 'A confirmação da nova senha não confere.', path: ['confirmNewPassword'] });
+const requestEmailChangeSchema = z.object({
+  newEmail: email,
+  currentPassword: z.string().min(1, 'Informe sua senha atual para confirmar a alteração.').max(128),
+}).strict();
+const revokeSessionsSchema = z.object({
+  currentPassword: z.string().min(1, 'Informe sua senha atual para encerrar todas as sessões.').max(128),
+}).strict();
 const updateMeSchema = z.object({
   name: str(3, 120).optional(),
   phone: phone.optional(),
+  cpf: cpf.optional(),
+  birthDate: z.string().trim().regex(/^\d{4}-\d{2}-\d{2}$/, 'Data inválida.').optional(),
+  avatarUrl: z.string().trim().max(255).refine(
+    v => !v || /^https?:\/\//i.test(v) || v.startsWith('/uploads/'),
+    'URL de foto de perfil inválida.'
+  ).optional(),
   currentPassword: z.string().max(128).optional(),
   newPassword: password.optional(),
-}).strict().refine(d => !d.newPassword || d.currentPassword,
-  { message: 'Informe a senha atual para trocar a senha.', path: ['currentPassword'] });
+  confirmNewPassword: z.string().max(128).optional(),
+}).strict()
+  .refine(d => !d.newPassword || d.currentPassword,
+    { message: 'Informe a senha atual para trocar a senha.', path: ['currentPassword'] })
+  .refine(d => !d.newPassword || d.confirmNewPassword === undefined || d.newPassword === d.confirmNewPassword,
+    { message: 'A confirmação da nova senha não confere.', path: ['confirmNewPassword'] });
 
 /* ---------- EVENTOS ---------- */
 const EVENT_STATUS = ['draft', 'upcoming', 'active', 'sold_out', 'closed'];
@@ -190,7 +215,8 @@ const unitEconQuery = z.object({
 
 module.exports = {
   registerSchema, loginSchema, refreshSchema, forgotSchema, resetPasswordSchema, updateMeSchema,
-  verifyAdminCodeSchema, resendAdminCodeSchema,
+  verifyAdminCodeSchema, resendAdminCodeSchema, verifyCodeSchema, resendCodeSchema,
+  changePasswordSchema, requestEmailChangeSchema, revokeSessionsSchema,
   eventSchema, eventUpdateSchema, goalsSchema,
   batchSchema, batchUpdateSchema, batchStockSchema,
   orderSchema, checkinSchema,
