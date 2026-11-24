@@ -458,7 +458,7 @@ function handleSql(sql, params) {
     return t ? [t] : [];
   }
 
-  if (s.startsWith('UPDATE users SET password_hash = ? WHERE id = ?')) {
+  if (s.startsWith('UPDATE users SET password_hash =')) {
     const u = tables.users.find(usr => usr.id === Number(params[1]));
     if (u) u.password_hash = params[0];
     return { affectedRows: 1 };

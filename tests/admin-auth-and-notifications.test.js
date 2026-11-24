@@ -39,6 +39,7 @@ const tables = {
   organization_members: [],
   refresh_tokens: [],
   password_reset_tokens: [],
+  email_verification_codes: [],
   admin_login_codes: [],
   in_app_notifications: [],
   notification_outbox: [],
@@ -87,6 +88,7 @@ async function handleSql(sql, params) {
       birth_date: params[5] || null,
       role: 'participante',
       status: 'active',
+      email_verified_at: null,
       created_at: new Date(),
     };
     tables.users.push(item);
@@ -108,10 +110,56 @@ async function handleSql(sql, params) {
   }
 
   // UPDATE users
-  if (s.startsWith('UPDATE users SET password_hash = ? WHERE id = ?')) {
+  if (s.startsWith('UPDATE users SET password_hash =')) {
     const u = tables.users.find(item => item.id === Number(params[1]));
     if (u) u.password_hash = params[0];
     return { affectedRows: u ? 1 : 0 };
+  }
+  if (s.startsWith('UPDATE users SET email_verified_at = NOW() WHERE id = ?')) {
+    const u = tables.users.find(item => item.id === Number(params[0]));
+    if (u) u.email_verified_at = new Date();
+    return { affectedRows: u ? 1 : 0 };
+  }
+
+  // email_verification_codes
+  if (s.startsWith('UPDATE email_verification_codes SET used_at = NOW() WHERE user_id = ?')) {
+    tables.email_verification_codes.forEach(c => {
+      if (c.user_id === Number(params[0]) && c.purpose === params[1] && !c.used_at) c.used_at = new Date();
+    });
+    return { affectedRows: 1 };
+  }
+  if (s.startsWith('INSERT INTO email_verification_codes')) {
+    const item = {
+      id: ++autoInc,
+      user_id: params[0],
+      purpose: params[1],
+      target_email: params[2],
+      challenge_token: params[3],
+      code_hash: params[4],
+      attempts: 0,
+      max_attempts: 5,
+      expires_at: new Date(Date.now() + 15 * 60000),
+      resend_available_at: new Date(Date.now() + 60000),
+      used_at: null,
+      ip_address: params[5] || null,
+      user_agent: params[6] || null,
+      created_at: new Date(),
+    };
+    tables.email_verification_codes.push(item);
+    return { insertId: item.id };
+  }
+  if (s.includes('FROM email_verification_codes WHERE challenge_token = ?')) {
+    return tables.email_verification_codes.filter(c => c.challenge_token === params[0] && c.purpose === 'register');
+  }
+  if (s.startsWith('UPDATE email_verification_codes SET used_at = NOW() WHERE id = ?')) {
+    const c = tables.email_verification_codes.find(item => item.id === Number(params[0]));
+    if (c) c.used_at = new Date();
+    return { affectedRows: c ? 1 : 0 };
+  }
+  if (s.startsWith('UPDATE email_verification_codes SET attempts = ? WHERE id = ?')) {
+    const c = tables.email_verification_codes.find(item => item.id === Number(params[1]));
+    if (c) c.attempts = Number(params[0]);
+    return { affectedRows: c ? 1 : 0 };
   }
 
   // SELECT organization_members
@@ -383,26 +431,36 @@ async function runTests() {
   tables.organizations.push({ id: 1, name: 'EvoTech Produções', slug: 'evotech' });
 
   // ---------------------------------------------------------------------------
-  // 1. CADASTRO DE PARTICIPANTE
+  // 1. CADASTRO DE PARTICIPANTE COM VERIFICAÇÃO DE E-MAIL
   // ---------------------------------------------------------------------------
-  console.log('--- TESTE 1: Cadastro válido de novo participante ---');
-  const userReg = await authService.register({
+  console.log('--- TESTE 1: Cadastro válido com código de verificação por e-mail ---');
+  const regChallenge = await authService.register({
     name: 'Mariana Silva',
     email: 'mariana.silva@exemplo.com',
     password: 'SenhaForte123!',
     cpf: '12345678901',
     phone: '51999998888',
   });
-  assert.ok(userReg.accessToken, 'Deve emitir accessToken no cadastro');
-  assert.ok(userReg.refreshToken, 'Deve emitir refreshToken no cadastro');
+  assert.strictEqual(regChallenge.requiresEmailVerification, true, 'Cadastro deve exigir confirmação de e-mail');
+  assert.ok(regChallenge.challengeToken, 'Deve retornar challengeToken');
+  assert.strictEqual(regChallenge.accessToken, undefined, 'Não deve emitir tokens antes da confirmação do e-mail');
+
+  const verifyCodeMatch = lastSentEmail.text.match(/\b(\d{6})\b/);
+  assert.ok(verifyCodeMatch, 'E-mail deve conter código numérico de 6 dígitos');
+  const userReg = await authService.verifyEmail({
+    challengeToken: regChallenge.challengeToken,
+    code: verifyCodeMatch[1],
+  });
+  assert.ok(userReg.accessToken, 'Deve emitir accessToken após confirmar e-mail');
+  assert.ok(userReg.refreshToken, 'Deve emitir refreshToken após confirmar e-mail');
   assert.strictEqual(userReg.user.nome, 'Mariana Silva');
   assert.strictEqual(userReg.user.role, 'participante');
 
   // Verifica persistência na outbox do e-mail de boas-vindas
-  const welcomeOutbox = tables.notification_outbox.find(o => o.recipient_email === 'mariana.silva@exemplo.com');
+  const welcomeOutbox = tables.notification_outbox.find(o => o.recipient_email === 'mariana.silva@exemplo.com' && o.subject.includes('Bem-vindo'));
   assert.ok(welcomeOutbox, 'E-mail de boas-vindas deve ser registrado na outbox');
   assert.strictEqual(welcomeOutbox.status, 'resend_accepted');
-  console.log('✓ Cadastro concluído com emissão de tokens e boas-vindas na outbox.');
+  console.log('✓ Cadastro com verificação de e-mail e emissão de tokens validados.');
 
   console.log('\n--- TESTE 2: Prevenção de e-mails duplicados no cadastro ---');
   let duplicateThrew = false;
@@ -420,14 +478,24 @@ async function runTests() {
   console.log('✓ Bloqueio de e-mail duplicado validado com sucesso.');
 
   // ---------------------------------------------------------------------------
-  // 2. LOGIN DE PARTICIPANTE COMUM (SEM 2FA)
+  // 2. LOGIN DE PARTICIPANTE COM CÓDIGO DE SEGURANÇA POR E-MAIL
   // ---------------------------------------------------------------------------
-  console.log('\n--- TESTE 3: Login de participante comum (sem desafio 2FA) ---');
-  const partLogin = await authService.login('mariana.silva@exemplo.com', 'SenhaForte123!');
-  assert.strictEqual(partLogin.requires2FA, undefined, 'Participante comum NÃO deve exigir 2FA');
-  assert.ok(partLogin.accessToken, 'Participante comum recebe tokens imediatamente');
+  console.log('\n--- TESTE 3: Login de participante com código de verificação por e-mail ---');
+  lastSentEmail = null;
+  const partChallenge = await authService.login('mariana.silva@exemplo.com', 'SenhaForte123!');
+  assert.strictEqual(partChallenge.requires2FA, true, 'Login de participante deve exigir código de segurança');
+  assert.ok(partChallenge.challengeToken);
+  assert.strictEqual(partChallenge.accessToken, undefined, 'Não deve emitir tokens antes de confirmar o código');
+
+  const partCodeMatch = lastSentEmail.text.match(/\b(\d{6})\b/);
+  assert.ok(partCodeMatch, 'E-mail de login deve conter código de 6 dígitos');
+  const partLogin = await authService.verifyLoginCode({
+    challengeToken: partChallenge.challengeToken,
+    code: partCodeMatch[1],
+  });
+  assert.ok(partLogin.accessToken, 'Participante recebe tokens após validar código');
   assert.strictEqual(partLogin.user.role, 'participante');
-  console.log('✓ Participante comum autenticado diretamente sem desafio 2FA.');
+  console.log('✓ Participante autenticado após validação de código por e-mail.');
 
   console.log('\n--- TESTE 4: Tentativa com senha incorreta ---');
   let wrongPassThrew = false;
@@ -476,9 +544,16 @@ async function runTests() {
   }
   assert.ok(reuseThrew, 'Token já utilizado não pode ser reutilizado');
 
-  // Valida login com nova senha
-  const newLogin = await authService.login('mariana.silva@exemplo.com', 'MinhaNovaSenha2026!');
-  assert.ok(newLogin.accessToken, 'Deve autenticar com a nova senha');
+  // Valida login com nova senha (inicia desafio 2FA por e-mail)
+  lastSentEmail = null;
+  const newLoginChallenge = await authService.login('mariana.silva@exemplo.com', 'MinhaNovaSenha2026!');
+  assert.strictEqual(newLoginChallenge.requires2FA, true);
+  const newLoginCode = lastSentEmail.text.match(/\b(\d{6})\b/)[1];
+  const newLogin = await authService.verifyLoginCode({
+    challengeToken: newLoginChallenge.challengeToken,
+    code: newLoginCode,
+  });
+  assert.ok(newLogin.accessToken, 'Deve autenticar com a nova senha após código');
   console.log('✓ Senha redefinida, token de uso único invalidado e login validado.');
 
   // ---------------------------------------------------------------------------
