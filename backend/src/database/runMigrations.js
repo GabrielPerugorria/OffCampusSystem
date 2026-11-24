@@ -469,6 +469,75 @@ const MIGRATIONS = [
       }
     },
   },
+  {
+    version: '20261124_010',
+    name: '010_security_email_verification_and_profile',
+    up: async (conn) => {
+      // 1. Verifica colunas em users
+      const [cols] = await conn.execute(
+        `SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+          WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users'
+            AND COLUMN_NAME IN ('email_verified_at', 'avatar_url', 'tokens_valid_after')`
+      );
+      const existing = cols.map((c) => c.COLUMN_NAME);
+
+      const addedEmailVerified = !existing.includes('email_verified_at');
+      if (addedEmailVerified) {
+        await conn.execute('ALTER TABLE users ADD COLUMN email_verified_at DATETIME NULL AFTER status');
+      }
+      if (!existing.includes('avatar_url')) {
+        await conn.execute('ALTER TABLE users ADD COLUMN avatar_url VARCHAR(255) NULL AFTER birth_date');
+      }
+      if (!existing.includes('tokens_valid_after')) {
+        await conn.execute('ALTER TABLE users ADD COLUMN tokens_valid_after DATETIME NULL AFTER email_verified_at');
+      }
+
+      // 2. Backfill compatível apenas se a coluna acabou de ser criada
+      if (addedEmailVerified) {
+        await conn.execute('UPDATE users SET email_verified_at = created_at WHERE email_verified_at IS NULL');
+      }
+
+      // 3. Tabela email_verification_codes
+      await conn.execute(`
+        CREATE TABLE IF NOT EXISTS email_verification_codes (
+          id                  BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+          user_id             BIGINT UNSIGNED NOT NULL,
+          purpose             ENUM('register', 'email_change') NOT NULL DEFAULT 'register',
+          target_email        VARCHAR(160) NOT NULL,
+          challenge_token     VARCHAR(64) NOT NULL,
+          code_hash           CHAR(64) NOT NULL,
+          attempts            TINYINT UNSIGNED NOT NULL DEFAULT 0,
+          max_attempts        TINYINT UNSIGNED NOT NULL DEFAULT 5,
+          expires_at          DATETIME NOT NULL,
+          resend_available_at DATETIME NOT NULL,
+          used_at             DATETIME NULL,
+          ip_address          VARCHAR(45) NULL,
+          user_agent          VARCHAR(255) NULL,
+          created_at          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          UNIQUE KEY uq_evc_challenge (challenge_token),
+          INDEX idx_evc_user_purpose (user_id, purpose, expires_at),
+          CONSTRAINT fk_evc_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+      `);
+    },
+    verify: async (conn) => {
+      const [cols] = await conn.execute(
+        `SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+          WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users'
+            AND COLUMN_NAME IN ('email_verified_at', 'avatar_url', 'tokens_valid_after')`
+      );
+      if (cols.length < 3) {
+        throw new Error('Falha na validação pós-migração: colunas de segurança/perfil ausentes na tabela users.');
+      }
+      const [tables] = await conn.execute(
+        `SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES
+          WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'email_verification_codes'`
+      );
+      if (tables.length === 0) {
+        throw new Error('Falha na validação pós-migração: tabela email_verification_codes não foi criada.');
+      }
+    },
+  },
 ];
 
 let _migrated = false;
