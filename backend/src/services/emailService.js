@@ -7,6 +7,10 @@ const renderPasswordResetTemplate = require('./emailTemplates/passwordResetTempl
 const renderOrderConfirmationTemplate = require('./emailTemplates/orderConfirmationTemplate');
 const renderPasswordChangedTemplate = require('./emailTemplates/passwordChangedTemplate');
 const renderAdminLoginCodeTemplate = require('./emailTemplates/adminLoginCodeTemplate');
+const renderEmailVerificationTemplate = require('./emailTemplates/emailVerificationTemplate');
+const renderLoginCodeTemplate = require('./emailTemplates/loginCodeTemplate');
+const renderEmailChangeCodeTemplate = require('./emailTemplates/emailChangeCodeTemplate');
+const renderSecurityAlertTemplate = require('./emailTemplates/securityAlertTemplate');
 
 // Instancia Resend se a chave estiver presente
 let resendClient = null;
@@ -205,6 +209,101 @@ async function sendAdminLoginCodeEmail({ to, name, code, expiresMinutes = 10, ip
 }
 
 /**
+ * Dispara código de verificação de e-mail no cadastro
+ */
+async function sendEmailVerificationCode({ to, name, code, expiresMinutes = 15 }) {
+  try {
+    const { html, text } = renderEmailVerificationTemplate({ name, code, expiresMinutes });
+    return await sendMail({
+      to,
+      subject: `Código de Verificação: ${code} — EvoTech Events`,
+      html,
+      text,
+    });
+  } catch (err) {
+    logger.error('Erro ao gerar template de verificação de e-mail:', err.message);
+    return { success: false, error: err.message };
+  }
+}
+
+/**
+ * Dispara código de verificação de login para participante
+ */
+async function sendLoginCodeEmail({ to, name, code, expiresMinutes = 10, ipAddress = null, userAgent = null }) {
+  try {
+    const { html, text } = renderLoginCodeTemplate({ name, code, expiresMinutes, ipAddress, userAgent });
+    return await sendMail({
+      to,
+      subject: `Código de Segurança para Login: ${code} — EvoTech Events`,
+      html,
+      text,
+    });
+  } catch (err) {
+    logger.error('Erro ao gerar template de código de login:', err.message);
+    return { success: false, error: err.message };
+  }
+}
+
+/**
+ * Dispara código de confirmação para alteração de e-mail
+ */
+async function sendEmailChangeCodeEmail({ to, name, newEmail, code, expiresMinutes = 15 }) {
+  try {
+    const { html, text } = renderEmailChangeCodeTemplate({ name, newEmail, code, expiresMinutes });
+    return await sendMail({
+      to,
+      subject: `Confirme seu novo e-mail: ${code} — EvoTech Events`,
+      html,
+      text,
+    });
+  } catch (err) {
+    logger.error('Erro ao gerar template de alteração de e-mail:', err.message);
+    return { success: false, error: err.message };
+  }
+}
+
+/**
+ * Dispara notificação de segurança da conta (sem códigos ou tokens)
+ */
+async function sendSecurityAlertEmail({ to, name, subject, badge, severity, heading, message, details, recommendation }) {
+  try {
+    const { html, text } = renderSecurityAlertTemplate({
+      name,
+      badge,
+      severity,
+      heading,
+      message,
+      details,
+      recommendation,
+    });
+    return await sendMail({
+      to,
+      subject: subject || `${heading} — EvoTech Events`,
+      html,
+      text,
+    });
+  } catch (err) {
+    logger.error('Erro ao gerar template de alerta de segurança:', err.message);
+    return { success: false, error: err.message };
+  }
+}
+
+/**
+ * Retorna status resumido da configuração do Resend (sem expor segredos)
+ */
+function getConfigStatus() {
+  const from = env.email.from || '';
+  const isSandboxFrom = from.includes('onboarding@resend.dev');
+  return {
+    configured: Boolean(resendClient),
+    hasApiKey: Boolean(env.email.resendApiKey),
+    hasWebhookSecret: Boolean(env.email.webhookSecret),
+    from,
+    isSandboxFrom,
+  };
+}
+
+/**
  * Permite recarregar ou injetar cliente (útil para testes unitários ou alteração de chave)
  */
 function _setResendClient(client) {
@@ -218,6 +317,11 @@ module.exports = {
   sendOrderConfirmationEmail,
   sendPasswordChangedNotification,
   sendAdminLoginCodeEmail,
+  sendEmailVerificationCode,
+  sendLoginCodeEmail,
+  sendEmailChangeCodeEmail,
+  sendSecurityAlertEmail,
+  getConfigStatus,
   _setResendClient,
   maskEmail,
 };

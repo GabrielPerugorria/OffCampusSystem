@@ -92,8 +92,8 @@ const env = {
 
   bcryptRounds: Number(process.env.BCRYPT_ROUNDS || 12),
 
-  corsOrigins: (process.env.CORS_ORIGINS || '')
-    .split(',').map(s => s.trim()).filter(Boolean),
+  corsOrigins: (process.env.CORS_ORIGINS || process.env.ORIGENS_CORS || '')
+    .split(',').map(s => s.trim().replace(/\/+$/, '')).filter(Boolean),
 
   autoConfirmOrders: String(process.env.AUTO_CONFIRM_ORDERS || 'false') === 'true',
 
@@ -105,10 +105,20 @@ const env = {
   email: {
     resendApiKey: process.env.RESEND_API_KEY || '',
     webhookSecret: process.env.RESEND_WEBHOOK_SECRET || '',
-    from: process.env.EMAIL_FROM || 'EvoTech Events <onboarding@resend.dev>',
+    from: process.env.EMAIL_FROM || process.env['E-MAIL_DE'] || process.env.EMAIL_DE || 'EvoTech Events <onboarding@resend.dev>',
   },
-  frontendUrl: (process.env.FRONTEND_URL || 'https://gabrielperugorria.github.io/OffCampusSystem').replace(/\/+$/, ''),
+  frontendUrl: (process.env.FRONTEND_URL || process.env.URL_FRONTEND || 'https://gabrielperugorria.github.io/OffCampusSystem').replace(/\/+$/, ''),
 };
+
+if (!process.env.CORS_ORIGINS && process.env.ORIGENS_CORS) {
+  console.warn('[ENV] Aviso: usando alias legado ORIGENS_CORS. Migre para CORS_ORIGINS.');
+}
+if (!process.env.EMAIL_FROM && (process.env['E-MAIL_DE'] || process.env.EMAIL_DE)) {
+  console.warn('[ENV] Aviso: usando alias legado E-MAIL_DE/EMAIL_DE. Migre para EMAIL_FROM.');
+}
+if (!process.env.FRONTEND_URL && process.env.URL_FRONTEND) {
+  console.warn('[ENV] Aviso: usando alias legado URL_FRONTEND. Migre para FRONTEND_URL.');
+}
 
 env.isProduction = env.nodeEnv === 'production';
 

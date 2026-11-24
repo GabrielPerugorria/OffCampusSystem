@@ -359,6 +359,7 @@ async function sendImmediateTransactional({
   );
 
   const emailService = require('./emailService');
+  const inAppNotificationService = require('./inAppNotificationService');
   try {
     const sendResult = await emailService.sendMail({
       to: recipientEmail,
@@ -371,11 +372,35 @@ async function sendImmediateTransactional({
       await markResendAccepted(outboxId, sendResult.id);
       return { success: true, id: sendResult.id, outboxId };
     } else {
-      await markResendFailed(outboxId, sendResult.error || 'Erro ao comunicar com provedor');
-      return { success: false, error: sendResult.error, outboxId };
+      const errorMsg = sendResult.error || 'Erro ao comunicar com provedor';
+      await markResendFailed(outboxId, errorMsg);
+      await inAppNotificationService.createNotification({
+        organizationId: organizationId || null,
+        eventId: eventId || null,
+        category: 'operation',
+        severity: 'warning',
+        title: 'Falha no envio de e-mail transacional',
+        message: `Falha ao enviar "${subject}" para ${emailService.maskEmail(recipientEmail)}: ${errorMsg}`,
+        metadata: { outboxId, category, simulated: Boolean(sendResult.simulated) },
+      }).catch(() => {});
+      return {
+        success: false,
+        error: errorMsg,
+        simulated: Boolean(sendResult.simulated),
+        outboxId,
+      };
     }
   } catch (err) {
     await markResendFailed(outboxId, err.message);
+    await inAppNotificationService.createNotification({
+      organizationId: organizationId || null,
+      eventId: eventId || null,
+      category: 'operation',
+      severity: 'critical',
+      title: 'Exceção no envio de e-mail transacional',
+      message: `Exceção ao enviar "${subject}" para ${emailService.maskEmail(recipientEmail)}: ${err.message}`,
+      metadata: { outboxId, category },
+    }).catch(() => {});
     return { success: false, error: err.message, outboxId };
   }
 }
