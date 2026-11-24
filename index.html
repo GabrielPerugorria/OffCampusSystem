@@ -1801,20 +1801,22 @@
             </div>
           </div>
 
-          <!-- Etapa 2: Desafio 2FA para Contas Administrativas -->
+          <!-- Etapa 2: Desafio 2FA / Verificação por E-mail -->
           <div id="loginStep2FA" style="display:none">
             <h2 class="auth-title" style="display:flex;align-items:center;gap:8px;">
               <i data-lucide="shield-check" style="color:#10b981;width:24px;height:24px;"></i>
-              Acesso Administrativo
+              <span id="login2FATitle">Verificação de Segurança</span>
             </h2>
             <p class="auth-sub">
-              Enviamos um código de 6 dígitos para o e-mail de segurança:<br>
+              Enviamos um código de 6 dígitos para o e-mail:<br>
               <strong id="login2FAEmailMasked" style="color:#10b981;">---</strong>
             </p>
+            <div id="login2FADeliveryWarn" style="display:none;margin:10px 0;padding:10px 12px;border-radius:8px;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.35);color:#fbbf24;font-size:12px;line-height:1.4;"></div>
             <input type="hidden" id="adminChallengeToken">
             <div style="margin:20px 0 10px 0;">
               <input type="text" id="login2FACode" maxlength="6" placeholder="000000" inputmode="numeric" autocomplete="one-time-code" style="letter-spacing:8px;font-size:26px;text-align:center;font-weight:800;color:#10b981;background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.3);border-radius:10px;padding:12px;width:100%;box-sizing:border-box;outline:none;">
             </div>
+            <div id="login2FAExpiresInfo" style="text-align:center;font-size:11px;color:#64748b;margin-bottom:8px;">Código válido por 10 minutos</div>
             <span class="mfield-error" id="login2FA-error" style="display:block;text-align:center;margin-bottom:12px;"></span>
             <button class="auth-btn" id="btnLogin2FASubmit">
               <span>Confirmar Código</span>
@@ -1866,43 +1868,78 @@
         </div>
         <!-- Lado direito: formulário -->
         <div class="auth-form-side">
-          <h2 class="auth-title">Criar conta</h2>
-          <p class="auth-sub">Junte-se ao EvoTech Events</p>
-          <div class="auth-field">
-            <i data-lucide="user"></i>
-            <input type="text" id="cadNome" placeholder="Nome completo" autocomplete="name" required>
+          <div id="cadStepForm">
+            <h2 class="auth-title">Criar conta</h2>
+            <p class="auth-sub">Junte-se ao EvoTech Events</p>
+            <div class="auth-field">
+              <i data-lucide="user"></i>
+              <input type="text" id="cadNome" placeholder="Nome completo" autocomplete="name" required>
+            </div>
+            <span class="mfield-error" id="cadNome-error"></span>
+            <div class="auth-field">
+              <i data-lucide="mail"></i>
+              <input type="email" id="cadEmail" placeholder="Seu e-mail" autocomplete="email" required>
+            </div>
+            <span class="mfield-error" id="cadEmail-error"></span>
+            <div class="auth-field">
+              <i data-lucide="id-card"></i>
+              <input type="text" id="cadCpf" placeholder="000.000.000-00" maxlength="14" autocomplete="off">
+            </div>
+            <span class="mfield-error" id="cadCpf-error"></span>
+            <div class="auth-field">
+              <i data-lucide="phone"></i>
+              <input type="tel" id="cadTel" placeholder="(00) 00000-0000" maxlength="15" autocomplete="tel">
+            </div>
+            <span class="mfield-error" id="cadTel-error"></span>
+            <div class="auth-field">
+              <i data-lucide="calendar"></i>
+              <input type="date" id="cadDt" autocomplete="bday">
+            </div>
+            <span class="mfield-error" id="cadDt-error"></span>
+            <div class="auth-field">
+              <i data-lucide="lock"></i>
+              <input type="password" id="cadSenha" placeholder="Mínimo 6 caracteres" autocomplete="new-password" required disabled>
+            </div>
+            <span class="mfield-error" id="cadSenha-error"></span>
+            <button class="auth-btn" id="btnCadastroSubmit">
+              <span>Criar conta</span>
+              <i data-lucide="arrow-right"></i>
+            </button>
+            <p class="auth-alt">Já tem conta? <a href="#" id="linkParaLogin">Entrar</a></p>
           </div>
-          <span class="mfield-error" id="cadNome-error"></span>
-          <div class="auth-field">
-            <i data-lucide="mail"></i>
-            <input type="email" id="cadEmail" placeholder="Seu e-mail" autocomplete="email" required>
+
+          <!-- Etapa 2: Confirmação obrigatória de e-mail -->
+          <div id="cadStepVerify" style="display:none">
+            <h2 class="auth-title" style="display:flex;align-items:center;gap:8px;">
+              <i data-lucide="mail-check" style="color:#10b981;width:24px;height:24px;"></i>
+              Confirmar E-mail
+            </h2>
+            <p class="auth-sub">
+              Enviamos um código de 6 dígitos para:<br>
+              <strong id="cadVerifyEmailMasked" style="color:#10b981;">---</strong>
+            </p>
+            <div id="cadVerifyDeliveryWarn" style="display:none;margin:10px 0;padding:10px 12px;border-radius:8px;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.35);color:#fbbf24;font-size:12px;line-height:1.4;"></div>
+            <input type="hidden" id="cadVerifyChallengeToken">
+            <div style="margin:20px 0 10px 0;">
+              <input type="text" id="cadVerifyCode" maxlength="6" placeholder="000000" inputmode="numeric" autocomplete="one-time-code" style="letter-spacing:8px;font-size:26px;text-align:center;font-weight:800;color:#10b981;background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.3);border-radius:10px;padding:12px;width:100%;box-sizing:border-box;outline:none;">
+            </div>
+            <div id="cadVerifyExpiresInfo" style="text-align:center;font-size:11px;color:#64748b;margin-bottom:8px;">Código válido por 15 minutos</div>
+            <span class="mfield-error" id="cadVerify-error" style="display:block;text-align:center;margin-bottom:12px;"></span>
+            <button class="auth-btn" id="btnCadVerifySubmit">
+              <span>Confirmar e Ativar Conta</span>
+              <i data-lucide="check"></i>
+            </button>
+            <p class="auth-alt" style="margin-top:16px;">
+              Não recebeu? <a href="#" id="linkReenviarCadVerify">Reenviar código</a>
+              <span id="timerReenviarCadVerify" style="color:#64748b;font-size:12px;margin-left:4px;"></span>
+            </p>
+            <p class="auth-alt" style="margin-top:8px;">
+              <a href="#" id="linkVoltarCadForm" style="color:#94a3b8;display:inline-flex;align-items:center;gap:4px;">
+                <i data-lucide="arrow-left" style="width:12px;height:12px;"></i> Voltar ao cadastro
+              </a>
+            </p>
           </div>
-          <span class="mfield-error" id="cadEmail-error"></span>
-          <div class="auth-field">
-            <i data-lucide="id-card"></i>
-            <input type="text" id="cadCpf" placeholder="000.000.000-00" maxlength="14" autocomplete="off">
-          </div>
-          <span class="mfield-error" id="cadCpf-error"></span>
-          <div class="auth-field">
-            <i data-lucide="phone"></i>
-            <input type="tel" id="cadTel" placeholder="(00) 00000-0000" maxlength="15" autocomplete="tel">
-          </div>
-          <span class="mfield-error" id="cadTel-error"></span>
-          <div class="auth-field">
-            <i data-lucide="calendar"></i>
-            <input type="date" id="cadDt" autocomplete="bday">
-          </div>
-          <span class="mfield-error" id="cadDt-error"></span>
-          <div class="auth-field">
-            <i data-lucide="lock"></i>
-            <input type="password" id="cadSenha" placeholder="Mínimo 6 caracteres" autocomplete="new-password" required disabled>
-          </div>
-          <span class="mfield-error" id="cadSenha-error"></span>
-          <button class="auth-btn" id="btnCadastroSubmit">
-            <span>Criar conta</span>
-            <i data-lucide="arrow-right"></i>
-          </button>
-          <p class="auth-alt">Já tem conta? <a href="#" id="linkParaLogin">Entrar</a></p>
+
           <button class="auth-close" id="modalCadastroClose" aria-label="Fechar">
             <i data-lucide="x"></i>
           </button>
@@ -1988,18 +2025,72 @@
             <input type="text" id="perfilNome" placeholder="Nome completo">
           </div>
           <div class="mform-group">
-            <label>E-mail</label>
-            <input type="email" id="perfilEmail" placeholder="E-mail" readonly>
+            <label>E-mail principal</label>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <input type="email" id="perfilEmail" placeholder="E-mail" readonly style="flex:1;">
+              <button class="btn-secondary btn-sm" id="btnAbrirAlterarEmail" type="button">Alterar e-mail</button>
+            </div>
           </div>
           <div class="mform-group">
             <label>Telefone</label>
             <input type="tel" id="perfilTel" placeholder="(00) 00000-0000">
+          </div>
+          <div class="mform-group">
+            <label>Foto de perfil (URL)</label>
+            <input type="url" id="perfilAvatarUrl" placeholder="https://...">
           </div>
           <div class="perfil-actions">
             <button class="btn-secondary" id="btnCancelarPerfil" type="button">Fechar</button>
             <button class="btn-primary" id="btnSalvarPerfil" type="button">Salvar alterações</button>
           </div>
           <div id="perfilSuccess" class="modal-success" style="display:none"><i data-lucide="check" style="width:16px;height:16px;display:inline-block;vertical-align:middle;margin-right:6px"></i> Perfil atualizado com sucesso!</div>
+
+          <!-- Alteração de E-mail Segura -->
+          <div id="boxAlterarEmail" style="display:none;margin-top:18px;padding:14px;border:1px solid rgba(255,255,255,0.1);border-radius:10px;background:rgba(255,255,255,0.02);">
+            <h4 style="margin:0 0 10px 0;font-size:14px;color:#fff;">Alterar endereço de e-mail</h4>
+            <div id="emailChangeStep1">
+              <div class="mform-group">
+                <label>Novo e-mail</label>
+                <input type="email" id="novoEmailInput" placeholder="novo@email.com">
+              </div>
+              <div class="mform-group">
+                <label>Senha atual (reautenticação)</label>
+                <input type="password" id="novoEmailSenhaAtual" placeholder="••••••••" autocomplete="current-password">
+              </div>
+              <button class="btn-primary btn-sm" id="btnSolicitarTrocaEmail" type="button">Enviar código de confirmação</button>
+            </div>
+            <div id="emailChangeStep2" style="display:none;">
+              <p style="font-size:12px;color:#94a3b8;margin:0 0 8px 0;">Informe o código de 6 dígitos enviado para <strong id="emailChangeMasked" style="color:#10b981;"></strong>:</p>
+              <input type="hidden" id="emailChangeChallengeToken">
+              <div class="mform-group">
+                <input type="text" id="emailChangeCodeInput" maxlength="6" placeholder="000000" inputmode="numeric" style="letter-spacing:6px;text-align:center;font-weight:700;">
+              </div>
+              <button class="btn-primary btn-sm" id="btnConfirmarTrocaEmail" type="button">Confirmar novo e-mail</button>
+            </div>
+            <div id="emailChangeFeedback" class="mfield-error" style="display:none;margin-top:8px;"></div>
+          </div>
+
+          <!-- Segurança: Alterar Senha e Revogar Sessões -->
+          <div style="margin-top:20px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.08);">
+            <h4 style="margin:0 0 12px 0;font-size:14px;color:#fff;">Segurança da Conta</h4>
+            <div class="mform-group">
+              <label>Senha atual</label>
+              <input type="password" id="perfilSenhaAtual" placeholder="••••••••" autocomplete="current-password">
+            </div>
+            <div class="mform-group">
+              <label>Nova senha (mínimo 6 caracteres)</label>
+              <input type="password" id="perfilNovaSenha" placeholder="••••••••" autocomplete="new-password">
+            </div>
+            <div class="mform-group">
+              <label>Confirmar nova senha</label>
+              <input type="password" id="perfilConfirmaSenha" placeholder="••••••••" autocomplete="new-password">
+            </div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+              <button class="btn-primary btn-sm" id="btnAlterarSenhaPerfil" type="button">Atualizar senha</button>
+              <button class="btn-secondary btn-sm" id="btnRevogarSessoes" type="button">Encerrar todas as sessões</button>
+            </div>
+            <div id="perfilSegurancaFeedback" class="mfield-error" style="display:none;margin-top:8px;"></div>
+          </div>
         </div>
       </div>
     </div>

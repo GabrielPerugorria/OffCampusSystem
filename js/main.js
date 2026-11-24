@@ -1182,15 +1182,31 @@ function iniciarTimer2FA(segundos) {
 function exibirDesafio2FA(res) {
     const sCreds = document.getElementById('loginStepCredentials');
     const s2FA = document.getElementById('loginStep2FA');
+    const titleEl = document.getElementById('login2FATitle');
     const tokenInp = document.getElementById('adminChallengeToken');
     const maskedSpan = document.getElementById('login2FAEmailMasked');
+    const warnEl = document.getElementById('login2FADeliveryWarn');
+    const expEl = document.getElementById('login2FAExpiresInfo');
     const codeInp = document.getElementById('login2FACode');
     const errSpan = document.getElementById('login2FA-error');
 
     if (sCreds) sCreds.style.display = 'none';
     if (s2FA) s2FA.style.display = 'block';
+    if (titleEl) titleEl.textContent = res.role === 'admin' ? 'Acesso Administrativo' : 'Verificação de Segurança';
     if (tokenInp) tokenInp.value = res.challengeToken;
     if (maskedSpan) maskedSpan.textContent = res.emailMasked || 'seu e-mail cadastrado';
+    if (warnEl) {
+        if (res.emailDeliveryFailed) {
+            warnEl.textContent = 'Atenção: não foi possível enviar o e-mail neste momento. Aguarde alguns segundos e clique em "Reenviar código".';
+            warnEl.style.display = 'block';
+        } else {
+            warnEl.style.display = 'none';
+            warnEl.textContent = '';
+        }
+    }
+    if (expEl && res.expiresInSeconds) {
+        expEl.textContent = `Código válido por ${Math.round(res.expiresInSeconds / 60)} minutos`;
+    }
     if (codeInp) { codeInp.value = ''; codeInp.focus(); }
     if (errSpan) { errSpan.textContent = ''; errSpan.style.color = ''; }
 
@@ -1200,9 +1216,71 @@ function exibirDesafio2FA(res) {
     iniciarTimer2FA(60);
 }
 
+let timerCadVerifyInterval = null;
+function iniciarTimerCadVerify(segundos = 60) {
+    if (timerCadVerifyInterval) clearInterval(timerCadVerifyInterval);
+    const link = document.getElementById('linkReenviarCadVerify');
+    const span = document.getElementById('timerReenviarCadVerify');
+    if (link) {
+        link.style.pointerEvents = 'none';
+        link.style.opacity = '0.5';
+    }
+    let restante = segundos;
+    const atualizar = () => {
+        if (restante <= 0) {
+            clearInterval(timerCadVerifyInterval);
+            if (span) span.textContent = '';
+            if (link) {
+                link.style.pointerEvents = 'auto';
+                link.style.opacity = '1';
+            }
+            return;
+        }
+        const m = Math.floor(restante / 60);
+        const s = restante % 60;
+        if (span) span.textContent = `(disponível em ${m}:${s < 10 ? '0' : ''}${s})`;
+        restante--;
+    };
+    atualizar();
+    timerCadVerifyInterval = setInterval(atualizar, 1000);
+}
+
+function exibirVerificacaoEmail(res) {
+    openModal('cadastro');
+    const stepForm = document.getElementById('cadStepForm');
+    const stepVerify = document.getElementById('cadStepVerify');
+    const tokenInp = document.getElementById('cadVerifyChallengeToken');
+    const maskedSpan = document.getElementById('cadVerifyEmailMasked');
+    const warnEl = document.getElementById('cadVerifyDeliveryWarn');
+    const codeInp = document.getElementById('cadVerifyCode');
+    const errSpan = document.getElementById('cadVerify-error');
+
+    if (stepForm) stepForm.style.display = 'none';
+    if (stepVerify) stepVerify.style.display = 'block';
+    if (tokenInp) tokenInp.value = res.challengeToken || '';
+    if (maskedSpan) maskedSpan.textContent = res.emailMasked || 'seu e-mail';
+    if (warnEl) {
+        if (res.emailDeliveryFailed) {
+            warnEl.textContent = 'Atenção: não foi possível enviar o e-mail de verificação agora. Clique em "Reenviar código" quando o contador liberar.';
+            warnEl.style.display = 'block';
+        } else {
+            warnEl.style.display = 'none';
+            warnEl.textContent = '';
+        }
+    }
+    if (codeInp) { codeInp.value = ''; codeInp.focus(); }
+    if (errSpan) { errSpan.textContent = ''; errSpan.style.color = ''; }
+    if (window.lucide && window.lucide.createIcons) window.lucide.createIcons();
+    iniciarTimerCadVerify(60);
+}
+
 async function loginDemo(email, senha, destinoAdmin) {
     try {
         const res = await EvoAPI.login(email, senha);
+        if (res && res.requiresEmailVerification) {
+            exibirVerificacaoEmail(res);
+            return;
+        }
         if (res && res.requires2FA) {
             exibirDesafio2FA(res);
             return;
@@ -1244,6 +1322,10 @@ document.getElementById('btnLoginSubmit')?.addEventListener('click', async () =>
     try {
         // A verificação de senha acontece no servidor, contra o hash bcrypt.
         const res = await EvoAPI.login(email, senha);
+        if (res && res.requiresEmailVerification) {
+            exibirVerificacaoEmail(res);
+            return;
+        }
         if (res && res.requires2FA) {
             exibirDesafio2FA(res);
             return;
@@ -1369,7 +1451,11 @@ document.getElementById('btnCadastroSubmit')?.addEventListener('click', async ()
     const botao = document.getElementById('btnCadastroSubmit');
     ocupado(botao, true);
     try {
-        await EvoAPI.register({ name: nome, email, password: senha, cpf, phone: tel, birthDate: dt });
+        const res = await EvoAPI.register({ name: nome, email, password: senha, cpf, phone: tel, birthDate: dt });
+        if (res && res.requiresEmailVerification) {
+            exibirVerificacaoEmail(res);
+            return;
+        }
         updateNavUI();
         closeModal();
     } catch (err) {
@@ -1383,6 +1469,70 @@ document.getElementById('btnCadastroSubmit')?.addEventListener('click', async ()
     } finally {
         ocupado(botao, false, 'Criar conta');
     }
+});
+
+/* ---------- CONFIRMAÇÃO DE E-MAIL NO CADASTRO ---------- */
+document.getElementById('btnCadVerifySubmit')?.addEventListener('click', async () => {
+    const challengeToken = document.getElementById('cadVerifyChallengeToken')?.value;
+    const code = document.getElementById('cadVerifyCode')?.value.trim();
+    const errSpan = document.getElementById('cadVerify-error');
+    const botao = document.getElementById('btnCadVerifySubmit');
+
+    if (!code || !/^\d{6}$/.test(code)) {
+        if (errSpan) {
+            errSpan.style.color = '#ef4444';
+            errSpan.textContent = 'Informe o código numérico de 6 dígitos.';
+        }
+        return;
+    }
+    if (errSpan) errSpan.textContent = '';
+
+    ocupado(botao, true, 'Confirmando…');
+    try {
+        await EvoAPI.verifyEmail(challengeToken, code);
+        updateNavUI();
+        closeModal();
+    } catch (err) {
+        if (errSpan) {
+            errSpan.style.color = '#ef4444';
+            errSpan.textContent = err.message || 'Código inválido ou expirado.';
+        }
+    } finally {
+        ocupado(botao, false, 'Confirmar e Ativar Conta');
+    }
+});
+
+document.getElementById('linkReenviarCadVerify')?.addEventListener('click', async (e) => {
+    e.preventDefault();
+    const challengeToken = document.getElementById('cadVerifyChallengeToken')?.value;
+    const errSpan = document.getElementById('cadVerify-error');
+    const warnEl = document.getElementById('cadVerifyDeliveryWarn');
+    if (!challengeToken) return;
+
+    try {
+        await EvoAPI.resendVerificationCode(challengeToken);
+        if (warnEl) warnEl.style.display = 'none';
+        if (errSpan) {
+            errSpan.style.color = '#10b981';
+            errSpan.textContent = 'Novo código enviado com sucesso ao seu e-mail!';
+            setTimeout(() => { if (errSpan) { errSpan.textContent = ''; errSpan.style.color = ''; } }, 4000);
+        }
+        iniciarTimerCadVerify(60);
+    } catch (err) {
+        if (errSpan) {
+            errSpan.style.color = '#ef4444';
+            errSpan.textContent = err.message || 'Erro ao reenviar código.';
+        }
+    }
+});
+
+document.getElementById('linkVoltarCadForm')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    const stepForm = document.getElementById('cadStepForm');
+    const stepVerify = document.getElementById('cadStepVerify');
+    if (stepForm) stepForm.style.display = 'block';
+    if (stepVerify) stepVerify.style.display = 'none';
+    if (timerCadVerifyInterval) clearInterval(timerCadVerifyInterval);
 });
 
 /* ---------- RECUPERAR SENHA ---------- */
@@ -1518,6 +1668,8 @@ async function buildParticipante(user) {
     if (pe) pe.value = user.email || '';
     const pt = document.getElementById('perfilTel');
     if (pt) pt.value = user.phone || user.tel || '';
+    const pa = document.getElementById('perfilAvatarUrl');
+    if (pa) pa.value = user.avatarUrl || '';
 
     const ingList = document.getElementById('meusIngressos');
     const histList = document.getElementById('meuHistorico');
@@ -1682,11 +1834,16 @@ document.querySelectorAll('.part-tab').forEach(tab => {
 document.getElementById('btnSalvarPerfil')?.addEventListener('click', async () => {
     const nome = document.getElementById('perfilNome').value.trim();
     const tel = document.getElementById('perfilTel').value.trim();
+    const avatarUrl = document.getElementById('perfilAvatarUrl')?.value.trim();
     const aviso = document.getElementById('perfilSuccess');
     const botao = document.getElementById('btnSalvarPerfil');
     ocupado(botao, true);
     try {
-        const user = await EvoAPI.put('/auth/me', { name: nome || undefined, phone: tel || undefined });
+        const user = await EvoAPI.put('/auth/me', {
+            name: nome || undefined,
+            phone: tel || undefined,
+            avatarUrl: avatarUrl || undefined,
+        });
         EvoAPI.store.setSession(user);
         updateNavUI();
         if (aviso) {
@@ -1706,6 +1863,140 @@ document.getElementById('btnSalvarPerfil')?.addEventListener('click', async () =
         }
     } finally {
         ocupado(botao, false, 'Salvar alterações');
+    }
+});
+
+// Alteração de e-mail com confirmação por código
+document.getElementById('btnAbrirAlterarEmail')?.addEventListener('click', () => {
+    const box = document.getElementById('boxAlterarEmail');
+    const s1 = document.getElementById('emailChangeStep1');
+    const s2 = document.getElementById('emailChangeStep2');
+    const fb = document.getElementById('emailChangeFeedback');
+    if (!box) return;
+    const isHidden = box.style.display === 'none';
+    box.style.display = isHidden ? 'block' : 'none';
+    if (s1) s1.style.display = 'block';
+    if (s2) s2.style.display = 'none';
+    if (fb) { fb.style.display = 'none'; fb.textContent = ''; }
+});
+
+document.getElementById('btnSolicitarTrocaEmail')?.addEventListener('click', async () => {
+    const newEmail = document.getElementById('novoEmailInput')?.value.trim();
+    const currentPassword = document.getElementById('novoEmailSenhaAtual')?.value;
+    const fb = document.getElementById('emailChangeFeedback');
+    const btn = document.getElementById('btnSolicitarTrocaEmail');
+
+    if (fb) { fb.style.display = 'none'; fb.textContent = ''; }
+    if (!newEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)) {
+        if (fb) { fb.textContent = 'Informe um novo e-mail válido.'; fb.style.color = '#ef4444'; fb.style.display = 'block'; }
+        return;
+    }
+    if (!currentPassword) {
+        if (fb) { fb.textContent = 'Informe sua senha atual para continuar.'; fb.style.color = '#ef4444'; fb.style.display = 'block'; }
+        return;
+    }
+
+    ocupado(btn, true, 'Enviando…');
+    try {
+        const res = await EvoAPI.requestEmailChange(newEmail, currentPassword);
+        document.getElementById('emailChangeChallengeToken').value = res.challengeToken;
+        document.getElementById('emailChangeMasked').textContent = res.emailMasked || newEmail;
+        document.getElementById('emailChangeStep1').style.display = 'none';
+        document.getElementById('emailChangeStep2').style.display = 'block';
+    } catch (err) {
+        if (fb) { fb.textContent = err.message || 'Erro ao solicitar alteração de e-mail.'; fb.style.color = '#ef4444'; fb.style.display = 'block'; }
+    } finally {
+        ocupado(btn, false, 'Enviar código de confirmação');
+    }
+});
+
+document.getElementById('btnConfirmarTrocaEmail')?.addEventListener('click', async () => {
+    const challengeToken = document.getElementById('emailChangeChallengeToken')?.value;
+    const code = document.getElementById('emailChangeCodeInput')?.value.trim();
+    const fb = document.getElementById('emailChangeFeedback');
+    const btn = document.getElementById('btnConfirmarTrocaEmail');
+
+    if (fb) { fb.style.display = 'none'; fb.textContent = ''; }
+    if (!code || !/^\d{6}$/.test(code)) {
+        if (fb) { fb.textContent = 'Informe o código de 6 dígitos.'; fb.style.color = '#ef4444'; fb.style.display = 'block'; }
+        return;
+    }
+
+    ocupado(btn, true, 'Confirmando…');
+    try {
+        const res = await EvoAPI.confirmEmailChange(challengeToken, code);
+        if (res?.user) {
+            document.getElementById('perfilEmail').value = res.user.email || '';
+            const emBig = document.getElementById('partEmailBig');
+            if (emBig) emBig.textContent = res.user.email || '';
+        }
+        updateNavUI();
+        document.getElementById('emailChangeStep2').style.display = 'none';
+        document.getElementById('emailChangeStep1').style.display = 'block';
+        document.getElementById('novoEmailInput').value = '';
+        document.getElementById('novoEmailSenhaAtual').value = '';
+        document.getElementById('emailChangeCodeInput').value = '';
+        if (fb) { fb.textContent = 'E-mail alterado e confirmado com sucesso!'; fb.style.color = '#10b981'; fb.style.display = 'block'; }
+    } catch (err) {
+        if (fb) { fb.textContent = err.message || 'Código inválido ou expirado.'; fb.style.color = '#ef4444'; fb.style.display = 'block'; }
+    } finally {
+        ocupado(btn, false, 'Confirmar novo e-mail');
+    }
+});
+
+// Alteração de senha autenticada
+document.getElementById('btnAlterarSenhaPerfil')?.addEventListener('click', async () => {
+    const currentPassword = document.getElementById('perfilSenhaAtual')?.value;
+    const newPassword = document.getElementById('perfilNovaSenha')?.value;
+    const confirmNewPassword = document.getElementById('perfilConfirmaSenha')?.value;
+    const fb = document.getElementById('perfilSegurancaFeedback');
+    const btn = document.getElementById('btnAlterarSenhaPerfil');
+
+    if (fb) { fb.style.display = 'none'; fb.textContent = ''; }
+    if (!currentPassword || !newPassword || newPassword.length < 6) {
+        if (fb) { fb.textContent = 'Informe a senha atual e uma nova senha com ao menos 6 caracteres.'; fb.style.color = '#ef4444'; fb.style.display = 'block'; }
+        return;
+    }
+    if (newPassword !== confirmNewPassword) {
+        if (fb) { fb.textContent = 'A confirmação da nova senha não confere.'; fb.style.color = '#ef4444'; fb.style.display = 'block'; }
+        return;
+    }
+
+    ocupado(btn, true, 'Atualizando…');
+    try {
+        await EvoAPI.changePassword(currentPassword, newPassword, confirmNewPassword);
+        document.getElementById('perfilSenhaAtual').value = '';
+        document.getElementById('perfilNovaSenha').value = '';
+        document.getElementById('perfilConfirmaSenha').value = '';
+        if (fb) { fb.textContent = 'Senha atualizada com sucesso! Sessões anteriores foram encerradas.'; fb.style.color = '#10b981'; fb.style.display = 'block'; }
+    } catch (err) {
+        if (fb) { fb.textContent = err.message || 'Erro ao atualizar senha.'; fb.style.color = '#ef4444'; fb.style.display = 'block'; }
+    } finally {
+        ocupado(btn, false, 'Atualizar senha');
+    }
+});
+
+// Revogação manual de todas as sessões
+document.getElementById('btnRevogarSessoes')?.addEventListener('click', async () => {
+    const currentPassword = document.getElementById('perfilSenhaAtual')?.value;
+    const fb = document.getElementById('perfilSegurancaFeedback');
+    const btn = document.getElementById('btnRevogarSessoes');
+
+    if (fb) { fb.style.display = 'none'; fb.textContent = ''; }
+    if (!currentPassword) {
+        if (fb) { fb.textContent = 'Informe sua senha atual no campo acima para encerrar todas as sessões.'; fb.style.color = '#ef4444'; fb.style.display = 'block'; }
+        return;
+    }
+
+    ocupado(btn, true, 'Encerrando…');
+    try {
+        await EvoAPI.revokeAllSessions(currentPassword);
+        document.getElementById('perfilSenhaAtual').value = '';
+        if (fb) { fb.textContent = 'Todas as outras sessões foram encerradas com segurança.'; fb.style.color = '#10b981'; fb.style.display = 'block'; }
+    } catch (err) {
+        if (fb) { fb.textContent = err.message || 'Erro ao encerrar sessões.'; fb.style.color = '#ef4444'; fb.style.display = 'block'; }
+    } finally {
+        ocupado(btn, false, 'Encerrar todas as sessões');
     }
 });
 

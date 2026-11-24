@@ -657,8 +657,14 @@
               <button class="pill" onclick="filtrarNotifCategoria('stock')" style="padding:4px 10px;border-radius:6px;font-size:12px;cursor:pointer;background:none;color:#94a3b8;border:none;">Estoque</button>
               <button class="pill" onclick="filtrarNotifCategoria('operation')" style="padding:4px 10px;border-radius:6px;font-size:12px;cursor:pointer;background:none;color:#94a3b8;border:none;">Operação</button>
             </div>
+            <select id="filtro-notif-severidade" onchange="carregarNotificacoesPainel(1)" style="background:#0d1117;border:1px solid #1e293b;color:#cbd5e1;border-radius:6px;padding:4px 8px;font-size:12px;">
+              <option value="">Todas gravidades</option>
+              <option value="info">Info</option>
+              <option value="warning">Aviso</option>
+              <option value="critical">Crítico</option>
+            </select>
             <label style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#94a3b8;cursor:pointer;">
-              <input type="checkbox" id="filtro-notif-nao-lidas" onchange="carregarNotificacoesPainel()" style="cursor:pointer;">
+              <input type="checkbox" id="filtro-notif-nao-lidas" onchange="carregarNotificacoesPainel(1)" style="cursor:pointer;">
               Apenas não lidas
             </label>
             <button class="btn btn-outline btn-sm" onclick="marcarTodasNotifLidas()" style="font-size:12px;">
@@ -673,6 +679,7 @@
         <div id="inapp-notifications-container" style="max-height:420px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:12px 0;">
           <div style="text-align:center;padding:30px;color:#64748b;font-size:13px;">Carregando notificações internas...</div>
         </div>
+        <div id="inapp-notifications-pagination" style="display:flex;align-items:center;justify-content:space-between;padding-top:10px;border-top:1px solid #1e293b;font-size:12px;color:#94a3b8;"></div>
       </div>
 
       <div class="grid-2" style="margin-bottom:20px;">

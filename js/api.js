@@ -180,8 +180,8 @@
       return data.user;
     },
 
-    async verifyAdminCode(challengeToken, code) {
-      const data = await request('/auth/verify-admin-code', {
+    async verifyLoginCode(challengeToken, code) {
+      const data = await request('/auth/verify-login-code', {
         method: 'POST', body: { challengeToken, code }, skipAuth: true,
       });
       store.setAuth({ accessToken: data.accessToken, refreshToken: data.refreshToken });
@@ -189,19 +189,84 @@
       return data.user;
     },
 
-    async resendAdminCode(challengeToken) {
-      return request('/auth/resend-admin-code', {
+    async resendLoginCode(challengeToken) {
+      return request('/auth/resend-login-code', {
         method: 'POST', body: { challengeToken }, skipAuth: true,
       });
+    },
+
+    async verifyAdminCode(challengeToken, code) {
+      return this.verifyLoginCode(challengeToken, code);
+    },
+
+    async resendAdminCode(challengeToken) {
+      return this.resendLoginCode(challengeToken);
     },
 
     async register(payload) {
       const data = await request('/auth/register', {
         method: 'POST', body: payload, skipAuth: true,
       });
+      if (data && data.requiresEmailVerification) {
+        return data;
+      }
       store.setAuth({ accessToken: data.accessToken, refreshToken: data.refreshToken });
       store.setSession(data.user);
       return data.user;
+    },
+
+    async verifyEmail(challengeToken, code) {
+      const data = await request('/auth/verify-email', {
+        method: 'POST', body: { challengeToken, code }, skipAuth: true,
+      });
+      store.setAuth({ accessToken: data.accessToken, refreshToken: data.refreshToken });
+      store.setSession(data.user);
+      return data.user;
+    },
+
+    async resendVerificationCode(challengeToken) {
+      return request('/auth/resend-verification-code', {
+        method: 'POST', body: { challengeToken }, skipAuth: true,
+      });
+    },
+
+    async changePassword(currentPassword, newPassword, confirmNewPassword) {
+      const data = await request('/auth/change-password', {
+        method: 'POST', body: { currentPassword, newPassword, confirmNewPassword },
+      });
+      if (data?.accessToken) {
+        store.setAuth({ accessToken: data.accessToken, refreshToken: data.refreshToken });
+        store.setSession(data.user);
+      }
+      return data;
+    },
+
+    async requestEmailChange(newEmail, currentPassword) {
+      return request('/auth/change-email/request', {
+        method: 'POST', body: { newEmail, currentPassword },
+      });
+    },
+
+    async confirmEmailChange(challengeToken, code) {
+      const data = await request('/auth/change-email/confirm', {
+        method: 'POST', body: { challengeToken, code },
+      });
+      if (data?.accessToken) {
+        store.setAuth({ accessToken: data.accessToken, refreshToken: data.refreshToken });
+        store.setSession(data.user);
+      }
+      return data;
+    },
+
+    async revokeAllSessions(currentPassword) {
+      const data = await request('/auth/revoke-sessions', {
+        method: 'POST', body: { currentPassword },
+      });
+      if (data?.accessToken) {
+        store.setAuth({ accessToken: data.accessToken, refreshToken: data.refreshToken });
+        store.setSession(data.user);
+      }
+      return data;
     },
 
     async logout() {

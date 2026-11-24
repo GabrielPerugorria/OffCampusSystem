@@ -2376,9 +2376,12 @@ async function dispararResumoExecutivoAgora() {
 
 /* ===== NOTIFICAÇÕES INTERNAS EM TEMPO REAL ===== */
 let notifCategoriaAtiva = '';
+let notifPaginaAtual = 1;
+const NOTIF_PAGE_SIZE = 20;
 
 function filtrarNotifCategoria(cat) {
   notifCategoriaAtiva = cat;
+  notifPaginaAtual = 1;
   const container = document.getElementById('notif-category-pills');
   if (container) {
     const buttons = container.querySelectorAll('.pill');
@@ -2394,21 +2397,47 @@ function filtrarNotifCategoria(cat) {
     activeBtn.style.color = '#fff';
     activeBtn.classList.add('active');
   }
-  carregarNotificacoesPainel();
+  carregarNotificacoesPainel(1);
 }
 
-async function carregarNotificacoesPainel() {
+function mudarPaginaNotif(page) {
+  notifPaginaAtual = Math.max(1, page);
+  carregarNotificacoesPainel(notifPaginaAtual);
+}
+
+async function carregarNotificacoesPainel(page) {
+  if (page !== undefined) notifPaginaAtual = Math.max(1, page);
   const container = document.getElementById('inapp-notifications-container');
+  const pagEl = document.getElementById('inapp-notifications-pagination');
   if (!container) return;
 
+  container.innerHTML = '<div style="text-align:center;padding:28px;color:#64748b;font-size:13px;">Carregando notificações...</div>';
+
   const unreadOnly = document.getElementById('filtro-notif-nao-lidas')?.checked || false;
-  const query = { limit: 50 };
+  const severity = document.getElementById('filtro-notif-severidade')?.value || '';
+  const query = {
+    limit: NOTIF_PAGE_SIZE,
+    offset: (notifPaginaAtual - 1) * NOTIF_PAGE_SIZE,
+  };
   if (notifCategoriaAtiva) query.category = notifCategoriaAtiva;
+  if (severity) query.severity = severity;
   if (unreadOnly) query.unreadOnly = 'true';
 
   try {
     const res = await EvoAPI.get('/notifications/in-app', query);
     const items = res.items || [];
+    const total = Number(res.total || 0);
+    const totalPages = Math.max(1, Math.ceil(total / NOTIF_PAGE_SIZE));
+
+    if (pagEl) {
+      pagEl.innerHTML = `
+        <span>Total: ${total} notificação(ões) &bull; Página ${notifPaginaAtual} de ${totalPages}</span>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-outline btn-sm" ${notifPaginaAtual <= 1 ? 'disabled' : ''} onclick="mudarPaginaNotif(${notifPaginaAtual - 1})" style="padding:3px 10px;font-size:11px;">Anterior</button>
+          <button class="btn btn-outline btn-sm" ${notifPaginaAtual >= totalPages ? 'disabled' : ''} onclick="mudarPaginaNotif(${notifPaginaAtual + 1})" style="padding:3px 10px;font-size:11px;">Próxima</button>
+        </div>
+      `;
+    }
 
     if (items.length === 0) {
       container.innerHTML = `
